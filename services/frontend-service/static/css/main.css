@@ -1,0 +1,541 @@
+/* css/main.css - 수정된 버전 */
+/* TODO: px→rem, width/height→vw/vh 통일 */
+:root {
+  --color-bg-header: #010002;
+  --color-footer-bg: #0d1f2d;
+  --color-logo-text: lab(69.67% -15.03 -23.49); 
+  --color-body-bg: #0b5264;
+  --color-nav-text: #0c3f2f;
+  --color-highlight: #204461;
+  --color-text-shadow: #2e1b8388; /* 오타 수정: clolr -> color */
+  --font-sans: 'Noto Sans KR', sans-serif;
+}
+
+/* Reset & scroll-snap */
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+html, body {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* 가로 스크롤 완전 제거 */
+  overflow-y: auto; /* 세로 스크롤만 허용 */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+body { 
+  font-family: sans-serif; 
+  min-height: 100vh; /* 최소 높이 보장 */
+}
+
+a { 
+  text-decoration: none; 
+  color: inherit; 
+}
+
+/* 임시 오버레이 */
+#temp-overlay {
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100vw; 
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8rem;
+  text-align: center;
+  padding: 2rem;
+  z-index: 9999;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+#temp-overlay.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* sections-wrapper가 스크롤 담당 */
+.sections-wrapper {
+  height: 100vh;
+  overflow-y: auto; /* 여기서만 스크롤 허용 */
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  /* 이 요소의 스크롤바 숨기기 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE */
+}
+
+.sections-wrapper::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* Header */
+#site-header { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100vw;
+  padding: 1rem 4vw;
+  display: flex; 
+  align-items: center; 
+  background: transparent; 
+  color: #fff; 
+  z-index: 10; 
+  transition: transform 0.3s ease-in-out; 
+  will-change: transform;
+}
+
+#site-header.hidden {
+  transform: translateY(-100%);
+}
+
+#site-header .logo { 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  text-shadow: 
+    0 0.1rem 0.2rem rgba(0,0,0,0.5),
+    0 0.05rem 0.1rem rgba(0,0,0,0.3);
+  transition: color .2s ease, 
+              transform .2s ease;
+}
+
+#site-header .logo img { 
+  height: 2.5rem;
+  width: auto;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+#site-header .logo span { 
+  color: lab(69.67% -15.03 -23.49); 
+  font-size: 1.5rem; 
+  font-weight: bold;  
+}
+
+#site-header nav { 
+  margin-left: auto; 
+  margin-right: 2rem;  
+}
+
+#site-header .nav-link { 
+  margin-left: 2rem; 
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #fff; 
+  text-shadow: 
+    0 0.1rem 0.2rem rgba(0,0,0,0.7),
+    0 0.05rem 0.1rem rgba(0,0,0,0.5);
+  transition: color .2s ease, 
+              transform .2s ease;
+}
+
+/* hover 시 좀 더 강조 & 약간 확대 */
+#site-header .nav-link:hover { 
+  color: lab(69.67% -15.03 -23.49); 
+  transform: scale(1.1);
+  text-shadow:
+    0 0.2rem 0.4rem rgba(0,0,0,0.8),
+    0 0.1rem 0.2rem rgba(0,0,0,0.6);
+  font-weight: bold;
+}
+
+/* logo 호버 시 스케일 업 + 약간 밝게 */
+#site-header .logo:hover img {
+  transform: scale(1.1) translateY(-0.2rem);
+  filter: brightness(1.1);
+}
+
+/* Section 공통 부모요소 */
+.section { 
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  scroll-snap-align: start;
+  overflow: hidden; /* 내부 스크롤 방지 */
+}
+
+.section.slider {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* HERO SLIDER */
+.slider {
+  position: relative;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+.slider .slide {
+  position: absolute;
+  top: 0; 
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0; 
+  z-index: 1;
+  transition: opacity 1s ease;
+  overflow: hidden; /* 이미지 넘침 방지 */
+}
+
+.slider .slide.active {
+  opacity: 1; 
+  z-index: 2;
+}
+
+/* 이미지 꽉 채우기 */
+.slider .slide img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  object-position: center;
+  display: block; /* inline 요소 여백 제거 */
+}
+
+/* 텍스트 오버레이 */
+.slider-overlay {
+  position: absolute;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  z-index: 3;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform .3s ease, text-shadow .3s ease;
+}
+
+.slide-title-main {
+  font-size: 3.5rem;
+  font-weight: bold;
+  text-shadow: 0 0 .5rem rgba(0,0,0,0.7);
+  margin-bottom: .5rem;
+}
+
+.slide-title-sub {
+  font-size: 1.2rem;
+  text-shadow: 0 0 .5rem rgba(0,0,0,0.7);
+}
+
+.slider-overlay .overlay-logo {
+  display: block;
+  max-width: 15rem !important;
+  max-height: 15rem !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 auto 1rem;
+  filter: brightness(0) invert(1);
+  pointer-events: none;
+  z-index: 4;
+  margin-bottom: .1rem;
+  transition: transform .3s ease, filter .3s ease;
+}
+
+/* Hover 효과 */
+.slider-overlay:hover {
+  transform: translate(-50%, -60%) scale(1.03);
+}
+
+.slider-overlay:hover .slide-title-main {
+  font-weight: bold;
+  text-shadow:
+    0 0.2rem 0.4rem rgba(0,0,0,0.8),
+    0 0.05rem 0.1rem rgba(0,0,0,0.6);
+}
+
+.slider-overlay:hover .slide-title-sub {
+  text-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.6);
+}
+
+.slider-overlay:hover .overlay-logo {
+  transform: translateY(-0.5rem) scale(1.1);
+  filter: drop-shadow(0 0.4rem 0.6rem rgba(0,0,0,0.8))
+          drop-shadow(0 0.1rem 0.2rem rgba(0,0,0,0.6));
+}
+
+/* Arrow 버튼 */
+.arrow {
+  position: absolute; 
+  top: 50vh;
+  transform: translateY(-50%);
+  background: none; 
+  color: #fff; 
+  padding: .5rem; 
+  cursor: pointer; 
+  z-index: 4;
+  border: .2rem solid #add8e6;
+}
+.arrow.left  { left: 1rem;}
+.arrow.right { right: 1rem;}
+
+/* THREE-COLUMN */
+.subgrid { 
+  display: flex; 
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* 내부 스크롤 방지 */
+  margin: 0;
+  padding: 0;
+  gap: 0; /* flex-gap 제거 */
+}
+
+/* 공통 카드 스타일 */
+.sub { 
+  flex: 1 1 0; /* 균등 분할 */
+  position: relative; 
+  cursor: pointer;  
+  overflow: hidden;
+}
+
+/* 이미지 수정 */
+.sub-img {
+  display: block; /* inline 요소 여백 제거 */
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  object-position: center;
+  transition: filter .4s ease, transform .4s ease;
+}
+
+/* Background 레이어 */
+.sub::before {
+  content: ""; 
+  position: absolute;
+  inset: 0;
+  background-image: var(--bg);
+  background-size: cover; 
+  background-position: center;
+  transition: filter .4s ease, transform .4s ease;
+  z-index: 0;
+}
+
+/* 텍스트 오버레이 */
+.sub-overlay {
+  position: absolute; 
+  bottom: 3rem; 
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #fff !important;
+  font-size: 1.2rem; 
+  z-index: 2;
+  text-shadow: 0 0 .5rem rgba(0,0,0,0.7); 
+  transition: transform .4s ease, color .4s ease;
+  pointer-events: none;
+}
+
+.sub-title-main {
+  display: block;
+  font-size: 3rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 .5rem rgba(0,0,0,0.7);
+  margin-bottom: .5rem;
+}
+.sub-title-sub {
+  display: block;
+  font-size: 2rem;
+  color: #fff;
+  opacity: .9;
+  text-shadow: 0 0 .3rem rgba(0,0,0,0.7);
+  font-weight: bold;
+}
+
+/* Hover 효과 이미지 어둡게 + 확대 */
+.sub:hover .sub-img { 
+  filter: brightness(50%) blur(.2rem);
+  transform: scale(1.02);
+}
+
+.sub:hover .sub-overlay {
+  transform: translateX(-50%) translateY(-1rem);
+  color: #fff;
+  font-weight: bold;
+}
+
+.sub:active .sub-title {
+  color: #fff;
+}
+
+/* sub1 배경 반전 */
+.sub1::before { 
+  transform: scaleX(-1);
+  font-weight: bold;
+}
+
+.sub1:hover::before {
+  filter: brightness(50%) blur(2px);
+  transform: scaleX(-1) scale(1.02);
+  font-weight: bold;
+}
+
+.sub2 .sub-title {
+  bottom: 3rem !important;
+  top: auto !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* FOOTER */
+#site-footer {
+  width: 100vw;
+  padding: 1rem 0; 
+  background: var(--color-footer-bg,#0d1f2d); 
+  color: #fff;
+  text-align: center; 
+  scroll-snap-align: start;
+}
+
+/* CHATBOT */
+.chatbot { 
+  position: fixed; 
+  bottom: 1rem; 
+  right: 1rem; 
+  z-index: 200; 
+  cursor: pointer; 
+}
+
+.chat-icon { 
+  width: 7.5rem; 
+  height: 7.5rem; 
+  border-radius: 50%; 
+  overflow: hidden; 
+}
+
+#chatbot-img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: contain; 
+  transform: scaleX(-1);
+}
+
+/* Chat Window */
+.chat-window {
+  position: fixed; 
+  bottom: 1rem; 
+  right: 1rem; 
+  width: 18.75rem;
+  height: 80vh; 
+  background: #fff; 
+  box-shadow: -2px 2px 10px rgba(0,0,0,0.2);
+  display: flex; 
+  flex-direction: column; 
+  transform: translateY(calc(100% + 2rem));
+  transition: transform .3s ease-in-out; 
+  z-index: 29;
+}
+
+.chat-window.open { 
+  transform: translateY(0); 
+}
+
+.chat-header {
+  background: lab(69.67% -15.03 -23.49); 
+  color: #fff; 
+  padding: .5rem;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+}
+
+#chatCloseBtn {
+  background: none; 
+  border: none; 
+  color: #fff; 
+  font-size: 1.2rem; 
+  cursor: pointer; 
+}
+
+/* 챗봇 스크롤바 숨기기 */
+.chat-body {
+  background: #f9f9f9; 
+  flex: 1; 
+  padding: .5rem; 
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.chat-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.chat-input { 
+  display: flex; 
+  border-top: 0.0625rem solid lab(69.67% -15.03 -23.49); 
+}
+
+#chatInput { 
+  color: #6363c2;
+  font-size: .9rem; 
+  flex: 1; 
+  border: none; 
+  padding: .5rem;  
+}
+
+#chatInput::placeholder { 
+  color: lab(69.67% -15.03 -23.49); 
+}
+
+#chatInput:focus { 
+  outline: none; 
+}
+
+#chatSendBtn { 
+  padding: 0 .75rem; 
+  border: none; 
+  background: lab(69.67% -15.03 -23.49); 
+  color: #fff; 
+  cursor: pointer; 
+}
+
+#chatSendBtn:hover { 
+  background: lab(69.67% -15.03 -23.49); 
+}
+
+/* Responsive */
+@media(max-width: 768px) {
+  #site-header .nav-link { 
+    margin-left: 1rem; 
+    font-size: .9rem; 
+  }
+  
+  .arrow { 
+    padding: .3rem; 
+  }
+  
+  .slide-title-main {
+    font-size: 2.5rem;
+  }
+  
+  .sub-title-main {
+    font-size: 2rem;
+  }
+  
+  .sub-title-sub {
+    font-size: 1.5rem;
+  }
+  
+  /* 모바일에서 스크롤바 더 얇게 */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+}
