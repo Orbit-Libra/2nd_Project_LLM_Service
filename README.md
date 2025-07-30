@@ -4,7 +4,7 @@
 
 2nd_Project_LLM_Service/
 │  
-├── \docs <- 문서폴더
+├── docs/ <- 문서폴더
 │   │
 │   ├── devlogs/    
 │
