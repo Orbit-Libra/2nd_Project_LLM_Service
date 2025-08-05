@@ -4,11 +4,6 @@
 
 2nd_Project_LLM_Service/
 │  
-├── db/ <- 데이터베이스 전용 폴더
-│   │
-│   ├── ai_db.dbf/ 
-│   └── svc_db.dbf/   
-│  
 ├── docs/ <- 문서폴더
 │   │
 │   └── devlogs/    
@@ -25,7 +20,7 @@
 │
 ├── shared_libs/               # 공통 유틸리티
 ├── .env                       # 환경 변수
-├── docker-compose.yml         # 전체 컨테이너 오케스트레이션
+├── setup.bat                  # 가상환경 & DB 셋업 스크립트
 └── README.md
 
 

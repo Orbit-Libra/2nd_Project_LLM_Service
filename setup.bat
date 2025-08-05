@@ -47,16 +47,22 @@ echo CREATE TABLESPACE data_db DATAFILE '!DATA_DB_PATH!' SIZE 100M AUTOEXTEND ON
 echo CREATE TABLESPACE web_db  DATAFILE '!WEB_DB_PATH!'  SIZE 100M AUTOEXTEND ON MAXSIZE UNLIMITED;
 echo.
 echo CREATE USER libra_user IDENTIFIED BY 1234 DEFAULT TABLESPACE user_db;
+echo ALTER USER libra_user QUOTA UNLIMITED ON user_db;
+echo ALTER USER libra_user QUOTA 0M ON data_db;
+echo ALTER USER libra_user QUOTA 0M ON web_db;
 echo GRANT CONNECT, RESOURCE TO libra_user;
-echo GRANT UNLIMITED TABLESPACE TO libra_user;
 echo.
 echo CREATE USER libra_data IDENTIFIED BY 1234 DEFAULT TABLESPACE data_db;
+echo ALTER USER libra_data QUOTA UNLIMITED ON data_db;
+echo ALTER USER libra_data QUOTA 0M ON user_db;
+echo ALTER USER libra_data QUOTA 0M ON web_db;
 echo GRANT CONNECT, RESOURCE TO libra_data;
-echo GRANT UNLIMITED TABLESPACE TO libra_data;
 echo.
 echo CREATE USER libra_web IDENTIFIED BY 1234 DEFAULT TABLESPACE web_db;
+echo ALTER USER libra_web QUOTA UNLIMITED ON web_db;
+echo ALTER USER libra_web QUOTA 0M ON user_db;
+echo ALTER USER libra_web QUOTA 0M ON data_db;
 echo GRANT CONNECT, RESOURCE TO libra_web;
-echo GRANT UNLIMITED TABLESPACE TO libra_web;
 echo.
 echo EXIT;
 ) > %TEMP_SQL_FILE%

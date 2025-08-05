@@ -1,0 +1,1 @@
+chrome.exe --user-data-dir="D:\workspace\project\Project_Libra\2nd_Project_LLM_Service\services\data_service\datafiles\chrome_user" --profile-directory="Profile 1"
