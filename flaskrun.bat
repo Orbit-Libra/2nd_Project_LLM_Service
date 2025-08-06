@@ -1,13 +1,17 @@
 @echo off
+REM 현재 .bat 파일 위치로 이동
+cd /d "%~dp0"
+
 REM 가상환경 활성화
 call .venv\libra_env\Scripts\activate.bat
 
-REM 프로젝트 루트로 이동
-cd /d D:\workspace\project\Project_Libra\2nd_Project_LLM_Service
-
-REM 환경변수 설정 (Flask 실행용)
+REM 환경변수 설정
 set FLASK_APP=app.main
 set FLASK_ENV=development
+set FLASK_DEBUG=1
 
-REM Flask 서버 실행
-flask run
+REM Flask 서버를 별도 콘솔에서 실행
+start cmd /k "flask run"
+
+REM 현재 콘솔 종료
+exit

@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import json
 from dotenv import load_dotenv
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -12,18 +13,29 @@ if PROJECT_ROOT not in sys.path:
 
 # .env 파일 로딩
 env_path = os.path.join(PROJECT_ROOT, ".env")
-if not os.path.exists(env_path):
-    print(f".env 파일을 찾을 수 없습니다 ➜ {env_path}")
-else:
+if os.path.exists(env_path):
     load_dotenv(env_path)
-    print(f".env 파일 로딩 완료 → {env_path}")
+    print(f".env 파일 로딩 완료 -> {env_path}")
+else:
+    print(f".env 파일을 찾을 수 없습니다 -> {env_path}")
 
-# 실행 순서 정의
-execution_sequence = [
-    {"package": "ModelCreator", "config": "Num01_Config_XGB.json"},
-    # {"package": "ModelCreator", "config": "Num02_Config_XGB.json"}
-]
+# 외부에서 실행 명령 받기
+sequence_json = os.getenv("EXECUTION_SEQUENCE")
+if sequence_json:
+    try:
+        execution_sequence = json.loads(sequence_json)
+        print("외부 실행 순서 로딩 완료")
+    except json.JSONDecodeError:
+        print("실행 순서 JSON 파싱 실패")
+        execution_sequence = []
+else:
+    print("외부 실행 순서 없음 -> 기본값 사용")
+    execution_sequence = [
+	# {"package": "ModelCreator", "config": "Num01_Config_XGB.json"},
+	{"package": "ModelCreator", "config": "Num02_Config_XGB.json"}
+    ]
 
+# 실행 루프
 for step in execution_sequence:
     package = step["package"]
     config_name = step.get("config")
@@ -40,7 +52,7 @@ for step in execution_sequence:
         print(f"-> 설정 파일: {config_name}")
 
     env = os.environ.copy()
-    env["PYTHONPATH"] = SERVICES_ROOT  # 핵심 수정: services 디렉토리 기준
+    env["PYTHONPATH"] = SERVICES_ROOT
     if config_name:
         env["MODEL_CONFIG_NAME"] = config_name
 

@@ -16,7 +16,7 @@
   "SORT_COLUMNS": {
     "ID": "ASC"
   },
-  "TABLE_TYPE": "CSV",
+  "TABLE_TYPE": "DB",
   "DB_TABLE_NAME": "LIBRA_DATA.ESTIMATIONFLOW",
   "SCV_DATA_NAME": "\uc608\uce21\ud658\uacbd\uc810\uc218",
   "CSV_DIR": "services/data_service/datafiles/csvfiles",
