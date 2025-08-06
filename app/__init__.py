@@ -6,7 +6,7 @@ import os
 # 환경변수 로딩
 load_dotenv(dotenv_path='../.env')
 
-# Blueprint 모듈 import
+# # Blueprint 모듈 import
 # from app.routes.data import data_bp
 # from app.routes.ml import ml_bp
 # from app.routes.prediction import prediction_bp

@@ -186,6 +186,33 @@ IF DEFINED NEED_SQL (
     del "!TEMP_SQL_FILE!" >nul 2>nul
 )
 
+REM ==============================
+REM 7. USER_DATA 테이블 존재 확인 및 초기화 스크립트 실행
+REM ==============================
+echo [🔍] USER_DATA 테이블 존재 확인 중...
+SET CHECK_USERDATA_SQL=check_userdata.sql
+(
+echo SET HEADING OFF
+echo SET FEEDBACK OFF
+echo SET PAGESIZE 0
+echo SELECT COUNT^(*^) FROM user_tables WHERE table_name = 'USER_DATA';
+echo EXIT;
+) > %CHECK_USERDATA_SQL%
+
+SET FOUND_USERDATA=0
+FOR /F "tokens=*" %%C IN ('sqlplus -s libra_user/1234@XE @%CHECK_USERDATA_SQL% 2^>nul') DO (
+    IF "%%C"=="1" SET FOUND_USERDATA=1
+)
+del %CHECK_USERDATA_SQL% >nul 2>nul
+
+IF %FOUND_USERDATA%==1 (
+    echo [⏭️] USER_DATA 테이블 이미 존재. 초기화 스크립트 생략합니다.
+) ELSE (
+    echo [🚀] USER_DATA 테이블 및 관리자 계정 초기화 중...
+    call .venv\libra_env\Scripts\activate.bat
+    python services\user_service\init_oracle_user_data.py
+)
+
 echo [✅] Libra Setup End.
 pause
 ENDLOCAL

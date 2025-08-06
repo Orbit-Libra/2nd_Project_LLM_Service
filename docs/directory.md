@@ -136,7 +136,8 @@
 ├── .env                       # 종합 환경 변수
 ├── flaskrun.bat               # 플라스크 서버 실행 스크립트
 ├── requirements.txt           # 라이브러리 목록
-└── setup.bat                  # 가상환경 & DB 셋업 스크립트
+├── setup-env.bat              # 가상환경 & DB 셋업 스크립트
+└── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
 
 ```
 
@@ -144,6 +145,7 @@ USR_CR
 USR_ID
 USR_PW 
 USR_NAME
+USR_EMAIL
 USR_SNM
 1ST_YR,1ST_USR_CPS,1ST_USR_LPS,1ST_USR_VPS,2ND_YR,2ND_USR_CPS,2ND_USR_LPS,2ND_USR_VPS,3RD_YR,3RD_USR_CPS,3RD_USR_LPS,3RD_USR_VPS,4TH_YR,4TH_USR_CPS,4TH_USR_LPS,4TH_USR_VPS,SCR_EST_1ST,SCR_EST_2ND,SCR_EST_3RD,SCR_EST_4TH
 
