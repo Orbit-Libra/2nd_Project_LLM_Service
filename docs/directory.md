@@ -6,6 +6,8 @@
 │   │
 │   └── libra_env/    
 │  
+├── app/ <- 플라스크 서버 시작지점
+│  
 ├── docs/ <- 문서 폴더
 │   │
 │   └── devlogs/    
@@ -16,7 +18,7 @@
 │   │   ├── __init__.py
 │   │   ├── config_loader.py                # .env 로드 모듈
 │   │   ├── Mapper.py                       # 헤더, 대학명 매핑표 모듈
-│   │   ├── OracleDBConnection.py           # 오라클DB 접속 모듈
+│   │   ├── OracleDBConnection.py           # 오라클DBD 접속 모듈
 │   │   ├── OracleSchemaBuilder.py          # 테이블 생성 시 데이터타입 보정 모듈
 │   │   └── OracleTableCreater.py           # 보정 후 테이블 생성 모듈
 │   │   
@@ -49,10 +51,41 @@
 │   │   ├── db/
 │   │   │   │
 │   │   │   └── DATA_DB.DBF    # AI용 데이터베이스
-│   │
-│   │
+│   │   |
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── .env
 │   │
 │   ├── ml_service/            # 모델 학습 및 튜닝
+│   │   │
+│   │   ├── _Configs/
+│   │   │   │
+│   │   │   └── Num01_Config_XGB.json
+│   │   │
+│   │   ├── _Logs/
+│   │   │   │
+│   │   │   └── Num01_XGB_v1.0_Log.json
+│   │   │
+│   │   ├── _Models/
+│   │   │   │
+│   │   │   └── Num01_XGB_full_v1.0.pkl
+│   │   │
+│   │   ├── ModelCreator/
+│   │   │   │
+│   │   │   ├── __init__.py
+│   │   │   ├── __main__.py
+│   │   │   ├── Cleaner.py
+│   │   │   ├── Controller_Num01.py
+│   │   │   ├── Controller_Num02.py
+│   │   │   ├── Fetcher.py
+│   │   │   ├── Handler.py
+│   │   │   ├── Logger.py
+│   │   │   ├── ModelLoader.py
+│   │   │   └── Trainer.py
+│   │   │
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── .env
 │   │
 │   ├── prediction_service/    # 머신러닝 예측 서비스
 │   │
@@ -67,6 +100,19 @@
 │   │   ├── db/
 │   │   │   │
 │   │   │   └── WEB_DB.DBF     # 웹페이지 데이터베이스
+│   │   │
+│   │   ├── static/
+│   │   │   │
+│   │   │   ├── css/
+│   │   │   ├── images/
+│   │   │   └── js/             
+│   │   │
+│   │   ├── templates/
+│   │   │   │
+│   │   │   ├── footer.html
+│   │   │   ├── header.html
+│   │   │   ├── index.html
+│   │   │   └── main.html     
 │   │
 │   └── llm_service/           # LLM 챗봇 서비스
 │
@@ -76,11 +122,4 @@
 
 ```
 
-
-
-
-http://www.rinfo.kr/stat/search/basic/1/result?sm=basic&syf=2014&syt=2024&year=2014%2C2015%2C2016%2C2017%2C2018%2C2019%2C2020%2C2021%2C2022%2C2023%2C2024&st=UNI&ut=&us=&etcheckall=&rgcheckall=&su=1&oatcheckall=true&oitcheckall=true&oixcheckall=true&cpp=10
-
-http://www.rinfo.kr/stat/search/basic/2/result?sm=basic&syf=2013&syt=2024&year=2013%2C2014%2C2015%2C2016%2C2017%2C2018%2C2019%2C2020%2C2021%2C2022%2C2023%2C2024&st=UNI&ut=&us=&etcheckall=&rgcheckall=&su=2&oatcheckall=true&oitcheckall=true&oixcheckall=true&cpp=10
-
-http://www.rinfo.kr/stat/search/basic/5/result?sm=basic&syf=2014&syt=2024&year=2014%2C2015%2C2016%2C2017%2C2018%2C2019%2C2020%2C2021%2C2022%2C2023%2C2024&st=UNI&ut=&us=&etcheckall=&rgcheckall=&su=5&oatcheckall=true&oitcheckall=true&oixcheckall=true&cpp=10
+D:\workspace\project\Project_Libra\2nd_Project_LLM_Service

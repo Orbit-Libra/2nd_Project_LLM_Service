@@ -3,3 +3,6 @@
 
 # 서비스 폴더 내의 .dbf 파일 무시
 services/*/db/*.dbf
+
+# 크롬 프로필 무시
+**/chrome_user/

@@ -10,9 +10,9 @@ ORACLE_PASSWORD     = os.getenv("ORACLE_PASSWORD")
 ORACLE_DSN          = os.getenv("ORACLE_DSN")
 ORACLE_CLIENT_PATH  = os.getenv("ORACLE_CLIENT_PATH")
 
-BASE_RAW_DIR        = os.getenv("BASE_RAW_DIR")
-BASE_CSV_DIR        = os.getenv("BASE_CSV_DIR")
-BASE_OUTPUT_DIR     = os.getenv("BASE_OUTPUT_DIR")
+RAW_DIR        = os.getenv("RAW_DIR")
+CSV_DIR        = os.getenv("CSV_DIR")
+OUTPUT_DIR     = os.getenv("OUTPUT_DIR")
 
 CSV_NUM06_PREFIX    = os.getenv("CSV_NUM06_PREFIX")
 CSV_NUM07_PREFIX    = os.getenv("CSV_NUM07_PREFIX")

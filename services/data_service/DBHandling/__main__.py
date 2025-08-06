@@ -1,6 +1,11 @@
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+CORE_UTILES_PATH = os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", "core_utiles"))
+
+if CORE_UTILES_PATH not in sys.path:
+    sys.path.insert(0, CORE_UTILES_PATH)
 
 from TableMergerUploader import TableMergerUploader
 from DataMergerAndExporter import DataMergerAndExporter

@@ -1,103 +1,82 @@
-<!--../templates/main.html-->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Libra | Balancing Infrastructure</title>
-  <link rel="stylesheet" href="../static/css/main.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
 </head>
 <body>
-  <!-- 공통 헤더 -->
-  <div id="header-area"></div>
+  {% include 'partials/header.html' %}
   
-  <!-- 스크롤 컨테이너 (중복 제거 - 한 번만 선언) -->
   <div class="sections-wrapper">
-    
-    <!-- 1) Hero Slider (오버랩 + 페이드) -->
+    <!-- Hero Slider -->
     <section class="section slider" id="hero-slider">
-      <!-- Slide 1 -->
       <div class="slide active">
-        <img src="../static/images/overlap01.jpg" alt="Slide 1">
+        <img src="{{ url_for('static', filename='images/overlap01.jpg') }}" alt="Slide 1">
         <div class="slider-overlay">
-          <!-- 로고 추가 -->
-          <img src="../staic/images/logo.jpeg" alt="Libra Logo" class="overlay-logo" />
+          <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" class="overlay-logo" />
           <div class="slide-title-main"></div><br/>
           <div class="slide-title-sub">교육 인프라 분석 및 예측 서비스</div>
         </div>
       </div>
-      
-      <!-- Slide 2 -->
       <div class="slide">
-        <img src="../static/images/overlap02.jpg" alt="Slide 2">
+        <img src="{{ url_for('static', filename='images/overlap02.jpg') }}" alt="Slide 2">
         <div class="slider-overlay">
           <div class="slide-title-main">학습환경 분석</div><br/>
           <div class="slide-title-sub">대학도서관의 데이터를 이용한 인프라 점수 부여<br/>점수를 통한 발전 가능성 예측</div>
         </div>
       </div>
-      
-      <!-- Slide 3 --> 
       <div class="slide">
-        <img src="../static/images/overlap03.jpg" alt="Slide 3">
+        <img src="{{ url_for('static', filename='images/overlap03.jpg') }}" alt="Slide 3">
         <div class="slider-overlay">
           <div class="slide-title-main">마이 서비스</div><br/>
           <div class="slide-title-sub">사용자의 정보를 토대로 한<br/>나의 인프라 점수 알아보기</div>
         </div>
       </div>
-      
-      <!-- arrows -->
       <div class="arrow left" id="prevBtn">&#10094;</div>
       <div class="arrow right" id="nextBtn">&#10095;</div>
     </section>
 
-    <!-- 2) Three Columns -->
+    <!-- Three Columns -->
     <section class="section subgrid" id="quick-links">
-      <!-- 1번 카드 -->
-      <div class="sub sub1" data-link="../html/page_chartpage_num01.html">
-        <img class="sub-img" src="../static/images/slide01.jpg" alt="환경 점수 예측">
+      <div class="sub sub1" data-link="{{ url_for('static', filename='html/page_chartpage_num01.html') }}">
+        <img class="sub-img" src="{{ url_for('static', filename='images/slide01.jpg') }}" alt="환경 점수 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">환경점수 검색</span><br/>
           <span class="sub-title-sub">>> 대학별 인프라<br/>점수 찾아보기</span>
         </div>
       </div>
-
-      <!-- 2번 카드 --> 
-      <div class="sub sub2" data-link="../html/page_prediction_num01.html">
-        <img class="sub-img" src="../static/images/slide02.jpg" alt="점수 변환 예측">
+      <div class="sub sub2" data-link="{{ url_for('static', filename='html/page_prediction_num01.html') }}">
+        <img class="sub-img" src="{{ url_for('static', filename='images/slide02.jpg') }}" alt="점수 변환 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">발전도 검색</span><br/>
           <span class="sub-title-sub">>> 연도 별 점수 추이 찾아보기</span>
         </div>
       </div>
-      
-      <!-- 3번 카드 -->
-      <div class="sub sub3" data-link="../html/page_userpage_num01.html">
-        <img class="sub-img" src="../static/images/slide03.jpg" alt="로그인 전용">
+      <div class="sub sub3" data-link="{{ url_for('static', filename='html/page_userpage_num01.html') }}">
+        <img class="sub-img" src="{{ url_for('static', filename='images/slide03.jpg') }}" alt="로그인 전용">
         <div class="sub-overlay">
-          <span class="sub-title-main">마이 서비스<br/></span><br/>
+          <span class="sub-title-main">마이 서비스</span><br/>
           <span class="sub-title-sub">>> 나의 데이터로<br/>환경점수 알아보기</span>
         </div>
       </div>
     </section>
-
-    <!-- 3) Footer -->
-    <div id="footer-area"></div>
-    
   </div>
 
-  <!-- 3번카드 임시 오버레이 -->
+  {% include 'partials/footer.html' %}
+
   <div id="temp-overlay">
     로그인 회원 전용페이지입니다. 로그인 회원이 아니면 서비스 제한이 있습니다.
   </div>
 
-  <!-- Chatbot Toggle -->
+  <!-- Chatbot -->
   <div class="chatbot" id="chatToggle">
     <div class="chat-icon">
-      <img src="../static/images/chatbot.png" alt="Chatbot" id="chatbot-img">
+      <img src="{{ url_for('static', filename='images/chatbot.png') }}" alt="Chatbot" id="chatbot-img">
     </div>
   </div>
 
-  <!-- Chatbot Window -->
   <div class="chat-window" id="chatWindow">
     <div class="chat-header">
       <span>AI Chat</span>
@@ -110,6 +89,6 @@
     </div>
   </div>
 
-  <script src="../static/js/main.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

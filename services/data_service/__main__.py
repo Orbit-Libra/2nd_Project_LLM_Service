@@ -5,13 +5,13 @@ from dotenv import load_dotenv
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "."))
-CONFIGS_DIR = os.path.join(PROJECT_ROOT, "_Configs")
+SERVICES_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, ".."))
 
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # .env 파일 로딩
-env_path = os.path.join(CONFIGS_DIR, ".env")
+env_path = os.path.join(PROJECT_ROOT, ".env")
 if not os.path.exists(env_path):
     print(f".env 파일을 찾을 수 없습니다 ➜ {env_path}")
 else:
@@ -20,7 +20,7 @@ else:
 
 # 실행 순서 정의
 execution_sequence = [
-    {"package": "DataHandling"},
+    # {"package": "DataHandling"},
     {"package": "DBHandling"}
 ]
 
@@ -40,7 +40,7 @@ for step in execution_sequence:
         print(f"-> 설정 파일: {config_name}")
 
     env = os.environ.copy()
-    env["PYTHONPATH"] = PROJECT_ROOT
+    env["PYTHONPATH"] = SERVICES_ROOT  # 핵심 수정: services 디렉토리 기준
     if config_name:
         env["MODEL_CONFIG_NAME"] = config_name
 

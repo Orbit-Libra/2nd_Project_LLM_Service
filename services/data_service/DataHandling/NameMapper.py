@@ -1,5 +1,19 @@
+import os
+import sys
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))  # /DataHandling/
+CORE_UTILES_PATH = os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", "core_utiles"))
+
+# 경로가 목록에 없으면 추가
+if CORE_UTILES_PATH not in sys.path:
+    sys.path.insert(0, CORE_UTILES_PATH)
+
+# 외부 매핑 함수 import
+from core_utiles.Mapper import NMP
 import pandas as pd
-from core_utiles.Mapper import NMP  # 외부 매핑 함수 호출
+
+
+
 
 class NameMapper:
     def __init__(self, input_path, output_path):
