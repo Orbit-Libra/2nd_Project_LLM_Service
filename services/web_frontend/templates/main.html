@@ -30,8 +30,12 @@
       <div class="slide">
         <img src="{{ url_for('static', filename='images/overlap02.jpg') }}" alt="Slide 2">
         <div class="slider-overlay">
-          <div class="slide-title-main">학습환경 분석</div><br/>
-          <div class="slide-title-sub">대학도서관의 데이터를 이용한 인프라 점수 부여<br/>점수를 통한 발전 가능성 예측</div>
+          <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" class="overlay-logo" />
+          {% if session.get('user') == 'libra_admin' %}
+          <a href="{{ url_for('admin_page') }}" class="admin-btn">관리자 페이지</a>
+          {% endif %}
+          <div class="slide-title-main"></div><br/>
+          <div class="slide-title-sub">교육 인프라 분석 및 예측 서비스</div>
         </div>
       </div>
       <!-- Slide 3 --> 

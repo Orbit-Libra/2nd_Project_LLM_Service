@@ -1,15 +1,26 @@
 <!-- ../templates/common/header.html -->
-<header id="site-header"><!-- ID 고정 영역 -->
-  <div class="logo" id="logo-area"><!-- ID 고정 영역 -->
-    <img src="../static/images/logo.jpeg" alt="Libra Logo" id="logo-img"><!-- ID 고정 영역 -->
-    <span id="logo-text">Libra</span><!-- ID 고정 영역 -->
+<header id="site-header">
+  <div class="logo" id="logo-area">
+    <!-- 로고 전체를 메인 페이지로 연결 -->
+    <a href="{{ url_for('index') }}" id="logo-link">
+      <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" id="logo-img">
+      <span id="logo-text">Libra</span>
+    </a>
+
+    <!-- 관리자 전용 버튼 -->
+    {% if session.get('user') == 'libra_admin' %}
+      <a href="{{ url_for('admin_page') }}" class="nav-link admin-link">관리자 페이지</a>
+    {% endif %}
   </div>
-  <nav id="main-nav"><!-- ID 고정 영역 -->
-    <!-- 1) 학습환경 분석  -->
-    <a href="../templates/chart.html" class="nav-link">학습환경 분석</a>
-    <!-- 2) 발전도 분석 → page_prediction_num01.html -->
-    <a href="page_prediction_num01.html" class="nav-link">발전도 분석</a>
-    <!-- 3) Login (unchanged) -->
-    <a href="page_devpage_num01.html" class="nav-link">Login</a>
+
+  <nav id="main-nav">
+    <a href="{{ url_for('chart') }}" class="nav-link">학습환경 분석</a>
+    <a href="{{ url_for('prediction') }}" class="nav-link">발전도 분석</a>
+
+    {% if session.get('user') %}
+      <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+    {% endif %}
   </nav>
 </header>

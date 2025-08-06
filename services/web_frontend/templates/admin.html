@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>관리자 페이지 | Libra</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+</head>
+<body>
+  {% include 'common/header.html' %}
+
+  <main class="admin-container">
+    <h1>관리자 페이지</h1>
+    <p>Libra 시스템의 관리자 전용 페이지입니다.</p>
+
+    <section class="admin-section">
+      <h2>📊 데이터 관리</h2>
+      <p>데이터 업로드, 삭제, 수정 기능이 여기에 들어갈 예정입니다.</p>
+    </section>
+
+    <section class="admin-section">
+      <h2>👥 사용자 관리</h2>
+      <p>사용자 권한 설정, 활동 로그 확인 등 기능이 추가될 예정입니다.</p>
+    </section>
+
+    <section class="admin-section">
+      <h2>⚙️ 시스템 설정</h2>
+      <p>환경 설정, 알림 설정 등을 관리할 수 있도록 구성할 예정입니다.</p>
+    </section>
+  </main>
+
+  {% include 'common/footer.html' %}
+</body>
+</html>
