@@ -1,0 +1,147 @@
+/* ../static/css/header-footer.css */
+:root {
+  --color-bg-header: #0d1f2d;
+  --color-footer-bg: #0d1f2d;
+  --color-logo-text: lab(69.67% -15.03 -23.49); 
+  --color-nav-text: #0c3f2f;
+  --color-highlight: #204461;
+  --font-sans: 'Noto Sans KR', sans-serif;
+}
+
+/* Header - 스크롤 문제 해결 */
+#site-header { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100vw;
+  max-width: 100vw; /* 📌 스크롤 방지 */
+  height: 8vh;
+  padding: 1rem 2vw; /* 📌 패딩 줄임 (4vw → 2vw) */
+  display: flex; 
+  align-items: center; 
+  background: #0d1f2d !important; /* 📌 헤더 색상 강제 적용 */
+  color: #fff !important; /* 📌 텍스트 색상 강제 적용 */
+  z-index: 1000; 
+  transition: transform 0.3s ease-in-out; 
+  will-change: transform;
+  box-sizing: border-box; /* 📌 박스 사이징 명시 */
+  overflow-x: hidden; /* 📌 가로 오버플로우 숨김 */
+}
+
+#site-header.hidden {
+  transform: translateY(-100%);
+}
+
+#site-header .logo { 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  text-shadow: 
+    0 0.1rem 0.2rem rgba(0,0,0,0.5),
+    0 0.05rem 0.1rem rgba(0,0,0,0.3);
+  transition: color 0.2s ease, 
+              transform 0.2s ease;
+}
+
+#site-header .logo img { 
+  height: 5vh;
+  min-height: 2rem;
+  width: auto;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* 로고텍스트 */
+#site-header .logo span { 
+  color: var(--color-logo-text); 
+  font-size: clamp(1.8rem, 3vw, 2rem); 
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+#site-header nav { 
+  margin-left: auto; 
+  margin-right: 2vw;  
+}
+
+#site-header .nav-link { 
+  margin-left: 2vw; 
+  font-size: clamp(1.5rem, 2.5vw, 1.8rem);
+  font-weight: bold;
+  color: var(--color-logo-text);
+  text-shadow: 
+    0 0.1rem 0.2rem rgba(0,0,0,0.7),
+    0 0.05rem 0.1rem rgba(0,0,0,0.5);
+  transition: color 0.2s ease, 
+              transform 0.2s ease;
+}
+
+/* hover 시 좀 더 강조 & 약간 확대 */
+#site-header .nav-link:hover { 
+  color: #fff;
+  transform: scale(1.1);
+  text-shadow:
+    0 0.2rem 0.4rem #0d1f2d,
+    0 0.1rem 0.2rem rgba(0,0,0,0.6);
+  font-weight: bold;
+  filter: brightness(1.1);
+}
+
+/* logo 호버 시 스케일 업 + 약간 밝게 */
+#site-header .logo:hover img {
+  transform: scale(1.1) translateY(-0.2rem);
+  filter: brightness(1.1);
+}
+
+/* FOOTER */
+#site-footer {
+  width: 100vw;
+  min-height: 8vh;
+  padding: 2rem 0; 
+  background: var(--color-footer-bg); 
+  color: var(--color-logo-text);
+  text-align: center; 
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+}
+
+/* 반응형 헤더 */
+@media(max-width: 768px) {
+  #site-header { 
+    padding: 1rem 2vw;
+    height: 7vh;
+  }
+  
+  #site-header .nav-link { 
+    margin-left: 1.5vw; 
+    font-size: clamp(0.8rem, 1.8vw, 1rem);
+  }
+  
+  #site-header .logo img { 
+    height: 3.5vh;
+    min-height: 1.8rem;
+  }
+  
+  #site-header .logo span { 
+    font-size: clamp(1rem, 2vw, 1.4rem); 
+  }
+}
+
+
+@media(max-width: 768px) {
+  /* #site-header .nav-link { 
+    margin-left: 1rem; 
+    font-size: .9rem; 
+  } */
+  #site-header .nav-link { 
+    margin-left: 1vw; 
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+  }
+  
+  #site-header .logo img { 
+    height: 3vh;
+    min-height: 1.5rem;
+  }
+}
