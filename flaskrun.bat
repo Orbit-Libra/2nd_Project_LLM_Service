@@ -14,4 +14,8 @@ REM Flask 서버를 별도 콘솔에서 실행
 start cmd /k "flask run"
 
 REM 현재 콘솔 종료
+<<<<<<< HEAD
 exit
+=======
+exit
+>>>>>>> main

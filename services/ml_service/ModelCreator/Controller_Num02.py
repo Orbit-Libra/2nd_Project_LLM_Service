@@ -4,6 +4,8 @@ import oracledb
 import pandas as pd
 import numpy as np
 import sys
+
+# 루트 경로 추가
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from core_utiles.config_loader import (
@@ -20,7 +22,12 @@ from ModelCreator.Logger import PipelineLogger
 
 class PipelineController:
     def __init__(self, config_path: str):
-        with open(config_path, "r", encoding="utf-8") as f:
+        # 경로 보정: __file__ 기준으로 절대경로 생성
+        base_dir = os.path.dirname(os.path.dirname(__file__))
+        abs_config_path = os.path.join(base_dir, config_path)
+        abs_config_path = os.path.normpath(abs_config_path)
+
+        with open(abs_config_path, "r", encoding="utf-8") as f:
             self.config = json.load(f)
         self.conn = None
 

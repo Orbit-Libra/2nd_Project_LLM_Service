@@ -8,7 +8,7 @@ class Controller:
     def __init__(self, config_name: str):
         # 컨피그 경로 구성
         self.config_path = os.path.join(
-            os.path.dirname(__file__), "..", "_Configs", config_name
+            os.path.dirname(__file__), "..", "..", "ml_service", "_Configs", config_name
         )
         self.config = self.load_config()
         self.db = OracleDBConnection()

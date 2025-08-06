@@ -7,6 +7,9 @@
 │   └── libra_env/    
 │  
 ├── app/ <- 플라스크 서버 시작지점
+│   │
+│   ├── __init__.py  
+│   └── main.py
 │  
 ├── docs/ <- 문서 폴더
 │   │
@@ -88,6 +91,20 @@
 │   │   └── .env
 │   │
 │   ├── prediction_service/    # 머신러닝 예측 서비스
+│   │   │
+│   │   ├── Predictor/
+│   │   │   │
+│   │   │   ├── __init__.py
+│   │   │   ├── __main__.py
+│   │   │   ├── Controller.py
+│   │   │   ├── PickleLoader.py
+│   │   │   ├── TableBuilder_Num01.py
+│   │   │   ├── TableBuilder_Num02.py
+│   │   │   └── TableBuilder_User.py
+│   │   │
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── .env
 │   │
 │   ├── user_service/          # 유저 관련 기능
 │   │   │
@@ -117,9 +134,16 @@
 │   └── llm_service/           # LLM 챗봇 서비스
 │
 ├── .env                       # 종합 환경 변수
-├── setup.bat                  # 가상환경 & DB 셋업 스크립트
-└── README.md
+├── flaskrun.bat               # 플라스크 서버 실행 스크립트
+├── requirements.txt           # 라이브러리 목록
+└── setup.bat                  # 가상환경 & DB 셋업 스크립트
 
 ```
 
-D:\workspace\project\Project_Libra\2nd_Project_LLM_Service
+USR_CR
+USR_ID
+USR_PW 
+USR_NAME
+USR_SNM
+1ST_YR,1ST_USR_CPS,1ST_USR_LPS,1ST_USR_VPS,2ND_YR,2ND_USR_CPS,2ND_USR_LPS,2ND_USR_VPS,3RD_YR,3RD_USR_CPS,3RD_USR_LPS,3RD_USR_VPS,4TH_YR,4TH_USR_CPS,4TH_USR_LPS,4TH_USR_VPS,SCR_EST_1ST,SCR_EST_2ND,SCR_EST_3RD,SCR_EST_4TH
+

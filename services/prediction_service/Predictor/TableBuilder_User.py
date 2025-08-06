@@ -1,14 +1,14 @@
 import os
 import pandas as pd
 from Predictor.PickleLoader import PickleLoader
-from core_utiles.config_loader import BASE_OUTPUT_DIR
+from core_utiles.config_loader import OUTPUT_DIR
 
 class TableBuilderUser:
     def __init__(self, config: dict):
         self.config = config
         self.models = PickleLoader(config=self.config).load()
 
-        self.csv_path = os.path.join(BASE_OUTPUT_DIR, "유저데이터.csv")
+        self.csv_path = os.path.join(OUTPUT_DIR, "유저데이터.csv")
         self.data_dir = self.config["PREDICTOR_CONFIG"]["IMPORT_CONFIG"]["CSV_CONFIG"]["FILE_PATH"]
         self.library_prefix = self.config["PREDICTOR_CONFIG"]["IMPORT_CONFIG"]["CSV_CONFIG"]["FILE_PREFIX"].split("_")[0]
 
@@ -95,7 +95,7 @@ class TableBuilderUser:
 
     def run(self):
         df = self.predict()
-        out_dir = BASE_OUTPUT_DIR
+        out_dir = OUTPUT_DIR
         os.makedirs(out_dir, exist_ok=True)
 
         out_path = os.path.join(out_dir, "유저환경점수.csv")

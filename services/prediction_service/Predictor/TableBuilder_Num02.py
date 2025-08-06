@@ -21,13 +21,17 @@ class TableBuilder:
 
         if table_type == "DB":
             table_name = self.import_cfg["DB_CONFIG"]["TABLE_PREFIX"]
-            query = f"SELECT * FROM LIBRA.{table_name}"
+            query = f"SELECT * FROM LIBRA_DATA.{table_name}"
             return pd.read_sql(query, con=self.conn)
 
         elif table_type == "CSV":
             filename = f"{self.import_cfg['CSV_CONFIG']['FILE_PREFIX']}.csv"
             path = self.import_cfg["CSV_CONFIG"]["FILE_PATH"]
-            return pd.read_csv(os.path.join(path, filename))
+
+            # 상대 경로 안정화
+            base_dir = os.path.dirname(__file__)
+            rel_path = os.path.normpath(os.path.join(base_dir, "..", "..", "..", path))
+            return pd.read_csv(os.path.join(rel_path, filename))
 
         else:
             raise ValueError(f"[ERROR] 지원되지 않는 TABLE_TYPE: {table_type}")
@@ -56,7 +60,7 @@ class TableBuilder:
         if self.missing_cfg.get("nullify_score_by_row", False):
             zero_ratio = df[input_cols].apply(lambda row: (row == 0).mean(), axis=1)
             preds = [None if ratio > self.missing_cfg.get("zero_threshold_ratio", 0.5) else p
-                    for p, ratio in zip(preds, zero_ratio)]
+                        for p, ratio in zip(preds, zero_ratio)]
 
         return pd.Series(preds, name=f"SCR_EST_{year}")
 
@@ -65,15 +69,20 @@ class TableBuilder:
         csv_prefix = self.export_cfg["CSV_CONFIG"]["FILE_PREFIX"]
         csv_path = self.export_cfg["CSV_CONFIG"]["FILE_PATH"]
 
-        table_name = f"{db_prefix}"
+        # 상대 경로 안정화
+        base_dir = os.path.dirname(__file__)
+        rel_path = os.path.normpath(os.path.join(base_dir, "..", "..", "..", csv_path))
         file_name = f"{csv_prefix}.csv"
-        file_path = os.path.join(csv_path, file_name)
+        file_path = os.path.join(rel_path, file_name)
+
+        # 디렉토리 없으면 생성
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         df_out = df.sort_values(by="ID").reset_index(drop=True)
-        OTC(cursor=self.conn.cursor(), table_name=table_name, df=df_out)
-        df_out.to_sql(name=table_name, con=self.engine, if_exists="append", index=False)
+        OTC(cursor=self.conn.cursor(), table_name=db_prefix, df=df_out)
+        df_out.to_sql(name=db_prefix, con=self.engine, if_exists="append", index=False)
         df_out.to_csv(file_path, index=False, encoding="utf-8-sig")
-        print(f"[저장 완료] {table_name} / {file_name}")
+        print(f"[저장 완료] {db_prefix} / {file_name}")
 
     def run(self):
         raw_years = get_raw_years()
@@ -98,4 +107,3 @@ class TableBuilder:
         # 최종 결과 내보내기
         df_final = df_accum.drop(columns=["YR"], errors="ignore")
         self._export_final(df_final)
-
