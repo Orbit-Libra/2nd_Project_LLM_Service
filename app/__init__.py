@@ -1,6 +1,7 @@
 # app/__init__.py
 from flask import Flask, render_template
 from dotenv import load_dotenv
+import os
 
 # 환경변수 로딩
 load_dotenv(dotenv_path='../.env')
@@ -13,6 +14,7 @@ load_dotenv(dotenv_path='../.env')
 # from app.routes.llm import llm_bp
 
 def create_app():
+    # __file__ 기준으로 services/web_frontend 경로 계산
     app = Flask(__name__,
                 template_folder='../services/web_frontend/templates',
                 static_folder='../services/web_frontend/static')
@@ -20,7 +22,7 @@ def create_app():
     # 기본 페이지 라우트
     @app.route('/')
     def index():
-        return render_template('main.html')
+        return render_template('index.html')
 
     # # Blueprint 등록
     # app.register_blueprint(data_bp, url_prefix='/data')

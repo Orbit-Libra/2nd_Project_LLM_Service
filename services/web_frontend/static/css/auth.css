@@ -1,5 +1,5 @@
-3-2. CSS 스타일 (page_chartpage_num01.html의 <style> 태그에 추가)
-css/* 인증 모달 스타일 */
+
+/* 인증 모달 스타일 */
 .auth-modal {
     display: none;
     position: fixed;
