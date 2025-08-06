@@ -136,7 +136,8 @@
 ├── .env                       # 종합 환경 변수
 ├── flaskrun.bat               # 플라스크 서버 실행 스크립트
 ├── requirements.txt           # 라이브러리 목록
-└── setup.bat                  # 가상환경 & DB 셋업 스크립트
+├── setup-env.bat              # 가상환경 & DB 셋업 스크립트
+└── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
 
 ```
 
