@@ -1,4 +1,6 @@
 # 캐시파일 폴더 무시
+__pycache__/
+*/__pycache__/
 **/__pycache__/
 
 # 툴 무시
