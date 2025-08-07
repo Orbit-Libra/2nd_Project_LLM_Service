@@ -1,5 +1,5 @@
 import pandas as pd
-from core_utiles.OracleSchemaBuilder import OSB
+from services.core_utiles.OracleSchemaBuilder import OSB
 
 def OTC(cursor, table_name: str, df: pd.DataFrame):
     # 기존 테이블 제거

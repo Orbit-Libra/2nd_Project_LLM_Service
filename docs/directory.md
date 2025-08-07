@@ -28,6 +28,10 @@
 │   │
 │   ├── data_service/          # 데이터 수집 및 처리 서비스
 │   │   │
+│   │   ├── api/       # 플라스크 api
+│   │   │   │  
+│   │   │   └── data_api.py  
+│   │   │
 │   │   ├── DataHandling/       # 원본파일 CSV파일화 및 DB 업로드 패키지  
 │   │   │   │  
 │   │   │   ├── __init__.py  
@@ -111,8 +115,16 @@
 │   │   ├── db/
 │   │   │   │
 │   │   │   └── USER_DB.DBF    # 유저 데이터베이스
+│   │   │
+│   │   ├── .env 
+│   │   ├── init_oracle_user_data.py 
+│   │   └── login_manager.py
 │   │
 │   ├── web_frontend/          # 사용자 웹 프론트엔드
+│   │   │
+│   │   ├── api/       # 플라스크 api
+│   │   │   │  
+│   │   │   └── sync.py
 │   │   │
 │   │   ├── db/
 │   │   │   │
@@ -121,15 +133,35 @@
 │   │   ├── static/
 │   │   │   │
 │   │   │   ├── css/
+│   │   │   │   |
+│   │   │   │   ├── 
+│   │   │   │   └── 
+│   │   │   │
+│   │   │   │
 │   │   │   ├── images/
-│   │   │   └── js/             
+│   │   │   │   |
+│   │   │   │   ├── 
+│   │   │   │   └── 
+│   │   │   │
+│   │   │   │
+│   │   │   └── js/  
+│   │   │       |
+│   │   │       ├──
+│   │   │       └── 
 │   │   │
 │   │   ├── templates/
 │   │   │   │
-│   │   │   ├── footer.html
-│   │   │   ├── header.html
-│   │   │   ├── index.html
+│   │   │   ├── common/
+│   │   │   │   |
+│   │   │   │   ├── chatbot.html
+│   │   │   │   ├── footer.html
+│   │   │   │   └── header.html
+│   │   │   │
+│   │   │   ├── admin.html
+│   │   │   ├── login.html
 │   │   │   └── main.html     
+│   │   │
+│   │   └── .env 
 │   │
 │   └── llm_service/           # LLM 챗봇 서비스
 │

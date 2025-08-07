@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 # 절대경로로 .env 로딩
 env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '.env'))
-load_dotenv(dotenv_path=env_path)
+load_dotenv(dotenv_path=env_path, override=True)
 
 # 디버깅: 환경변수 확인
 client_path = os.getenv("ORACLE_CLIENT_PATH")

@@ -1,18 +1,30 @@
+import os
 from flask import Flask, render_template, request, redirect, session, url_for
 from dotenv import load_dotenv
-import os, sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import sys
 
+# 경로 설정
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(BASE_DIR)
+
+# 사용자 인증 모듈
 from services.user_service.login_manager import authenticate_user
+from services.web_frontend.api.sync import sync_bp
+from services.web_frontend.api.chart_data import chart_data_bp  # 차트 데이터 API 추가
 
-load_dotenv(dotenv_path='../services/user_service/.env')
+# 환경 변수 로드
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, 'services/user_service/.env'))
 
 def create_app():
     app = Flask(__name__,
-                template_folder='../services/web_frontend/templates',
-                static_folder='../services/web_frontend/static')
+                template_folder=os.path.join(BASE_DIR, 'services/web_frontend/templates'),
+                static_folder=os.path.join(BASE_DIR, 'services/web_frontend/static'))
 
     app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
+
+    # Blueprint 등록
+    app.register_blueprint(sync_bp)
+    app.register_blueprint(chart_data_bp)  # 차트 데이터 API Blueprint 등록
 
     # 메인 페이지
     @app.route('/')
@@ -49,10 +61,10 @@ def create_app():
             return redirect(url_for('login'))
         return render_template('admin.html')
 
-    # 학습환경 분석 페이지
+    # 학습환경 분석 페이지 (차트 페이지)
     @app.route('/chart')
     def chart():
-        return render_template('chart.html')
+        return render_template('chartpage1.html')  # 파일명 변경
 
     # 발전도 분석 페이지
     @app.route('/prediction')

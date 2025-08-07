@@ -13,17 +13,18 @@
   <!-- 공통 헤더 -->
   {% include 'common/header.html' %}
 
-  <!-- 스크롤 컨테이너 (중복 제거 - 한 번만 선언) -->
-  <div class="sections-wrapper">
+  <!-- 플로팅 헤더 버튼 -->
+  <div class="floating-header-btn" id="floating-header-btn"></div>
+
+  <!-- 스크롤 컨테이너 -->
+  <div class="sections-wrapper" id="sections-wrapper">
     <!-- Hero Slider (오버랩 + 페이드)-->
     <section class="section slider" id="hero-slider">
       <!-- Slide 1 -->
       <div class="slide active">
         <img src="{{ url_for('static', filename='images/overlap01.jpg') }}" alt="Slide 1">
         <div class="slider-overlay">
-          <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" class="overlay-logo" />
-          <div class="slide-title-main"></div><br/>
-          <div class="slide-title-sub">교육 인프라 분석 및 예측 서비스</div>
+          <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" class="overlay-logo logo-only" />
         </div>
       </div>
       <!-- Slide 2 -->
@@ -34,7 +35,7 @@
           {% if session.get('user') == 'libra_admin' %}
           <a href="{{ url_for('admin_page') }}" class="admin-btn">관리자 페이지</a>
           {% endif %}
-          <div class="slide-title-main"></div><br/>
+          <div class="slide-title-main">Libra</div><br/>
           <div class="slide-title-sub">교육 인프라 분석 및 예측 서비스</div>
         </div>
       </div>
@@ -54,7 +55,7 @@
     <!-- Three Columns -->
     <section class="section subgrid" id="quick-links">
       <!-- 1번 카드 -->
-      <div class="sub sub1" data-link="{{ url_for('static', filename='html/chart.html') }}">
+      <div class="sub sub1" data-link="{{ url_for('chart') }}">
         <img class="sub-img" src="{{ url_for('static', filename='images/slide01.jpg') }}" alt="환경 점수 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">환경점수 검색</span><br/>
@@ -78,6 +79,9 @@
         </div>
       </div>
     </section>
+
+    <!-- Footer -->
+    {% include 'common/footer.html' %}
   </div>
 
   <!-- 3번카드 임시 오버레이 -->
@@ -85,12 +89,30 @@
     로그인 회원 전용페이지입니다. 로그인 회원이 아니면 서비스 제한이 있습니다.
   </div>
 
-  <!-- Footer -->
-  {% include 'common/footer.html' %}
-
   <!-- Chatbot -->
   {# {% include 'common/chatbot.html' %} #}
-  <!--Chatbot (footer 로딩시 자동)-->
+  <!-- 임시로 챗봇 직접 구현 -->
+  <div class="chatbot" id="chatToggle">
+    <div class="chat-icon">
+      <img src="{{ url_for('static', filename='images/chatbot.png') }}" alt="Chatbot" id="chatbot-img">
+    </div>
+  </div>
+
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <span>Libra Assistant</span>
+      <button id="chatCloseBtn">&times;</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div style="color: #666; padding: 10px; text-align: center;">
+        안녕하세요! Libra 챗봇입니다. 무엇을 도와드릴까요?
+      </div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+      <button id="chatSendBtn">전송</button>
+    </div>
+  </div>
 
   <!-- JS 파일들 (순서 중요!) -->
   <script src="{{ url_for('static', filename='js/common/utils.js') }}"></script>

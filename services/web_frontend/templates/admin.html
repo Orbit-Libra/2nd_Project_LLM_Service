@@ -14,10 +14,21 @@
     <h1>관리자 페이지</h1>
     <p>Libra 시스템의 관리자 전용 페이지입니다.</p>
 
-    <section class="admin-section">
-      <h2>📊 데이터 관리</h2>
-      <p>데이터 업로드, 삭제, 수정 기능이 여기에 들어갈 예정입니다.</p>
-    </section>
+  <section class="admin-section">
+    <h2>📊 데이터 관리</h2>
+    <p>Libra 시스템의 머신러닝 예측 결과를 웹 서비스용으로 갱신합니다.</p>
+
+      <button id="sync-btn">데이터 동기화</button>
+
+      <script>
+      document.getElementById("sync-btn").addEventListener("click", function () {
+          fetch("/sync-estimation", { method: "POST" })
+              .then(response => response.json())
+              .then(data => alert(data.message))
+              .catch(error => alert("동기화 실패: " + error));
+      });
+      </script>
+  </section>
 
     <section class="admin-section">
       <h2>👥 사용자 관리</h2>
