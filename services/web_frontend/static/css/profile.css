@@ -1,0 +1,176 @@
+/* static/css/profile.css */
+
+/* 베이스 */
+body {
+  font-family: "Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #f7f8fa;
+  color: #222;
+  margin: 0;
+}
+
+/* 컨테이너 */
+.login-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  margin: 32px auto 48px;
+  padding: 24px 28px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+
+.login-container h2 {
+  margin: 0 0 18px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+}
+
+/* 읽기 전용 기본 회원정보 */
+.login-container > div:first-of-type {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 14px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.login-container label {
+  font-size: 14px;
+  color: #555;
+}
+
+.login-container input[type="text"],
+.login-container input[type="email"],
+.login-container input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #dcdfe4;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  background: #fff;
+}
+
+.login-container input:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74,144,226,.15);
+}
+
+/* disabled 스타일 */
+.login-container input[disabled] {
+  background: #f3f4f7;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* 상단 버튼 영역 */
+.login-container > div:nth-of-type(2) {
+  margin-top: 14px;
+}
+
+.login-container a button,
+.login-container button[type="button"] {
+  appearance: none;
+  border: 0;
+  background: #4a90e2;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, transform .02s;
+}
+
+.login-container a button:hover {
+  background: #357abd;
+}
+.login-container a button:active {
+  transform: translateY(1px);
+}
+
+/* 구분선 */
+.login-container hr {
+  border: 0;
+  height: 1px;
+  background: #eceff3;
+  margin: 22px 0;
+}
+
+/* 학년별 입력 박스 */
+.login-container h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.login-container p {
+  margin: 0 0 8px;
+  color: #666;
+  font-size: 13px;
+}
+
+/* fieldset들을 카드처럼 */
+.login-container fieldset {
+  margin: 16px 0 0;
+  padding: 14px 16px 12px;
+  border: 1px solid #e6e8ec;
+  border-radius: 10px;
+  background: #fafbfc;
+}
+
+.login-container legend {
+  padding: 0 6px;
+  font-weight: 700;
+  color: #2b2b2b;
+}
+
+/* fieldset 내부 폼 그리드 */
+.login-container fieldset {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 8px 14px;
+}
+
+.login-container fieldset label {
+  align-self: center;
+  color: #444;
+}
+
+/* number input 스피너 숨김(옵션) */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+/* 저장 버튼 */
+.login-container button[type="submit"] {
+  margin-top: 16px;
+  width: 100%;
+  appearance: none;
+  border: 0;
+  background: #111827;
+  color: #fff;
+  font-weight: 700;
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s, transform .02s, box-shadow .15s;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+.login-container button[type="submit"]:hover { background: #0e1523; }
+.login-container button[type="submit"]:active { transform: translateY(1px); }
+
+/* 반응형 */
+@media (max-width: 560px) {
+  .login-container {
+    margin: 20px 14px 32px;
+    padding: 18px 16px;
+  }
+  .login-container > div:first-of-type,
+  .login-container fieldset {
+    grid-template-columns: 1fr;
+  }
+}

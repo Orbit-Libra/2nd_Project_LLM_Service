@@ -13,6 +13,8 @@ from services.web_frontend.api.sync import sync_bp
 from services.web_frontend.api.chart_data import chart_data_bp
 from services.web_frontend.api.register_api import bp_register
 from services.web_frontend.api.user_api import bp_user
+from services.user_service.predict_sync import bp_predict_sync
+from services.user_service.user_analysis import bp_user_analysis
 
 # Oracle 연결을 위한 import (profile 라우트에서 사용)
 try:
@@ -40,6 +42,8 @@ def create_app():
     app.register_blueprint(chart_data_bp)
     app.register_blueprint(bp_register)
     app.register_blueprint(bp_user)
+    app.register_blueprint(bp_predict_sync)
+    app.register_blueprint(bp_user_analysis)
 
     # 메인 페이지
     @app.route('/')

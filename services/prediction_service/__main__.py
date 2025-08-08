@@ -30,14 +30,17 @@ if sequence_json:
         execution_sequence = []
 else:
     print("외부 실행 순서 없음 -> 기본값 사용")
+    # 기본: 유저 예측만 수행
     execution_sequence = [
-    {"package": "Predictor", "config": "Num02_Config_XGB.json"}
+        {"package": "Predictor", "config": "Num01_Config_XGB.json", "run": "user"} 
+        # run: "main" | "user" | "both"
     ]
 
 # 실행 루프
 for step in execution_sequence:
     package = step["package"]
     config_name = step.get("config")
+    run_type = step.get("run", "both")  # 기본 both
 
     package_path = os.path.join(PROJECT_ROOT, package)
     main_path = os.path.join(package_path, "__main__.py")
@@ -49,11 +52,13 @@ for step in execution_sequence:
     print(f"\n실행 중: {package}/__main__.py")
     if config_name:
         print(f"-> 설정 파일: {config_name}")
+    print(f"-> 실행 타입(RUN_TYPE): {run_type}")
 
     env = os.environ.copy()
     env["PYTHONPATH"] = SERVICES_ROOT
     if config_name:
         env["MODEL_CONFIG_NAME"] = config_name
+    env["RUN_TYPE"] = run_type  # ✅ Predictor에서 분기
 
     result = subprocess.run(
         [sys.executable, main_path],

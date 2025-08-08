@@ -334,3 +334,126 @@ main {
 .chart-area {
   animation: fadeInUp 0.6s ease-out 0.2s both;
 }
+
+/* ==== Userservice charts: fix flex heights & prevent resize loop ==== */
+.chart-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.chart-block {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  overflow: hidden;              /* 캔버스 넘침 방지 */
+}
+
+.chart-block-header {
+  background: linear-gradient(45deg, #42a5f5, #29b6f6);
+  color: #fff;
+  padding: 14px 18px;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.chart-block-content {
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  min-height: 320px;             /* 부모 고정 */
+}
+
+.bar-charts-container,
+.donut-charts-container {
+  min-width: 0;                  /* flex 자식 수평 오버플로 방지 */
+  height: 290px;                 /* 핵심: 고정 높이 */
+  display: flex;
+  gap: 8px;
+}
+
+.bar-charts-container { flex: 3; }
+.donut-charts-container { flex: 2; }
+
+.individual-bar-chart,
+.donut-chart-item {
+  position: relative;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 8px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.individual-bar-chart { flex: 1; }
+
+.individual-bar-chart canvas {
+  flex: 1;
+  min-height: 180px !important;  /* 캔버스 “부모 높이” 하한선 */
+  max-width: 100%;
+}
+
+.donut-chart-item { 
+  flex: 1; 
+  align-items: center; 
+  justify-content: center; 
+}
+
+.donut-chart-item canvas {
+  width: 80px !important;        /* 도넛 크기 명시 */
+  height: 80px !important;
+}
+
+.score-comparison-block {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.user-score-chart,
+.similar-scores-chart {
+  flex: 1;
+  height: 250px;                 /* 비교 차트 고정 높이 */
+  position: relative;
+}
+
+.chart-title {
+  font-size: 0.85rem;
+  color: #42a5f5;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .chart-block-content { flex-direction: column; min-height: 0; }
+  .bar-charts-container,
+  .donut-charts-container { height: auto; }
+  .user-score-chart,
+  .similar-scores-chart { height: 220px; }
+}
+
+
+#global-loader {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9999;
+  display: none;
+}
+#global-loader .gl-inner {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; color: #fff;
+  font-size: 16px;
+}
+#global-loader .gl-spinner {
+  width: 48px; height: 48px; margin: 0 auto 12px;
+  border: 4px solid rgba(255,255,255,0.35);
+  border-top-color: #fff; border-radius: 50%;
+  animation: gl-spin 0.9s linear infinite;
+}
+#global-loader .gl-text { letter-spacing: .2px; }
+@keyframes gl-spin { to { transform: rotate(360deg); } }

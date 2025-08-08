@@ -20,6 +20,13 @@
     };
   </script>
 </head>
+<!-- 글로벌 로더 -->
+<div id="global-loader" aria-live="polite" aria-busy="true" style="display:none">
+  <div class="gl-inner">
+    <div class="gl-spinner"></div>
+    <div class="gl-text">잠시만 기다려주세요…</div>
+  </div>
+</div>
 <body>
   {% include 'common/header.html' %}
 
@@ -43,6 +50,7 @@
           </div>
 
           <div class="panel-actions">
+            <button class="action-btn secondary" id="btnSyncPredict" type="button">예측 점수 동기화</button>
             <button class="action-btn primary" id="btnGoProfile" type="button">내정보 관리</button>
           </div>
         </aside>
@@ -52,16 +60,15 @@
           <div class="chart-header">
             <h2>마이 서비스</h2>
           </div>
-
-          <div class="chart-container">
-            <div class="chart-placeholder" id="placeholderBox">
-              <div class="placeholder-content">
-                <div class="placeholder-icon">👤</div>
-                <h3>내 정보 기반 개인화 영역</h3>
-                <p>왼쪽에서 내 정보를 확인하고, “내정보 관리” 버튼으로 학년별 데이터 입력/수정 페이지로 이동하세요.</p>
+            <div class="chart-grid" id="chartGrid">
+              <div class="chart-placeholder" id="chartPlaceholder">
+                <div class="placeholder-content">
+                  <div class="placeholder-icon">👤</div>
+                  <h3>내 정보 기반 개인화 영역</h3>
+                  <p>왼쪽에서 내 정보를 확인하고, “예측 점수 동기화”를 누른 뒤 분석 결과를 확인하세요.</p>
+                </div>
               </div>
             </div>
-          </div>
 
           <div class="chart-info">
             <div class="info-card">
