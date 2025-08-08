@@ -124,11 +124,9 @@
 │   │   │
 │   │   ├── api/       # 플라스크 api
 │   │   │   │  
+│   │   │   ├── chart_data.py
+│   │   │   ├── Oracle_utils.py
 │   │   │   └── sync.py
-│   │   │
-│   │   ├── db/
-│   │   │   │
-│   │   │   └── WEB_DB.DBF     # 웹페이지 데이터베이스
 │   │   │
 │   │   ├── static/
 │   │   │   │

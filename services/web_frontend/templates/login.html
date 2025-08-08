@@ -10,22 +10,27 @@
 <body>
   {% include 'common/header.html' %}
 
-  <div class="login-container">
-    <h2>로그인</h2>
-    <form method="POST" action="/login">
-      <label for="usr_id">아이디</label>
-      <input type="text" id="usr_id" name="usr_id" required />
+<div class="login-container">
+  <h2>로그인</h2>
+  <form method="POST" action="/login">
+    <label for="usr_id">아이디</label>
+    <input type="text" id="usr_id" name="usr_id" required />
 
-      <label for="usr_pw">비밀번호</label>
-      <input type="password" id="usr_pw" name="usr_pw" required />
+    <label for="usr_pw">비밀번호</label>
+    <input type="password" id="usr_pw" name="usr_pw" required />
 
-      <button type="submit">로그인</button>
-    </form>
+    <button type="submit">로그인</button>
+  </form>
 
-    {% if error %}
-      <p class="error">{{ error }}</p>
-    {% endif %}
-  </div>
+  <form method="GET" action="/register">
+    <button type="submit" class="signup-btn">회원가입</button>
+  </form>
+
+  {% if error %}
+    <p class="error">{{ error }}</p>
+  {% endif %}
+</div>
+
 
   {% include 'common/footer.html' %}
 </body>

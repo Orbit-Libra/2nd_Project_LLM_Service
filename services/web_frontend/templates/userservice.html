@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Libra - 마이 서비스</title>
+
+  <!-- 공통 헤더/푸터 css가 있다면 같이 포함해도 됨 -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chartpage1.css') }}">
+
+  <!-- Chart.js 필요하면 유지, 당장은 안 써도 됨 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+
+  <!-- 서버에서 값 주입 (없으면 빈 문자열) -->
+  <script>
+    window.__USER__ = {
+      name: {{ (usr_name|tojson) if usr_name is defined else '""' }},
+      univ: {{ (usr_snm|tojson)  if usr_snm  is defined else '""'  }}
+    };
+  </script>
+</head>
+<body>
+  {% include 'common/header.html' %}
+
+  <main>
+    <div class="container">
+      <div class="main-layout">
+        <!-- 왼쪽 패널 -->
+        <aside class="control-panel">
+          <div class="panel-section">
+            <h3>내 정보</h3>
+            <div class="table-info">
+              <div class="info-item">
+                <span class="label">이름</span>
+                <span class="value" id="userName">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">소속대학</span>
+                <span class="value" id="userUniv">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="action-btn primary" id="btnGoProfile" type="button">내정보 관리</button>
+          </div>
+        </aside>
+
+        <!-- 오른쪽 영역 -->
+        <section class="chart-area">
+          <div class="chart-header">
+            <h2>마이 서비스</h2>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-placeholder" id="placeholderBox">
+              <div class="placeholder-content">
+                <div class="placeholder-icon">👤</div>
+                <h3>내 정보 기반 개인화 영역</h3>
+                <p>왼쪽에서 내 정보를 확인하고, “내정보 관리” 버튼으로 학년별 데이터 입력/수정 페이지로 이동하세요.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-info">
+            <div class="info-card">
+              <h4>안내</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="label">학년별 입력 값</span>
+                  <span class="value">프로필 &gt; 회원정보 수정에서 입력</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">저장 위치</span>
+                  <span class="value">USER_DATA 테이블</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  {% include 'common/footer.html' %}
+
+  <script src="{{ url_for('static', filename='js/userservice.js') }}"></script>
+</body>
+</html>

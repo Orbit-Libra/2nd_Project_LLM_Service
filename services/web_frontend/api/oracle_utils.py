@@ -3,7 +3,7 @@ import cx_Oracle
 from dotenv import load_dotenv
 
 # 절대 경로로 .env 로딩
-env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../web_frontend/.env'))
+env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../user_service/.env'))
 load_dotenv(dotenv_path=env_path, override=True)
 
 # Oracle Instant Client 경로 설정
