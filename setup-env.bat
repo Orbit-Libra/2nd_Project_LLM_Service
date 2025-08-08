@@ -102,64 +102,37 @@ IF DEFINED NEED_SQL (
     echo [🧠] Oracle 설정 중...
     SET TEMP_SQL_FILE=oracle_setup_temp.sql
     (
-    echo -- 오류 발생 시에도 계속 진행
     echo WHENEVER SQLERROR CONTINUE
     echo.
+
     IF DEFINED CREATE_TS (
-        echo -- 테이블스페이스 생성 ^(이미 존재하면 무시^)
-        echo BEGIN
-        echo     EXECUTE IMMEDIATE 'CREATE TABLESPACE user_db DATAFILE ''!USER_DB_PATH!'' SIZE 100M AUTOEXTEND ON MAXSIZE UNLIMITED';
-        echo     DBMS_OUTPUT.PUT_LINE^('USER_DB 생성 완료'^);
-        echo EXCEPTION
-        echo     WHEN OTHERS THEN
-        echo         IF SQLCODE != -1543 THEN RAISE; END IF;
-        echo END;
-        echo /
-        echo.
-        echo BEGIN
-        echo     EXECUTE IMMEDIATE 'CREATE TABLESPACE data_db DATAFILE ''!DATA_DB_PATH!'' SIZE 100M AUTOEXTEND ON MAXSIZE UNLIMITED';
-        echo     DBMS_OUTPUT.PUT_LINE^('DATA_DB 생성 완료'^);
-        echo EXCEPTION
-        echo     WHEN OTHERS THEN
-        echo         IF SQLCODE != -1543 THEN RAISE; END IF;
-        echo END;
-        echo /
+        echo CREATE TABLESPACE user_db DATAFILE '!USER_DB_PATH!' SIZE 100M AUTOEXTEND ON MAXSIZE UNLIMITED;
+        echo CREATE TABLESPACE data_db DATAFILE '!DATA_DB_PATH!' SIZE 100M AUTOEXTEND ON MAXSIZE UNLIMITED;
         echo.
     )
+
     IF DEFINED CREATE_USERS (
-        echo -- 사용자 계정 생성 ^(이미 존재하면 무시^)
-        echo BEGIN
-        echo     EXECUTE IMMEDIATE 'CREATE USER libra_user IDENTIFIED BY 1234 DEFAULT TABLESPACE user_db';
-        echo     EXECUTE IMMEDIATE 'ALTER USER libra_user QUOTA UNLIMITED ON user_db';
-        echo     EXECUTE IMMEDIATE 'ALTER USER libra_user QUOTA 0M ON data_db';
-        echo     GRANT CONNECT, RESOURCE TO libra_user;
-        echo     DBMS_OUTPUT.PUT_LINE^('LIBRA_USER 생성 완료'^);
-        echo EXCEPTION
-        echo     WHEN OTHERS THEN
-        echo         IF SQLCODE != -1920 THEN RAISE; END IF;
-        echo END;
-        echo /
+        echo CREATE USER libra_user IDENTIFIED BY 1234 DEFAULT TABLESPACE user_db;
+        echo ALTER USER libra_user QUOTA UNLIMITED ON user_db;
+        echo GRANT CONNECT, RESOURCE TO libra_user;
         echo.
-        echo BEGIN
-        echo     EXECUTE IMMEDIATE 'CREATE USER libra_data IDENTIFIED BY 1234 DEFAULT TABLESPACE data_db';
-        echo     EXECUTE IMMEDIATE 'ALTER USER libra_data QUOTA UNLIMITED ON data_db';
-        echo     EXECUTE IMMEDIATE 'ALTER USER libra_data QUOTA 0M ON user_db';
-        echo     GRANT CONNECT, RESOURCE TO libra_data;
-        echo     DBMS_OUTPUT.PUT_LINE^('LIBRA_DATA 생성 완료'^);
-        echo EXCEPTION
-        echo     WHEN OTHERS THEN
-        echo         IF SQLCODE != -1920 THEN RAISE; END IF;
-        echo END;
-        echo /
+        echo CREATE USER libra_data IDENTIFIED BY 1234 DEFAULT TABLESPACE data_db;
+        echo ALTER USER libra_data QUOTA UNLIMITED ON data_db;
+        echo GRANT CONNECT, RESOURCE TO libra_data;
         echo.
     )
-    echo.
+
     echo EXIT;
     ) > "!TEMP_SQL_FILE!"
 
-    sqlplus -s sys/Oracle123@XE as sysdba @"!TEMP_SQL_FILE!" >nul 2>nul
+    echo [📜] 생성된 SQL 스크립트 내용 확인:
+    type "!TEMP_SQL_FILE!"
+
+    echo [🚀] SQL 실행 시작...
+    sqlplus -s sys/Oracle123@XE as sysdba @"!TEMP_SQL_FILE!"
     del "!TEMP_SQL_FILE!" >nul 2>nul
 )
+
 
 REM ==============================
 REM 7. USER_DATA 테이블 존재 확인 및 초기화 스크립트 실행
