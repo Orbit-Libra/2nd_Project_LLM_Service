@@ -28,8 +28,6 @@ def _to_float_or_none(v):
         except Exception:
             return None
 
-
-# TODO: 5050 데이터서비스 붙이면 실제 값으로 교체
 def fetch_univ_metrics(snm: str, year: int):
     url = f"{DATA_SERVICE_BASE}/api/num06-metrics"
     try:

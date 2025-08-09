@@ -25,9 +25,9 @@
       <input type="text" value="{{ user.usr_snm }}" disabled />
     </div>
 
+    <!-- ✅ '회원정보 수정' 버튼: 모달 오픈 -->
     <div style="margin-top:10px;">
-      <a href="{{ url_for('edit_profile') }}"><button type="button">회원정보 수정</button></a>
-      <!-- edit_profile 라우트는 나중에 구현 예정 -->
+      <button type="button" id="open-edit-profile">회원정보 수정</button>
     </div>
 
     <hr style="margin:20px 0;">
@@ -91,61 +91,47 @@
 
       <button type="submit" style="margin-top:16px;">저장하기</button>
     </form>
+
+    <!-- ✅ 회원정보 수정 모달: 컨테이너 내부로 이동 -->
+    <dialog id="edit-profile-dialog">
+      <form id="edit-profile-form" method="dialog" style="min-width:360px;">
+        <h3 style="margin-top:0;">회원정보 수정</h3>
+
+        <label for="edit_name">이름</label>
+        <input id="edit_name" type="text" required value="{{ user.usr_name }}" />
+
+        <label for="edit_email">이메일</label>
+        <input id="edit_email" type="email" required value="{{ user.usr_email }}" />
+
+        <label for="edit_snm">소속대학</label>
+        <input id="edit_snm" type="text" list="snm-list-edit" placeholder="대학명 입력 또는 선택" required value="{{ user.usr_snm }}" />
+        <datalist id="snm-list-edit"></datalist>
+        <small id="snm_edit_msg"></small>
+
+        <hr style="margin:12px 0;">
+
+        <!-- 보안: 현재 비밀번호 재확인 -->
+        <label for="cur_pw">현재 비밀번호</label>
+        <input id="cur_pw" type="password" required />
+        <small class="muted">변경 적용 전에 현재 비밀번호를 확인합니다.</small>
+
+        <!-- 선택: 새 비밀번호 변경 -->
+        <label for="new_pw" style="margin-top:8px;">새 비밀번호 (선택)</label>
+        <input id="new_pw" type="password" />
+        <label for="new_pw2">새 비밀번호 확인</label>
+        <input id="new_pw2" type="password" />
+        <small id="new_pw_msg"></small>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+          <button type="button" id="cancel-edit">취소</button>
+          <button type="submit" id="save-edit" value="default">저장</button>
+        </div>
+      </form>
+    </dialog>
   </div>
 
   {% include 'common/footer.html' %}
 
-  <script>
-  (function(){
-    const form = document.getElementById('academic-form');
-
-    function valOrNull(id){
-      const v = document.getElementById(id).value.trim();
-      return v === '' ? null : Number(v);
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if(!confirm('입력한 내용을 저장하겠습니까?')) return;
-
-      const payload = {
-        '1ST_YR':      valOrNull('first_yr'),
-        '1ST_USR_CPS': valOrNull('first_cps'),
-        '1ST_USR_LPS': valOrNull('first_lps'),
-        '1ST_USR_VPS': valOrNull('first_vps'),
-        '2ND_YR':      valOrNull('second_yr'),
-        '2ND_USR_CPS': valOrNull('second_cps'),
-        '2ND_USR_LPS': valOrNull('second_lps'),
-        '2ND_USR_VPS': valOrNull('second_vps'),
-        '3RD_YR':      valOrNull('third_yr'),
-        '3RD_USR_CPS': valOrNull('third_cps'),
-        '3RD_USR_LPS': valOrNull('third_lps'),
-        '3RD_USR_VPS': valOrNull('third_vps'),
-        '4TH_YR':      valOrNull('fourth_yr'),
-        '4TH_USR_CPS': valOrNull('fourth_cps'),
-        '4TH_USR_LPS': valOrNull('fourth_lps'),
-        '4TH_USR_VPS': valOrNull('fourth_vps')
-        // SCR_EST_* 는 추후 예측값 저장 시 사용
-      };
-
-      try{
-        const res = await fetch('/api/user/academic', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if(data.success){
-          alert('저장이 완료되었습니다.');
-          location.reload();
-        } else {
-          alert(data.error || '저장 중 오류가 발생했습니다.');
-        }
-      }catch(err){
-        alert('네트워크 오류가 발생했습니다.');
-      }
-    });
-  })();
-  </script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 </body>
 </html>

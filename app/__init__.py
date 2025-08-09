@@ -11,8 +11,10 @@ sys.path.append(BASE_DIR)
 from services.user_service.login_manager import authenticate_user
 from services.web_frontend.api.sync import sync_bp
 from services.web_frontend.api.chart_data import chart_data_bp
+from services.web_frontend.api.profile_api import bp_profile
 from services.web_frontend.api.register_api import bp_register
 from services.web_frontend.api.user_api import bp_user
+from services.web_frontend.api.admin_system import admin_system_bp
 from services.user_service.predict_sync import bp_predict_sync
 from services.user_service.user_analysis import bp_user_analysis
 
@@ -41,9 +43,11 @@ def create_app():
     app.register_blueprint(sync_bp)
     app.register_blueprint(chart_data_bp)
     app.register_blueprint(bp_register)
+    app.register_blueprint(bp_profile)
     app.register_blueprint(bp_user)
     app.register_blueprint(bp_predict_sync)
     app.register_blueprint(bp_user_analysis)
+    app.register_blueprint(admin_system_bp)
 
     # 메인 페이지
     @app.route('/')

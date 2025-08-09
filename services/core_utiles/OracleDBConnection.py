@@ -1,7 +1,7 @@
 import os
 import oracledb
 from sqlalchemy import create_engine
-from services.core_utiles.config_loader import (
+from core_utiles.config_loader import (
     ORACLE_USER, ORACLE_PASSWORD, ORACLE_DSN, ORACLE_CLIENT_PATH
 )
 

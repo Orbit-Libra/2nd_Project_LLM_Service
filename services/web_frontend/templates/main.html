@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Libra | Balancing Infrastructure</title>
-  <!-- CSS 파일들 -->
+  <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/chatbot.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
@@ -18,7 +18,7 @@
 
   <!-- 스크롤 컨테이너 -->
   <div class="sections-wrapper" id="sections-wrapper">
-    <!-- Hero Slider (오버랩 + 페이드)-->
+    <!-- Hero Slider -->
     <section class="section slider" id="hero-slider">
       <!-- Slide 1 -->
       <div class="slide active">
@@ -35,7 +35,7 @@
           <div class="slide-title-sub">각 대학의 학습환경 예측 및 발전도 분석</div>
         </div>
       </div>
-      <!-- Slide 3 --> 
+      <!-- Slide 3 -->
       <div class="slide">
         <img src="{{ url_for('static', filename='images/overlap03.jpg') }}" alt="Slide 3">
         <div class="slider-overlay">
@@ -58,8 +58,8 @@
           <span class="sub-title-sub">>> 대학별 인프라<br/>점수 찾아보기</span>
         </div>
       </div>
-      <!-- 2번 카드 --> 
-      <div class="sub sub2" data-link="{{ url_for('static', filename='html/page_prediction_num01.html') }}">
+      <!-- 2번 카드 -->
+      <div class="sub sub2" data-link="{{ url_for('prediction') }}">
         <img class="sub-img" src="{{ url_for('static', filename='images/slide02.jpg') }}" alt="점수 변환 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">발전도 검색</span><br/>
@@ -67,7 +67,7 @@
         </div>
       </div>
       <!-- 3번 카드 -->
-      <div class="sub sub3" data-link="{{ url_for('static', filename='html/page_userpage_num01.html') }}">
+      <div class="sub sub3">
         <img class="sub-img" src="{{ url_for('static', filename='images/slide03.jpg') }}" alt="로그인 전용">
         <div class="sub-overlay">
           <span class="sub-title-main">마이 서비스</span><br/>
@@ -80,14 +80,9 @@
     {% include 'common/footer.html' %}
   </div>
 
-  <!-- 3번카드 임시 오버레이 -->
-  <div id="temp-overlay">
-    로그인 회원 전용페이지입니다. 로그인 회원이 아니면 서비스 제한이 있습니다.
-  </div>
+  <!-- (임시 오버레이는 더 이상 사용하지 않으므로 제거) -->
 
   <!-- Chatbot -->
-  {# {% include 'common/chatbot.html' %} #}
-  <!-- 임시로 챗봇 직접 구현 -->
   <div class="chatbot" id="chatToggle">
     <div class="chat-icon">
       <img src="{{ url_for('static', filename='images/chatbot.png') }}" alt="Chatbot" id="chatbot-img">
@@ -110,9 +105,19 @@
     </div>
   </div>
 
-  <!-- JS 파일들 (순서 중요!) -->
+  <!-- 전역 변수: main.js보다 먼저 선언 필요 -->
+  <script>
+    window.isLoggedIn    = {{ 'true' if session.get('user') else 'false' }};
+    window.myServiceUrl  = "{{ url_for('my_service') }}";  // userservice.html 라우트
+    window.loginUrl      = "{{ url_for('login') }}";       // login.html 라우트
+    window.predictionUrl = "{{ url_for('prediction') }}";  // chartpage2.html 라우트
+    window.chartUrl      = "{{ url_for('chart') }}";       // chartpage1.html 라우트
+  </script>
+
+  <!-- JS 로드 순서 주의 -->
   <script src="{{ url_for('static', filename='js/common/utils.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/common/header-footer.js') }}"></script>
+  <!-- (선택) 로그아웃 확인창을 header.js에서 구현했다면 아래 주석 해제 -->
+  <!-- <script src="{{ url_for('static', filename='js/header.js') }}"></script> -->
   <script src="{{ url_for('static', filename='js/common/chatbot.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

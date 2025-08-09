@@ -2,7 +2,7 @@
 <header id="site-header">
   <div class="logo" id="logo-area">
     <a href="{{ url_for('index') }}" id="logo-link">
-      <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" id="logo-img">
+      <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="Libra Logo" id="logo-img">
       <span id="logo-text">Libra</span>
     </a>
 
@@ -28,3 +28,5 @@
     {% endif %}
   </nav>
 </header>
+
+<script src="{{ url_for('static', filename='js/header.js') }}"></script>

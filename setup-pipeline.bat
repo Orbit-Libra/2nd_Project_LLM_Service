@@ -24,7 +24,7 @@ cd /d %~dp0
 
 REM ✅ 5. Run prediction for Model 01
 echo [STEP 2] Predicting with Model 01
-set EXECUTION_SEQUENCE=[{"package":"Predictor","config":"Num01_Config_XGB.json"}]
+set EXECUTION_SEQUENCE=[{"package":"Predictor","config":"Num01_Config_XGB.json", "run": "main"}]
 cd /d .\services\prediction_service
 python __main__.py
 cd /d %~dp0
@@ -38,7 +38,7 @@ cd /d %~dp0
 
 REM ✅ 7. Run prediction for Model 02
 echo [STEP 4] Predicting with Model 02
-set EXECUTION_SEQUENCE=[{"package":"Predictor","config":"Num02_Config_XGB.json"}]
+set EXECUTION_SEQUENCE=[{"package":"Predictor","config":"Num02_Config_XGB.json", "run": "main"}]
 cd /d .\services\prediction_service
 python __main__.py
 cd /d %~dp0

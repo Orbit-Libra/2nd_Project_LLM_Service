@@ -32,7 +32,7 @@ else:
     print("외부 실행 순서 없음 -> 기본값 사용")
     # 기본: 유저 예측만 수행
     execution_sequence = [
-        {"package": "Predictor", "config": "Num01_Config_XGB.json", "run": "user"} 
+        {"package": "Predictor", "config": "Num01_Config_XGB.json", "run": "main"} 
         # run: "main" | "user" | "both"
     ]
 
