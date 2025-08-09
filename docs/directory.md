@@ -30,7 +30,9 @@
 │   │   │
 │   │   ├── api/       # 플라스크 api
 │   │   │   │  
-│   │   │   └── data_api.py  
+│   │   │   ├── data_api.py  
+│   │   │   ├── main.py  
+│   │   │   └── num06_api.py  
 │   │   │
 │   │   ├── DataHandling/       # 원본파일 CSV파일화 및 DB 업로드 패키지  
 │   │   │   │  
@@ -96,6 +98,11 @@
 │   │
 │   ├── prediction_service/    # 머신러닝 예측 서비스
 │   │   │
+│   │   ├── api/               # 플라스크 api
+│   │   │   │  
+│   │   │   ├── server.py  
+│   │   │   └── user_api.py  
+│   │   │
 │   │   ├── Predictor/
 │   │   │   │
 │   │   │   ├── __init__.py
@@ -110,7 +117,7 @@
 │   │   ├── __main__.py
 │   │   └── .env
 │   │
-│   ├── user_service/          # 유저 관련 기능
+│   ├── user_service/          # 유저 서비스 관련 라우터
 │   │   │
 │   │   ├── db/
 │   │   │   │
@@ -118,34 +125,53 @@
 │   │   │
 │   │   ├── .env 
 │   │   ├── init_oracle_user_data.py 
-│   │   └── login_manager.py
+│   │   ├── login_manager.py
+│   │   ├── predict_sync.py
+│   │   └── user_analysis.py
 │   │
 │   ├── web_frontend/          # 사용자 웹 프론트엔드
 │   │   │
-│   │   ├── api/       # 플라스크 api
+│   │   ├── api/               # 플라스크 웹서버 라우터
 │   │   │   │  
+│   │   │   ├── admin_system.py
 │   │   │   ├── chart_data.py
 │   │   │   ├── Oracle_utils.py
-│   │   │   └── sync.py
+│   │   │   ├── profile_api.py
+│   │   │   ├── register_api.py
+│   │   │   ├── sync.py
+│   │   │   └── user_api.py
 │   │   │
 │   │   ├── static/
 │   │   │   │
 │   │   │   ├── css/
-│   │   │   │   |
-│   │   │   │   ├── 
-│   │   │   │   └── 
+│   │   │   │   │
+│   │   │   │   ├── common/
+│   │   │   │   │   │
+│   │   │   │   │   └── header-footer.css
+│   │   │   │   │
+│   │   │   │   ├── admin.css
+│   │   │   │   ├── chartpage1.css
+│   │   │   │   ├── login.css
+│   │   │   │   ├── main.css
+│   │   │   │   └── profile.css
 │   │   │   │
 │   │   │   │
 │   │   │   ├── images/
 │   │   │   │   |
-│   │   │   │   ├── 
-│   │   │   │   └── 
+│   │   │   │   ├── logo.jpeg
+│   │   │   │   └── logo2.png
 │   │   │   │
 │   │   │   │
 │   │   │   └── js/  
 │   │   │       |
-│   │   │       ├──
-│   │   │       └── 
+│   │   │       ├── admin.js
+│   │   │       ├── chartpage1.js
+│   │   │       ├── chartpage2.js
+│   │   │       ├── header.js
+│   │   │       ├── main.js
+│   │   │       ├── profile.js
+│   │   │       ├── register.js
+│   │   │       └── userservice.js
 │   │   │
 │   │   ├── templates/
 │   │   │   │
@@ -156,18 +182,24 @@
 │   │   │   │   └── header.html
 │   │   │   │
 │   │   │   ├── admin.html
+│   │   │   ├── chartpage1.html
+│   │   │   ├── chartpage2.html
 │   │   │   ├── login.html
-│   │   │   └── main.html     
+│   │   │   ├── main.html
+│   │   │   ├── profile.html
+│   │   │   ├── register.html
+│   │   │   └── userservice.html
 │   │   │
 │   │   └── .env 
 │   │
 │   └── llm_service/           # LLM 챗봇 서비스
 │
-├── .env                       # 종합 환경 변수
-├── flaskrun.bat               # 플라스크 서버 실행 스크립트
+├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
+├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트
+├── flaskrun-web.bat           # 플라스크 웹서버 실행 스크립트
 ├── requirements.txt           # 라이브러리 목록
 ├── setup-env.bat              # 가상환경 & DB 셋업 스크립트
-└── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
+└── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
 
 ```
 
