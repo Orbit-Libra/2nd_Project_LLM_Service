@@ -1,4 +1,57 @@
-### 2nd_Project_LLM_Service
+## 2차 프로젝트 - 딥러닝 & 플라스크 기반 서비스 프로젝트
+
+### 프로젝트 명 : Generative AI 및 지능형 에이전트 기반 교육 인프라 예측 서비스
+
+### 5조 - 강승민, 김선희
+
+## 디렉토리 구조
+
+```
+
+2nd_Project_LLM_Service/
+│  
+├── .venv/                     # 가상환경 폴더
+├── app/                       # 플라스크 웹서버 게이트웨이
+├── docs/                      # 문서 폴더
+├── services/                  # 각 서비스 폴더
+├── tools/                     # 프로젝트 프로그램파일 폴더
+├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
+├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트
+├── flaskrun-web.bat           # 플라스크 웹서버 실행 스크립트
+├── requirements.txt           # 라이브러리 목록
+├── setup-env.bat              # 가상환경 & DB 셋업 스크립트
+└── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
+
+```
+
+## 패키지 구동 방법
+
+#### 1. 환경세팅
+
+사용 파이썬 버전 : 3.11.9
+
+오라클 DB 사용 버전 : 
+
+오라클 클라이언트 버전 : 
+
+#### 2. 초기환경 세팅
+
+setup-env 실행 : 가상환경 및 오라클 테이블 스페이스 및 스키마, 초기 테이블 생성
+
+setup-pipline 실행 : 서비스용 초기 전처리 및 머신러닝 예측 전체 진행
+
+
+#### 3. 플라스크 서버 실행
+
+flaskrun 3종 실행 : 웹서버 및 2종의 api 서버 실행
+
+관리자 계정으로 로그인 : ID : libra_admin, PW : 1234
+
+관리자 페이지 접속 후 데이터 초기 동기화 실행
+
+
+## 프로젝트 전체 디렉토리 정보
+
 
 ```
 
@@ -29,6 +82,12 @@
 │   │   
 │   │
 │   ├── data_service/          # 데이터 수집 및 처리 서비스
+│   │   │
+│   │   ├── api/       # 플라스크 api
+│   │   │   │  
+│   │   │   ├── data_api.py  
+│   │   │   ├── main.py  
+│   │   │   └── num06_api.py  
 │   │   │
 │   │   ├── DataHandling/       # 원본파일 CSV파일화 및 DB 업로드 패키지  
 │   │   │   │  
@@ -94,6 +153,11 @@
 │   │
 │   ├── prediction_service/    # 머신러닝 예측 서비스
 │   │   │
+│   │   ├── api/               # 플라스크 api
+│   │   │   │  
+│   │   │   ├── server.py  
+│   │   │   └── user_api.py  
+│   │   │
 │   │   ├── Predictor/
 │   │   │   │
 │   │   │   ├── __init__.py
@@ -108,44 +172,88 @@
 │   │   ├── __main__.py
 │   │   └── .env
 │   │
-│   ├── user_service/          # 유저 관련 기능
+│   ├── user_service/          # 유저 서비스 관련 라우터
 │   │   │
 │   │   ├── db/
 │   │   │   │
 │   │   │   └── USER_DB.DBF    # 유저 데이터베이스
+│   │   │
+│   │   ├── .env 
+│   │   ├── init_oracle_user_data.py 
+│   │   ├── login_manager.py
+│   │   ├── predict_sync.py
+│   │   └── user_analysis.py
 │   │
 │   ├── web_frontend/          # 사용자 웹 프론트엔드
 │   │   │
-│   │   ├── db/
-│   │   │   │
-│   │   │   └── WEB_DB.DBF     # 웹페이지 데이터베이스
+│   │   ├── api/               # 플라스크 웹서버 라우터
+│   │   │   │  
+│   │   │   ├── admin_system.py
+│   │   │   ├── chart_data.py
+│   │   │   ├── Oracle_utils.py
+│   │   │   ├── profile_api.py
+│   │   │   ├── register_api.py
+│   │   │   ├── sync.py
+│   │   │   └── user_api.py
 │   │   │
 │   │   ├── static/
 │   │   │   │
 │   │   │   ├── css/
+│   │   │   │   │
+│   │   │   │   ├── common/
+│   │   │   │   │   │
+│   │   │   │   │   └── header-footer.css
+│   │   │   │   │
+│   │   │   │   ├── admin.css
+│   │   │   │   ├── chartpage1.css
+│   │   │   │   ├── login.css
+│   │   │   │   ├── main.css
+│   │   │   │   └── profile.css
+│   │   │   │
+│   │   │   │
 │   │   │   ├── images/
-│   │   │   └── js/             
+│   │   │   │   |
+│   │   │   │   ├── logo.jpeg
+│   │   │   │   └── logo2.png
+│   │   │   │
+│   │   │   │
+│   │   │   └── js/  
+│   │   │       |
+│   │   │       ├── admin.js
+│   │   │       ├── chartpage1.js
+│   │   │       ├── chartpage2.js
+│   │   │       ├── header.js
+│   │   │       ├── main.js
+│   │   │       ├── profile.js
+│   │   │       ├── register.js
+│   │   │       └── userservice.js
 │   │   │
 │   │   ├── templates/
 │   │   │   │
-│   │   │   ├── footer.html
-│   │   │   ├── header.html
-│   │   │   ├── index.html
-│   │   │   └── main.html     
+│   │   │   ├── common/
+│   │   │   │   |
+│   │   │   │   ├── chatbot.html
+│   │   │   │   ├── footer.html
+│   │   │   │   └── header.html
+│   │   │   │
+│   │   │   ├── admin.html
+│   │   │   ├── chartpage1.html
+│   │   │   ├── chartpage2.html
+│   │   │   ├── login.html
+│   │   │   ├── main.html
+│   │   │   ├── profile.html
+│   │   │   ├── register.html
+│   │   │   └── userservice.html
+│   │   │
+│   │   └── .env 
 │   │
 │   └── llm_service/           # LLM 챗봇 서비스
 │
-├── .env                       # 종합 환경 변수
-├── flaskrun.bat               # 플라스크 서버 실행 스크립트
+├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
+├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트
+├── flaskrun-web.bat           # 플라스크 웹서버 실행 스크립트
 ├── requirements.txt           # 라이브러리 목록
 ├── setup-env.bat              # 가상환경 & DB 셋업 스크립트
-└── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
+└── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
 
 ```
-
-
-### 가상환경 및 테이블스페이스 세팅
-
-1. 루트 경로에서 터미널 실행 및 setup.bat 실행
--> cd 경로/2nd_Project_LLM_Service
--> ./setup.bat
