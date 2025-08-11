@@ -18,7 +18,7 @@ set FLASK_ENV=development
 set FLASK_DEBUG=1
 
 REM Prediction API 서버 실행 (포트: 5100)
-start cmd /k "flask run --port=5100"
+start cmd /k "flask run --host=0.0.0.0 --port=5100"
 
 REM 현재 콘솔 종료
 exit
