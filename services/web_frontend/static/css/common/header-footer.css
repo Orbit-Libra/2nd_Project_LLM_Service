@@ -128,20 +128,3 @@
     font-size: clamp(1rem, 2vw, 1.4rem); 
   }
 }
-
-
-@media(max-width: 768px) {
-  /* #site-header .nav-link { 
-    margin-left: 1rem; 
-    font-size: .9rem; 
-  } */
-  #site-header .nav-link { 
-    margin-left: 1vw; 
-    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-  }
-  
-  #site-header .logo img { 
-    height: 3vh;
-    min-height: 1.5rem;
-  }
-}

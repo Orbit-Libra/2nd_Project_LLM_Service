@@ -11,8 +11,11 @@
 </head>
 <body>
   <!-- 공통 헤더 -->
-  {% include 'common/header.html' %}
-
+  {% comment %} {% include 'common/header.html' %} {% endcomment %}
+{% extends 'base.html' %}
+{% block content %}
+  <h1>메인 컨텐츠</h1>
+  <main class="main-content">
   <!-- 스크롤 컨테이너 (중복 제거 - 한 번만 선언) -->
   <div class="sections-wrapper">
     <!-- Hero Slider (오버랩 + 페이드)-->
@@ -86,12 +89,12 @@
   </div>
 
   <!-- Footer -->
-  {% include 'common/footer.html' %}
+  {% comment %} {% include 'common/footer.html' %} {% endcomment %}
 
   <!-- Chatbot -->
   {# {% include 'common/chatbot.html' %} #}
   <!--Chatbot (footer 로딩시 자동)-->
-
+{% endblock %}
   <!-- JS 파일들 (순서 중요!) -->
   <script src="{{ url_for('static', filename='js/common/utils.js') }}"></script>
   <script src="{{ url_for('static', filename='js/common/header-footer.js') }}"></script>

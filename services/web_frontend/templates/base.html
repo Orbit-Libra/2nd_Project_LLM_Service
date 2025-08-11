@@ -5,38 +5,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-  <!--Bootstrap css -->
-  <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <title>{% block title %}Libra{% endblock %}</title>
-</head>
-<body>
-  {% include "hearder.html" %}
-  {% block header %}{% endblock %}
   
-<div class="sections-wrapper">
-    {% block content %}{% endblock %}
-  </div>
+  {# --- 기본 <title> 과 CSS를 로드할 블록 --- #}
+  <title>{% block title %}Libra{% endblock %}</title>
 
-  <main>
-    {% block content %}{% endblock %}
+  {% block head %}
+ <!-- 기본 CSS -->
+    <!--Bootstrap css -->
+  <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common/chatbot.css') }}">   
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}">
+  {% endblock %}
+</head>
+
+<body>
+  <!-- 공통 헤더 -->
+  <header>
+  {% include "header.html" %}
+  {% block header %}{% endblock %}
+</header>
+
+ {# ─── 메인 콘텐츠 ─── #}
+<main>
+    {% block content %}
+  {# --- 페이지마다 달라질 본문 영역 --- #}
+  <!--여기 안에 HTML 컨텐츠가 들어감-->
+{% endblock %}
   </main>
 
-  {% include "footer.html" %}
-
-<!--여기 안에 HTML 컨텐츠가 들어감-->
-<!-- {% endblock %} -->
- 
-<!-- 기본 템플릿에 삽입할 내용 End -->
-<!--jQuery JS-->
-        <script src="{{ url_for('static', filename='jquery-3.7.1.min.js') }}"></script>
-        <!--Bootstrap JS-->
-        <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-
-  <!-- <script src="{{ url_for('static', filename='js/main.js') }}"></script> -->
-   <!--자바스크립트 Start -->
+  <!-- 공통 푸터 -->
+<footer>
+{% include "footer.html" %}
+<p>우리 앱 © 2025</p>
+  </footer>
+<!-- Chatbot -->
+{% include 'common/chatbot.html' %} 
+  <!--Chatbot (footer 로딩시 자동)-->
 {% block script %}
+    {{ super() }}
+    <!-- chatbot.js 는 defer 옵션으로 이미 로드됨 -->
+  {% endblock %}
+
+
+<!--자바스크립트 Start -->
+{% block script %}
+<!--jQuery JS-->
+<script src="{{ url_for('static', filename='jquery-3.7.1.min.js') }}"></script>
+<!--Bootstrap JS-->
+<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/common./chatbot.js') }}"></script> 
+<script src="{{ url_for('static', filename='js/common/header-footer.js') }}"></script>
+ <!--자바스크립트 End -->
 {% endblock %}
-<!--자바스크립트 End -->
+
 </body>
 </html>
