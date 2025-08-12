@@ -115,7 +115,7 @@ flaskrun 3종 실행 : 웹서버 및 2종의 api 서버 실행
 │   │   ├── db/
 │   │   │   │
 │   │   │   └── DATA_DB.DBF    # AI용 데이터베이스
-│   │   |
+│   │   │
 │   │   ├── __init__.py
 │   │   ├── __main__.py
 │   │   └── .env
@@ -247,7 +247,12 @@ flaskrun 3종 실행 : 웹서버 및 2종의 api 서버 실행
 │   │   │
 │   │   └── .env 
 │   │
-│   └── llm_service/           # LLM 챗봇 서비스
+│   ├── llm_service/           # LLM 챗봇 서비스
+│   │
+│   └── tools/                 # 필수유틸 폴더
+│       │
+│       └── instantclient-basic-windows.x64-19.25.0.0.0dbru/
+│
 │
 ├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
 ├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트

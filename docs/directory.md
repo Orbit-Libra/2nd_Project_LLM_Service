@@ -193,6 +193,10 @@
 │   │   └── .env 
 │   │
 │   └── llm_service/           # LLM 챗봇 서비스
+│   
+├── tools/                 # 필수유틸 폴더
+│   │
+│   └── instantclient-basic-windows.x64-19.25.0.0.0dbru/
 │
 ├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
 ├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트

@@ -1,5 +1,6 @@
 <!-- templates/common/header.html -->
-<header id="site-header">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header-footer.css') }}">
+<header id="site-header" data-hf>
   <div class="logo" id="logo-area">
     <a href="{{ url_for('index') }}" id="logo-link">
       <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="Libra Logo" id="logo-img">
@@ -28,5 +29,3 @@
     {% endif %}
   </nav>
 </header>
-
-<script src="{{ url_for('static', filename='js/header.js') }}"></script>
