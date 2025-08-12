@@ -1,7 +1,18 @@
 import os
 import sys
-from flask import Flask, render_template, request, redirect, session, url_for
+import logging
+from flask import Flask, render_template, request, redirect, session, url_for, g
 from dotenv import load_dotenv
+
+# --- 로깅 기본 설정 (환경변수로 레벨 조절 가능) ---
+LOG_LEVEL = os.getenv("APP_LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s [%(levelname)s] [%(threadName)s] %(name)s - %(message)s"
+)
+app_log = logging.getLogger("webapp")
+werk_log = logging.getLogger("werkzeug")  # 접속 로그
+werk_log.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
 
 # 경로 설정
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
