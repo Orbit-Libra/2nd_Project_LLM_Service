@@ -1,0 +1,166 @@
+/* register.css — 로그인/프로필과 톤 통일 */
+
+:root{
+  --primary-color:#42a5f5;
+  --primary-dark:#1976d2;
+  --background-gradient:linear-gradient(135deg,#e3f2fd 0%,#bbdefb 100%);
+  --card-shadow:0 10px 30px rgba(0,0,0,.10);
+  --radius:15px;
+}
+
+/* 페이지 베이스 */
+body.register-page{
+  min-height:100vh;
+  margin:0;
+  padding-top:80px; /* 고정 헤더 높이 보정 */
+  background:var(--background-gradient);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR',sans-serif;
+  color:#222;
+  display:flex;
+  flex-direction:column;
+}
+
+/* 컨테이너(로그인 카드와 동일 톤) */
+.login-container{
+  width:100%;
+  max-width:520px;
+  margin:120px auto 80px;
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow:var(--card-shadow);
+  padding:22px 20px 20px;
+}
+
+/* 제목 바 */
+.login-container h2{
+  margin:-22px -20px 18px;
+  padding:16px 20px;
+  background:linear-gradient(45deg,var(--primary-color),#29b6f6);
+  color:#fff;
+  font-size:1.25rem;
+  font-weight:700;
+  border-top-left-radius:var(--radius);
+  border-top-right-radius:var(--radius);
+}
+
+/* 폼 */
+#register-form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* 라벨 */
+#register-form label{
+  font-size:.95rem;
+  color:#333;
+  font-weight:500;
+  width:85%;
+  margin:0 auto -4px; /* 입력 박스와 간격 좁게 */
+}
+
+/* 입력 공통: 카드보다 살짝 좁게 + 가운데 정렬 */
+#register-form input[type="text"],
+#register-form input[type="email"],
+#register-form input[type="password"]{
+  display:block;
+  width:85%;
+  margin:0 auto;
+  padding:12px 14px;
+  font-size:.95rem;
+  border:2px solid #e3f2fd;
+  border-radius:10px;
+  background:#fff;
+  transition:border-color .2s, box-shadow .2s;
+}
+#register-form input:focus{
+  outline:none;
+  border-color:var(--primary-color);
+  box-shadow:0 0 0 3px rgba(66,165,245,.15);
+}
+
+/* 아이디 + 중복확인 묶음 */
+.inline-group{
+  width:85%;
+  margin:0 auto;
+  display:flex;
+  gap:8px;
+}
+.inline-group input{ flex:1; }
+#check_id_btn{
+  flex:0 0 auto;
+  padding:12px 14px;
+  border:none;
+  border-radius:10px;
+  background:#eef6ff;
+  color:var(--primary-dark);
+  font-weight:700;
+  cursor:pointer;
+  transition:background .15s, transform .15s;
+}
+#check_id_btn:hover{ background:#e3f2fd; transform:translateY(-1px); }
+
+/* 힌트/검증 메시지 */
+#register-form small{
+  width:85%;
+  margin:2px auto 0;
+  display:block;
+  font-size:.85rem;
+  color:#777;
+}
+#register-form small.ok{ color:#2e7d32; }
+#register-form small.err{ color:#c0392b; }
+
+/* datalist 입력 */
+#usr_snm{ background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6' fill='%2399b6d8'/></svg>") no-repeat right 12px center; background-size:10px 6px; }
+
+/* 제출/보조 버튼 */
+#register-form button[type="submit"]{
+  display:block;
+  width:85%;
+  margin:10px auto 0;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,var(--primary-color),#29b6f6);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .15s, box-shadow .15s;
+  box-shadow:0 8px 20px rgba(66,165,245,.22);
+}
+#register-form button[type="submit"]:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 24px rgba(66,165,245,.28);
+}
+
+/* 하단 링크 */
+.login-container > div:last-of-type{
+  text-align:center;
+  margin-top:12px;
+}
+.login-container > div:last-of-type a{
+  color:var(--primary-dark);
+  text-decoration:none;
+  font-weight:600;
+}
+.login-container > div:last-of-type a:hover{
+  text-decoration:underline;
+}
+
+/* 에러 상태 인풋 */
+.is-invalid{
+  border-color:#e57373 !important;
+  box-shadow:0 0 0 3px rgba(229,115,115,.18) !important;
+}
+
+/* 모바일 */
+@media (max-width:480px){
+  .login-container{ max-width:420px; padding:18px 16px; }
+  .login-container h2{ font-size:1.1rem; padding:14px 16px; margin:-18px -16px 14px; }
+  #register-form label,
+  #register-form input,
+  .inline-group,
+  #register-form button[type="submit"],
+  #register-form small{ width:92%; }
+}

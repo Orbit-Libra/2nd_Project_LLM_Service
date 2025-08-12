@@ -1,18 +1,14 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Libra | Balancing Infrastructure</title>
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
+{% extends "common/base.html" %}
+
+{% block title %}Libra | Balancing Infrastructure{% endblock %}
+
+{% block head_extra %}
+  <!-- 메인 페이지 전용 CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/chatbot.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
-</head>
-<body>
-  <!-- 공통 헤더 -->
-  {% include 'common/header.html' %}
+{% endblock %}
 
+{% block content %}
   <!-- 플로팅 헤더 버튼 -->
   <div class="floating-header-btn" id="floating-header-btn"></div>
 
@@ -75,14 +71,9 @@
         </div>
       </div>
     </section>
-
-    <!-- Footer -->
-    {% include 'common/footer.html' %}
   </div>
 
-  <!-- (임시 오버레이는 더 이상 사용하지 않으므로 제거) -->
-
-  <!-- Chatbot -->
+  <!-- Chatbot (이 페이지에서만 보이게 유지하려면 여기 둠) -->
   <div class="chatbot" id="chatToggle">
     <div class="chat-icon">
       <img src="{{ url_for('static', filename='images/chatbot.png') }}" alt="Chatbot" id="chatbot-img">
@@ -104,7 +95,9 @@
       <button id="chatSendBtn">전송</button>
     </div>
   </div>
+{% endblock %}
 
+{% block scripts %}
   <!-- 전역 변수: main.js보다 먼저 선언 필요 -->
   <script>
     window.isLoggedIn    = {{ 'true' if session.get('user') else 'false' }};
@@ -114,11 +107,7 @@
     window.chartUrl      = "{{ url_for('chart') }}";       // chartpage1.html 라우트
   </script>
 
-  <!-- JS 로드 순서 주의 -->
-  <script src="{{ url_for('static', filename='js/common/utils.js') }}"></script>
-  <!-- (선택) 로그아웃 확인창을 header.js에서 구현했다면 아래 주석 해제 -->
-  <!-- <script src="{{ url_for('static', filename='js/header.js') }}"></script> -->
+  <!-- 페이지 전용 JS -->
   <script src="{{ url_for('static', filename='js/common/chatbot.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
+{% endblock %}

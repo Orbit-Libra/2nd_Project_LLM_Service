@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Libra | Balancing Infrastructure{% endblock %}</title>
+
+  <!-- 공통 CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
+
+  <!-- 페이지 전용 head 추가영역 (CDN, 개별 CSS 등) -->
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  {% include 'common/header.html' %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'common/footer.html' %}
+
+  <!-- 공통 JS -->
+  <script src="{{ url_for('static', filename='js/common/utils.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/common/header-footer.js') }}"></script>
+
+  <!-- 페이지 전용 스크립트 -->
+  {% block scripts %}{% endblock %}
+</body>
+</html>
