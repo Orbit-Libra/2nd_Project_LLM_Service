@@ -14,7 +14,7 @@ set FLASK_ENV=development
 set FLASK_DEBUG=1
 
 REM Flask 서버를 별도 콘솔에서 실행
-start cmd /k "flask run --host=0.0.0.0 --port=5050"
+start cmd /k "flask run --host=0.0.0.0 --port=5050 --with-threads"
 
 REM 현재 콘솔 종료
 exit
