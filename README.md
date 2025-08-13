@@ -433,26 +433,26 @@ flaskrun 3종 실행 : 웹서버 및 2종의 api 서버 실행
 │   │
 │   └── devlogs/    
 │
-├── services/                  # 모든 마이크로서비스 폴더 묶음
+├── services/             # 모든 마이크로서비스 폴더 묶음
 │   │
-│   ├── core_utiles/                        # 공통 모듈 전용 폴더
+│   ├── core_utiles/                         # 공통 모듈 전용 폴더
 │   │   ├── __init__.py
-│   │   ├── config_loader.py                # .env 로드 모듈
-│   │   ├── Mapper.py                       # 헤더, 대학명 매핑표 모듈
-│   │   ├── OracleDBConnection.py           # 오라클DBD 접속 모듈
-│   │   ├── OracleSchemaBuilder.py          # 테이블 생성 시 데이터타입 보정 모듈
-│   │   └── OracleTableCreater.py           # 보정 후 테이블 생성 모듈
+│   │   ├── config_loader.py                 # .env 로드 모듈
+│   │   ├── Mapper.py                        # 헤더, 대학명 매핑표 모듈
+│   │   ├── OracleDBConnection.py            # 오라클DBD 접속 모듈
+│   │   ├── OracleSchemaBuilder.py           # 테이블 생성 시 데이터타입 보정 모듈
+│   │   └── OracleTableCreater.py            # 보정 후 테이블 생성 모듈
 │   │   
 │   │
-│   ├── data_service/          # 데이터 수집 및 처리 서비스
+│   ├── data_service/                        # 데이터 수집 및 처리 서비스
 │   │   │
-│   │   ├── api/       # 플라스크 api
+│   │   ├── api/                             # 플라스크 api
 │   │   │   │  
-│   │   │   ├── data_api.py  
-│   │   │   ├── main.py  
-│   │   │   └── num06_api.py  
+│   │   │   ├── data_api.py                  # 전체예측값 전달 클래스
+│   │   │   ├── main.py                      # 플라스크 api서버 메인코드
+│   │   │   └── num06_api.py                 # 유저서비스 데이터 전달 클래스
 │   │   │
-│   │   ├── DataHandling/       # 원본파일 CSV파일화 및 DB 업로드 패키지  
+│   │   ├── DataHandling/                    # 원본파일 CSV파일화 및 DB 업로드 패키지  
 │   │   │   │  
 │   │   │   ├── __init__.py  
 │   │   │   ├── __main__.py                  # DataHandling 패키지 실행  
@@ -477,145 +477,152 @@ flaskrun 3종 실행 : 웹서버 및 2종의 api 서버 실행
 │   │   │
 │   │   ├── db/
 │   │   │   │
-│   │   │   └── DATA_DB.DBF    # AI용 데이터베이스
-│   │   │
+│   │   │   └── DATA_DB.DBF                  # AI용 데이터베이스
+│   │   |
 │   │   ├── __init__.py
-│   │   ├── __main__.py
+│   │   ├── __main__.py                      # 전체 패키지 컨트롤 메인코드
 │   │   └── .env
 │   │
-│   ├── ml_service/            # 모델 학습 및 튜닝
+│   ├── ml_service/                          # 모델 학습 및 튜닝
 │   │   │
-│   │   ├── _Configs/
+│   │   ├── _Configs/                        # 각 모델 설정파일 폴더
 │   │   │   │
 │   │   │   └── Num01_Config_XGB.json
 │   │   │
-│   │   ├── _Logs/
+│   │   ├── _Logs/                           # 각 모델 학습 로그 폴더
 │   │   │   │
 │   │   │   └── Num01_XGB_v1.0_Log.json
 │   │   │
-│   │   ├── _Models/
+│   │   ├── _Models/                         # 각 모델 피클파일 폴더
 │   │   │   │
 │   │   │   └── Num01_XGB_full_v1.0.pkl
 │   │   │
-│   │   ├── ModelCreator/
+│   │   ├── ModelCreator/                    # 설정값 기반 모델 생성 패키지
+│   │   │   │
+│   │   │   ├── Utiles/                      # 공용 유틸 패키지
+│   │   │   │   │
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── Evaluator.py             # 모델 평가 클래스
+│   │   │   │   ├── Exporter.py              # 피클파일 저장 클래스
+│   │   │   │   └── Validator.py             # 데이터 무결성 검사 클래스
 │   │   │   │
 │   │   │   ├── __init__.py
-│   │   │   ├── __main__.py
-│   │   │   ├── Cleaner.py
-│   │   │   ├── Controller_Num01.py
-│   │   │   ├── Controller_Num02.py
-│   │   │   ├── Fetcher.py
-│   │   │   ├── Handler.py
-│   │   │   ├── Logger.py
-│   │   │   ├── ModelLoader.py
-│   │   │   └── Trainer.py
+│   │   │   ├── __main__.py                  # 실행 트리거
+│   │   │   ├── Cleaner.py                   # 이상치 & 결측치 처리 클래스
+│   │   │   ├── Controller_Num01.py          # 모델 01번 실행 파이프라인 클래스
+│   │   │   ├── Controller_Num02.py          # 모델 01번 실행 파이프라인 클래스
+│   │   │   ├── Fetcher.py                   # 학습용 데이터 로딩 클래스
+│   │   │   ├── Handler.py                   # 스케일러 & 클러스터 적용 클래스
+│   │   │   ├── Logger.py                    # 학습 로그 저장 클래스
+│   │   │   ├── ModelLoader.py               # 머신러닝 모델 호출 클래스
+│   │   │   └── Trainer.py                   # 학습 클래스
 │   │   │
 │   │   ├── __init__.py
-│   │   ├── __main__.py
+│   │   ├── __main__.py                      # 전체 패키지 컨트롤 메인코드
 │   │   └── .env
 │   │
-│   ├── prediction_service/    # 머신러닝 예측 서비스
+│   ├── prediction_service/                  # 머신러닝 모델 예측 패키지
 │   │   │
-│   │   ├── api/               # 플라스크 api
+│   │   ├── api/                             # 플라스크 api
 │   │   │   │  
-│   │   │   ├── server.py  
-│   │   │   └── user_api.py  
+│   │   │   ├── server.py                    # 플라스크 api서버 메인코드
+│   │   │   └── user_api.py                  # api 기반 예측 파이프라인
 │   │   │
-│   │   ├── Predictor/
+│   │   ├── Predictor/                       # 예측 실행 클래스
 │   │   │   │
 │   │   │   ├── __init__.py
-│   │   │   ├── __main__.py
-│   │   │   ├── Controller.py
-│   │   │   ├── PickleLoader.py
-│   │   │   ├── TableBuilder_Num01.py
-│   │   │   ├── TableBuilder_Num02.py
-│   │   │   └── TableBuilder_User.py
+│   │   │   ├── __main__.py                  # 실행 트리거
+│   │   │   ├── Controller.py                # 예측 실행 전체 파이프라인 클래스
+│   │   │   ├── PickleLoader.py              # 설정값에 따른 피클파일 로딩 클래스
+│   │   │   ├── TableBuilder_Num01.py        # 모델 01번 기반 예측 클래스
+│   │   │   ├── TableBuilder_Num02.py        # 모델 02번 기반 예측 클래스
+│   │   │   └── TableBuilder_User.py         # 유저 데이터 기반 예측 클래스
 │   │   │
 │   │   ├── __init__.py
-│   │   ├── __main__.py
+│   │   ├── __main__.py                      # 전체 패키지 컨트롤 메인코드
 │   │   └── .env
 │   │
-│   ├── user_service/          # 유저 서비스 관련 라우터
+│   ├── user_service/                        # 유저 데이터 관리 블루프린트
 │   │   │
 │   │   ├── db/
 │   │   │   │
-│   │   │   └── USER_DB.DBF    # 유저 데이터베이스
+│   │   │   └── USER_DB.DBF                  # 유저 데이터베이스
 │   │   │
 │   │   ├── .env 
-│   │   ├── init_oracle_user_data.py 
-│   │   ├── login_manager.py
-│   │   ├── predict_sync.py
-│   │   └── user_analysis.py
+│   │   ├── init_oracle_user_data.py         # 초기 유저 데이터베이스 세팅 스크립트
+│   │   ├── login_manager.py                 # 로그인 유효성 검사 스크립트
+│   │   ├── predict_sync.py                  # 유저 데이터 예측 블루프린트
+│   │   └── user_analysis.py                 # 유저 서비스 페이지 블루프린트
 │   │
-│   ├── web_frontend/          # 사용자 웹 프론트엔드
+│   ├── web_frontend/                        # 웹 프론트엔드 패키지
 │   │   │
-│   │   ├── api/               # 플라스크 웹서버 라우터
+│   │   ├── api/                             # 플라스크 웹서버 블루프린트 폴더
 │   │   │   │  
-│   │   │   ├── admin_system.py
-│   │   │   ├── chart_data.py
-│   │   │   ├── Oracle_utils.py
-│   │   │   ├── profile_api.py
-│   │   │   ├── register_api.py
-│   │   │   ├── sync.py
-│   │   │   └── user_api.py
+│   │   │   ├── admin_system.py              # 관리자 전용 기능제어 블루프린트
+│   │   │   ├── chart_data.py                # 차트페이지 블루프린트
+│   │   │   ├── Oracle_utils.py              # 오라클DB 커넥션 모듈
+│   │   │   ├── profile_api.py               # 마이페이지 블루프린트
+│   │   │   ├── register_api.py              # 회원가입 페이지 블루프린트
+│   │   │   ├── sync.py                      # 예측데이터 api 콜 블루프린트
+│   │   │   └── user_api.py                  # 유저 입력정보 api콜 플루프린트
 │   │   │
-│   │   ├── static/
+│   │   ├── static/                          # css & js & image 스테틱 폴더
 │   │   │   │
-│   │   │   ├── css/
+│   │   │   ├── css/                         # 페이지 별 css파일 폴더
 │   │   │   │   │
-│   │   │   │   ├── common/
+│   │   │   │   ├── common/                  # 공통 파츠
 │   │   │   │   │   │
-│   │   │   │   │   └── header-footer.css
+│   │   │   │   │   └── header-footer.css    # 헤더 & 푸터 css
 │   │   │   │   │
-│   │   │   │   ├── admin.css
-│   │   │   │   ├── chartpage1.css
-│   │   │   │   ├── login.css
-│   │   │   │   ├── main.css
-│   │   │   │   └── profile.css
+│   │   │   │   ├── admin.css                # 관리자 페이지 css
+│   │   │   │   ├── chartpage1.css           # 차트페이지용 css
+│   │   │   │   ├── login.css                # 로그인 페이지 css
+│   │   │   │   ├── main.css                 # 메인페이지 css
+│   │   │   │   ├── profile.css              # 마이페이지 css
+│   │   │   │   └── register.css             # 회원가입 페이지 css
 │   │   │   │
 │   │   │   │
-│   │   │   ├── images/
+│   │   │   ├── images/                      # 이미지 리소스파일
 │   │   │   │   |
 │   │   │   │   ├── logo.jpeg
 │   │   │   │   └── logo2.png
 │   │   │   │
 │   │   │   │
-│   │   │   └── js/  
+│   │   │   └── js/                          # 페이지 별 로직 구현 js파일 폴더
 │   │   │       |
-│   │   │       ├── admin.js
-│   │   │       ├── chartpage1.js
-│   │   │       ├── chartpage2.js
-│   │   │       ├── header.js
-│   │   │       ├── main.js
-│   │   │       ├── profile.js
-│   │   │       ├── register.js
-│   │   │       └── userservice.js
+│   │   │       ├── admin.js                 # 관리자 페이지 js
+│   │   │       ├── chartpage1.js            # 차트페이지 1번용 js
+│   │   │       ├── chartpage2.js            # 차트페이지 2번용 js
+│   │   │       ├── header.js                # 헤더 js
+│   │   │       ├── main.js                  # 메인페이지 js
+│   │   │       ├── profile.js               # 마이페이지 js
+│   │   │       ├── register.js              # 회원가입 js
+│   │   │       └── userservice.js           # 유저서비스 js
 │   │   │
-│   │   ├── templates/
+│   │   ├── templates/                       # 페이지 html 파일 폴더
 │   │   │   │
-│   │   │   ├── common/
+│   │   │   ├── common/                      # 공통 파츠
 │   │   │   │   |
-│   │   │   │   ├── chatbot.html
-│   │   │   │   ├── footer.html
-│   │   │   │   └── header.html
+│   │   │   │   ├── chatbot.html             # 챗봇 플로터용 html
+│   │   │   │   ├── footer.html              # 푸터 html
+│   │   │   │   └── header.html              # 헤더 html
 │   │   │   │
-│   │   │   ├── admin.html
-│   │   │   ├── chartpage1.html
-│   │   │   ├── chartpage2.html
-│   │   │   ├── login.html
-│   │   │   ├── main.html
-│   │   │   ├── profile.html
-│   │   │   ├── register.html
-│   │   │   └── userservice.html
+│   │   │   ├── admin.html                   # 관리자 페이지 html
+│   │   │   ├── chartpage1.html              # 차트페이지 1번용 html
+│   │   │   ├── chartpage2.html              # 차트페이지 2번용 html
+│   │   │   ├── login.html                   # 로그인 페이지 html
+│   │   │   ├── main.html                    # 메인페이지 html
+│   │   │   ├── profile.html                 # 마이페이지 html
+│   │   │   ├── register.html                # 회원가입 html
+│   │   │   └── userservice.html             # 유저서비스 html
 │   │   │
 │   │   └── .env 
 │   │
-│   ├── llm_service/           # LLM 챗봇 서비스
+│   └── llm_service/           # LLM 챗봇 서비스
+│   
+├── tools/                 # 필수유틸 폴더
 │   │
-│   └── tools/                 # 필수유틸 폴더
-│       │
-│       └── instantclient-basic-windows.x64-19.25.0.0.0dbru/
-│
+│   └── instantclient-basic-windows.x64-19.25.0.0.0dbru/
 │
 ├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
 ├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트
