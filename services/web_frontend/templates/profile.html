@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Libra | 내정보</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}" />
+</head>
+<body>
+  {% include 'common/header.html' %}
+
+  <div class="login-container" style="max-width: 720px;">
+    <h2>내 정보</h2>
+
+    <!-- 기본 회원정보: 읽기 전용 -->
+    <div>
+      <label>아이디</label>
+      <input type="text" value="{{ user.usr_id }}" disabled />
+      <label>이름</label>
+      <input type="text" value="{{ user.usr_name }}" disabled />
+      <label>이메일</label>
+      <input type="text" value="{{ user.usr_email }}" disabled />
+      <label>소속대학</label>
+      <input type="text" value="{{ user.usr_snm }}" disabled />
+    </div>
+
+    <!-- ✅ '회원정보 수정' 버튼: 모달 오픈 -->
+    <div style="margin-top:10px;">
+      <button type="button" id="open-edit-profile">회원정보 수정</button>
+    </div>
+
+    <hr style="margin:20px 0;">
+
+    <!-- 학년별 입력 박스 -->
+    <h3>학년별 학습 데이터 입력</h3>
+    <p style="margin-top:-8px;">숫자만 입력 (연도, 자료구입비(CPS), 대출건수(LPS), 방문수(VPS))</p>
+
+    <form id="academic-form">
+      <!-- 1학년 -->
+      <fieldset style="margin-top:15px;">
+        <legend>1학년</legend>
+        <label for="first_yr">이수연도</label>
+        <input id="first_yr" type="number" value="{{ user.y1 or '' }}">
+        <label for="first_cps">자료구입비(CPS)</label>
+        <input id="first_cps" type="number" step="any" value="{{ user.cps1 or '' }}">
+        <label for="first_lps">대출건수(LPS)</label>
+        <input id="first_lps" type="number" step="any" value="{{ user.lps1 or '' }}">
+        <label for="first_vps">방문수(VPS)</label>
+        <input id="first_vps" type="number" step="any" value="{{ user.vps1 or '' }}">
+      </fieldset>
+
+      <!-- 2학년 -->
+      <fieldset style="margin-top:15px;">
+        <legend>2학년</legend>
+        <label for="second_yr">이수연도</label>
+        <input id="second_yr" type="number" value="{{ user.y2 or '' }}">
+        <label for="second_cps">자료구입비(CPS)</label>
+        <input id="second_cps" type="number" step="any" value="{{ user.cps2 or '' }}">
+        <label for="second_lps">대출건수(LPS)</label>
+        <input id="second_lps" type="number" step="any" value="{{ user.lps2 or '' }}">
+        <label for="second_vps">방문수(VPS)</label>
+        <input id="second_vps" type="number" step="any" value="{{ user.vps2 or '' }}">
+      </fieldset>
+
+      <!-- 3학년 -->
+      <fieldset style="margin-top:15px;">
+        <legend>3학년</legend>
+        <label for="third_yr">이수연도</label>
+        <input id="third_yr" type="number" value="{{ user.y3 or '' }}">
+        <label for="third_cps">자료구입비(CPS)</label>
+        <input id="third_cps" type="number" step="any" value="{{ user.cps3 or '' }}">
+        <label for="third_lps">대출건수(LPS)</label>
+        <input id="third_lps" type="number" step="any" value="{{ user.lps3 or '' }}">
+        <label for="third_vps">방문수(VPS)</label>
+        <input id="third_vps" type="number" step="any" value="{{ user.vps3 or '' }}">
+      </fieldset>
+
+      <!-- 4학년 -->
+      <fieldset style="margin-top:15px;">
+        <legend>4학년</legend>
+        <label for="fourth_yr">이수연도</label>
+        <input id="fourth_yr" type="number" value="{{ user.y4 or '' }}">
+        <label for="fourth_cps">자료구입비(CPS)</label>
+        <input id="fourth_cps" type="number" step="any" value="{{ user.cps4 or '' }}">
+        <label for="fourth_lps">대출건수(LPS)</label>
+        <input id="fourth_lps" type="number" step="any" value="{{ user.lps4 or '' }}">
+        <label for="fourth_vps">방문수(VPS)</label>
+        <input id="fourth_vps" type="number" step="any" value="{{ user.vps4 or '' }}">
+      </fieldset>
+
+      <button type="submit" style="margin-top:16px;">저장하기</button>
+    </form>
+
+    <!-- ✅ 회원정보 수정 모달: 컨테이너 내부로 이동 -->
+    <dialog id="edit-profile-dialog">
+      <form id="edit-profile-form" method="dialog" style="min-width:360px;">
+        <h3 style="margin-top:0;">회원정보 수정</h3>
+
+        <label for="edit_name">이름</label>
+        <input id="edit_name" type="text" required value="{{ user.usr_name }}" />
+
+        <label for="edit_email">이메일</label>
+        <input id="edit_email" type="email" required value="{{ user.usr_email }}" />
+
+        <label for="edit_snm">소속대학</label>
+        <input id="edit_snm" type="text" list="snm-list-edit" placeholder="대학명 입력 또는 선택" required value="{{ user.usr_snm }}" />
+        <datalist id="snm-list-edit"></datalist>
+        <small id="snm_edit_msg"></small>
+
+        <hr style="margin:12px 0;">
+
+        <!-- 보안: 현재 비밀번호 재확인 -->
+        <label for="cur_pw">현재 비밀번호</label>
+        <input id="cur_pw" type="password" required />
+        <small class="muted">변경 적용 전에 현재 비밀번호를 확인합니다.</small>
+
+        <!-- 선택: 새 비밀번호 변경 -->
+        <label for="new_pw" style="margin-top:8px;">새 비밀번호 (선택)</label>
+        <input id="new_pw" type="password" />
+        <label for="new_pw2">새 비밀번호 확인</label>
+        <input id="new_pw2" type="password" />
+        <small id="new_pw_msg"></small>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+          <button type="button" id="cancel-edit">취소</button>
+          <button type="submit" id="save-edit" value="default">저장</button>
+        </div>
+      </form>
+    </dialog>
+  </div>
+
+  {% include 'common/footer.html' %}
+
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+</body>
+</html>

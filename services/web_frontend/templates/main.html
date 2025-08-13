@@ -4,13 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Libra | Balancing Infrastructure</title>
-  <!-- CSS 파일들 -->
+  <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/chatbot.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
 </head>
 <body>
   <!-- 공통 헤더 -->
+<<<<<<< HEAD
   {% comment %} {% include 'common/header.html' %} {% endcomment %}
 {% extends 'base.html' %}
 {% block content %}
@@ -19,29 +20,33 @@
   <!-- 스크롤 컨테이너 (중복 제거 - 한 번만 선언) -->
   <div class="sections-wrapper">
     <!-- Hero Slider (오버랩 + 페이드)-->
+=======
+  {% include 'common/header.html' %}
+
+  <!-- 플로팅 헤더 버튼 -->
+  <div class="floating-header-btn" id="floating-header-btn"></div>
+
+  <!-- 스크롤 컨테이너 -->
+  <div class="sections-wrapper" id="sections-wrapper">
+    <!-- Hero Slider -->
+>>>>>>> main
     <section class="section slider" id="hero-slider">
       <!-- Slide 1 -->
       <div class="slide active">
         <img src="{{ url_for('static', filename='images/overlap01.jpg') }}" alt="Slide 1">
         <div class="slider-overlay">
-          <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" class="overlay-logo" />
-          <div class="slide-title-main"></div><br/>
-          <div class="slide-title-sub">교육 인프라 분석 및 예측 서비스</div>
+          <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" class="overlay-logo logo-only" />
         </div>
       </div>
       <!-- Slide 2 -->
       <div class="slide">
         <img src="{{ url_for('static', filename='images/overlap02.jpg') }}" alt="Slide 2">
         <div class="slider-overlay">
-          <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" class="overlay-logo" />
-          {% if session.get('user') == 'libra_admin' %}
-          <a href="{{ url_for('admin_page') }}" class="admin-btn">관리자 페이지</a>
-          {% endif %}
-          <div class="slide-title-main"></div><br/>
-          <div class="slide-title-sub">교육 인프라 분석 및 예측 서비스</div>
+          <div class="slide-title-main">교육 인프라 예측 서비스</div><br/>
+          <div class="slide-title-sub">각 대학의 학습환경 예측 및 발전도 분석</div>
         </div>
       </div>
-      <!-- Slide 3 --> 
+      <!-- Slide 3 -->
       <div class="slide">
         <img src="{{ url_for('static', filename='images/overlap03.jpg') }}" alt="Slide 3">
         <div class="slider-overlay">
@@ -57,15 +62,15 @@
     <!-- Three Columns -->
     <section class="section subgrid" id="quick-links">
       <!-- 1번 카드 -->
-      <div class="sub sub1" data-link="{{ url_for('static', filename='html/chart.html') }}">
+      <div class="sub sub1" data-link="{{ url_for('chart') }}">
         <img class="sub-img" src="{{ url_for('static', filename='images/slide01.jpg') }}" alt="환경 점수 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">환경점수 검색</span><br/>
           <span class="sub-title-sub">>> 대학별 인프라<br/>점수 찾아보기</span>
         </div>
       </div>
-      <!-- 2번 카드 --> 
-      <div class="sub sub2" data-link="{{ url_for('static', filename='html/page_prediction_num01.html') }}">
+      <!-- 2번 카드 -->
+      <div class="sub sub2" data-link="{{ url_for('prediction') }}">
         <img class="sub-img" src="{{ url_for('static', filename='images/slide02.jpg') }}" alt="점수 변환 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">발전도 검색</span><br/>
@@ -73,7 +78,7 @@
         </div>
       </div>
       <!-- 3번 카드 -->
-      <div class="sub sub3" data-link="{{ url_for('static', filename='html/page_userpage_num01.html') }}">
+      <div class="sub sub3">
         <img class="sub-img" src="{{ url_for('static', filename='images/slide03.jpg') }}" alt="로그인 전용">
         <div class="sub-overlay">
           <span class="sub-title-main">마이 서비스</span><br/>
@@ -81,8 +86,12 @@
         </div>
       </div>
     </section>
+
+    <!-- Footer -->
+    {% include 'common/footer.html' %}
   </div>
 
+<<<<<<< HEAD
   <!-- 3번카드 임시 오버레이 -->
   <div id="temp-overlay">
     로그인 회원 전용페이지입니다. 로그인 회원이 아니면 서비스 제한이 있습니다.
@@ -96,8 +105,46 @@
   <!--Chatbot (footer 로딩시 자동)-->
 {% endblock %}
   <!-- JS 파일들 (순서 중요!) -->
+=======
+  <!-- (임시 오버레이는 더 이상 사용하지 않으므로 제거) -->
+
+  <!-- Chatbot -->
+  <div class="chatbot" id="chatToggle">
+    <div class="chat-icon">
+      <img src="{{ url_for('static', filename='images/chatbot.png') }}" alt="Chatbot" id="chatbot-img">
+    </div>
+  </div>
+
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <span>Libra Assistant</span>
+      <button id="chatCloseBtn">&times;</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div style="color: #666; padding: 10px; text-align: center;">
+        안녕하세요! Libra 챗봇입니다. 무엇을 도와드릴까요?
+      </div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+      <button id="chatSendBtn">전송</button>
+    </div>
+  </div>
+
+  <!-- 전역 변수: main.js보다 먼저 선언 필요 -->
+  <script>
+    window.isLoggedIn    = {{ 'true' if session.get('user') else 'false' }};
+    window.myServiceUrl  = "{{ url_for('my_service') }}";  // userservice.html 라우트
+    window.loginUrl      = "{{ url_for('login') }}";       // login.html 라우트
+    window.predictionUrl = "{{ url_for('prediction') }}";  // chartpage2.html 라우트
+    window.chartUrl      = "{{ url_for('chart') }}";       // chartpage1.html 라우트
+  </script>
+
+  <!-- JS 로드 순서 주의 -->
+>>>>>>> main
   <script src="{{ url_for('static', filename='js/common/utils.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/common/header-footer.js') }}"></script>
+  <!-- (선택) 로그아웃 확인창을 header.js에서 구현했다면 아래 주석 해제 -->
+  <!-- <script src="{{ url_for('static', filename='js/header.js') }}"></script> -->
   <script src="{{ url_for('static', filename='js/common/chatbot.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

@@ -1,23 +1,28 @@
-<!-- ../templates/common/header.html -->
-<header id="site-header">
+<!-- templates/common/header.html -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header-footer.css') }}">
+<header id="site-header" data-hf>
   <div class="logo" id="logo-area">
-    <!-- 로고 전체를 메인 페이지로 연결 -->
     <a href="{{ url_for('index') }}" id="logo-link">
-      <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Libra Logo" id="logo-img">
+      <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="Libra Logo" id="logo-img">
       <span id="logo-text">Libra</span>
     </a>
 
-    <!-- 관리자 전용 버튼 -->
     {% if session.get('user') == 'libra_admin' %}
       <a href="{{ url_for('admin_page') }}" class="nav-link admin-link">관리자 페이지</a>
     {% endif %}
   </div>
 
   <nav id="main-nav">
+    <!-- 학습환경 분석: 단일 연도 분석 (chartpage1.html) -->
     <a href="{{ url_for('chart') }}" class="nav-link">학습환경 분석</a>
+    
+    <!-- 발전도 분석: 다중 연도 예측 분석 (chartpage2.html) -->
     <a href="{{ url_for('prediction') }}" class="nav-link">발전도 분석</a>
 
     {% if session.get('user') %}
+      <!-- 로그인한 사용자만 접근 가능 -->
+      <a href="{{ url_for('my_service') }}" class="nav-link">마이서비스</a>
+      <a href="{{ url_for('profile') }}" class="nav-link">내정보</a>
       <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
     {% else %}
       <a href="{{ url_for('login') }}" class="nav-link">Login</a>
