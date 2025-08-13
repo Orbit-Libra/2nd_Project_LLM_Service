@@ -4,8 +4,7 @@
 
 ### 5조 - 강승민, 김선희
 
-## 디렉토리 구조
-
+## Directory Structure
 ```
 
 2nd_Project_LLM_Service/
@@ -24,7 +23,7 @@
 
 ```
 
-## 파이프라인 오버뷰
+## Pipeline Overview
 
 ```mermaid
 
@@ -105,7 +104,7 @@ flowchart LR
 
 ```
 
-## 클래스 다이어그램
+## Class Diagram
 
 ```mermaid
 
@@ -359,7 +358,7 @@ TableBuilderUser__aa40e7 --> PickleLoader__1ec100 : uses
 
 ```
 
-## 예측 실행 시퀀스 다이어그램
+## Prediction Sequence Diagram
 
 ```mermaid
 
