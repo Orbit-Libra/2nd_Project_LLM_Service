@@ -1,0 +1,73 @@
+flowchart LR
+  subgraph Batch_Entrypoints
+    setup_pipeline["setup-pipeline.bat"]
+    flaskrun_data["flaskrun-data.bat"]
+    flaskrun_predict["flaskrun-predict.bat"]
+    flaskrun_web["flaskrun-web.bat"]
+  end
+
+  subgraph Stores
+    RAW["data/raw/*"]
+    INT["data/intermediate/*"]
+    Oracle["Oracle DB"]
+    Models["services/ml_service/_Models/*.pkl"]
+    Logs["services/ml_service/_Logs/*.json"]
+    PredCSV["outputs/predictions/*.csv"]
+  end
+
+  subgraph setup_pipeline_grp["Initial ML Data Setup"]
+    setup_pipeline_S1["DataHandling\n(CSV/Excel/Crawl → 정제)"]
+    RAW -.-> setup_pipeline_S1
+    setup_pipeline_S1 --> INT
+    setup_pipeline_S2["DBHandling\n(Merge/Upload)"]
+    setup_pipeline_S1 --> setup_pipeline_S2
+    INT -.-> setup_pipeline_S2
+    setup_pipeline_S2 --> Oracle
+    setup_pipeline_S3["ModelCreator (Num01)\n(train & export)"]
+    setup_pipeline_S2 --> setup_pipeline_S3
+    Oracle -.-> setup_pipeline_S3
+    setup_pipeline_S3 --> Models
+    setup_pipeline_S3 --> Logs
+    setup_pipeline_S4["Predictor (Num01)\n(feature build & predict)"]
+    setup_pipeline_S3 --> setup_pipeline_S4
+    Oracle -.-> setup_pipeline_S4
+    Models -.-> setup_pipeline_S4
+    setup_pipeline_S4 --> PredCSV
+    setup_pipeline_S5["ModelCreator (Num02)\n(train & export)"]
+    setup_pipeline_S4 --> setup_pipeline_S5
+    Oracle -.-> setup_pipeline_S5
+    setup_pipeline_S5 --> Models
+    setup_pipeline_S5 --> Logs
+    setup_pipeline_S6["Predictor (Num02)\n(feature build & predict)"]
+    setup_pipeline_S5 --> setup_pipeline_S6
+    Oracle -.-> setup_pipeline_S6
+    Models -.-> setup_pipeline_S6
+    setup_pipeline_S6 --> PredCSV
+  end
+
+  setup_pipeline --> setup_pipeline_S1
+
+  subgraph flaskrun_data_grp["Data API Server"]
+    flaskrun_data_S1["data_service/api/main.py\n(Flask data API)"]
+    Oracle -.-> flaskrun_data_S1
+  end
+
+  flaskrun_data --> flaskrun_data_S1
+
+  subgraph flaskrun_predict_grp["Prediction API Server"]
+    flaskrun_predict_S1["prediction_service/api/server.py\n(Flask prediction API)"]
+    Oracle -.-> flaskrun_predict_S1
+    Models -.-> flaskrun_predict_S1
+    PredCSV -.-> flaskrun_predict_S1
+  end
+
+  flaskrun_predict --> flaskrun_predict_S1
+
+  subgraph flaskrun_web_grp["Web Frontend Server"]
+    flaskrun_web_S1["web_frontend/api/*.py\n(Flask web blueprints)"]
+    Oracle -.-> flaskrun_web_S1
+    Models -.-> flaskrun_web_S1
+    PredCSV -.-> flaskrun_web_S1
+  end
+
+  flaskrun_web --> flaskrun_web_S1

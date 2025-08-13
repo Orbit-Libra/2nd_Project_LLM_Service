@@ -1,0 +1,58 @@
+{
+  "stores": {
+    "RAW": "data/raw/*",
+    "INT": "data/intermediate/*",
+    "Oracle": "Oracle DB",
+    "Models": "services/ml_service/_Models/*.pkl",
+    "Logs": "services/ml_service/_Logs/*.json",
+    "PredCSV": "outputs/predictions/*.csv"
+  },
+  "bats": {
+    "setup-pipeline.bat": {
+      "label": "Initial ML Data Setup",
+      "steps": [
+        { "name": "DataHandling", "desc": "CSV/Excel/Crawl → 정제", "produces": ["INT"], "consumes": ["RAW"] },
+        { "name": "DBHandling", "desc": "Merge/Upload", "produces": ["Oracle"], "consumes": ["INT"] },
+        { "name": "ModelCreator (Num01)", "desc": "train & export", "produces": ["Models", "Logs"], "consumes": ["Oracle"] },
+        { "name": "Predictor (Num01)", "desc": "feature build & predict", "produces": ["PredCSV"], "consumes": ["Oracle", "Models"] },
+        { "name": "ModelCreator (Num02)", "desc": "train & export", "produces": ["Models", "Logs"], "consumes": ["Oracle"] },
+        { "name": "Predictor (Num02)", "desc": "feature build & predict", "produces": ["PredCSV"], "consumes": ["Oracle", "Models"] }
+      ]
+    },
+    "flaskrun-data.bat": {
+      "label": "Data API Server",
+      "steps": [
+        { "name": "data_service/api/main.py", "desc": "Flask data API", "produces": [], "consumes": ["Oracle"] }
+      ]
+    },
+    "flaskrun-predict.bat": {
+      "label": "Prediction API Server",
+      "steps": [
+        { "name": "prediction_service/api/server.py", "desc": "Flask prediction API", "produces": [], "consumes": ["Oracle", "Models", "PredCSV"] }
+      ]
+    },
+    "flaskrun-web.bat": {
+      "label": "Web Frontend Server",
+      "steps": [
+        { "name": "web_frontend/api/*.py", "desc": "Flask web blueprints", "produces": [], "consumes": ["Oracle", "Models", "PredCSV"] }
+      ]
+    }
+  },
+  "sequence": {
+    "target_bat": "setup-pipeline.bat",
+    "actors": ["BAT","DataHandling","DBHandling","ModelCreator","TableBuilder","PickleLoader","Oracle","Exporter"],
+    "messages": [
+      ["BAT","DataHandling","__main__.py → run()"],
+      ["DataHandling","DataHandling","정리/정규화 → INT"],
+      ["BAT","DBHandling","__main__.py → merge_and_save() / upload_to_oracle()"],
+      ["DBHandling","Oracle","insert/commit"],
+      ["BAT","ModelCreator","Controller_Num01/02.run()"],
+      ["ModelCreator","Oracle","fetch training data"],
+      ["ModelCreator","ModelCreator","train/eval/export → Models, Logs"],
+      ["BAT","TableBuilder","TableBuilder_Num01/02.run()"],
+      ["TableBuilder","PickleLoader","load(model.pkl)"],
+      ["TableBuilder","Oracle","_load_data() / features"],
+      ["TableBuilder","Exporter","_export_final() → PredCSV"]
+    ]
+  }
+}
