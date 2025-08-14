@@ -13,7 +13,8 @@
 │  
 ├── docs/ <- 문서 폴더
 │   │
-│   └── devlogs/    
+│   ├── diagrams/         # 다이어그램 mmd 파일 폴더    
+│   └── devlogs/          # 개발노트 md 파일 폴더
 │
 ├── services/             # 모든 마이크로서비스 폴더 묶음
 │   │
