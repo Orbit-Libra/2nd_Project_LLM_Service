@@ -1,0 +1,21 @@
+sequenceDiagram
+  autonumber
+  participant BAT as "BAT"
+  participant DataHandling as "DataHandling"
+  participant DBHandling as "DBHandling"
+  participant ModelCreator as "ModelCreator"
+  participant TableBuilder as "TableBuilder"
+  participant PickleLoader as "PickleLoader"
+  participant Oracle as "Oracle"
+  participant Exporter as "Exporter"
+  BAT->>DataHandling: __main__.py → run()
+  DataHandling->>DataHandling: 정리/정규화 → INT
+  BAT->>DBHandling: __main__.py → merge_and_save() / upload_to_oracle()
+  DBHandling->>Oracle: insert/commit
+  BAT->>ModelCreator: Controller_Num01/02.run()
+  ModelCreator->>Oracle: fetch training data
+  ModelCreator->>ModelCreator: train/eval/export → Models, Logs
+  BAT->>TableBuilder: TableBuilder_Num01/02.run()
+  TableBuilder->>PickleLoader: load(model.pkl)
+  TableBuilder->>Oracle: _load_data() / features
+  TableBuilder->>Exporter: _export_final() → PredCSV
