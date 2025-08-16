@@ -554,11 +554,7 @@ flaskrun 3종 실행 : 웹서버 및 2종의 api 서버 실행
 │   │   ├── predict_sync.py                  # 유저 데이터 예측 블루프린트
 │   │   └── user_analysis.py                 # 유저 서비스 페이지 블루프린트
 │   │
-<<<<<<< HEAD
-│   ├── web_frontend/                        # 웹 프론트엔드 패키지
-=======
 │   ├── web_frontend/                        # 웹 프론트엔드
->>>>>>> main
 │   │   │
 │   │   ├── api/                             # 플라스크 웹서버 블루프린트 폴더
 │   │   │   │  
