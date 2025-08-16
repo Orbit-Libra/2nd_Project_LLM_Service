@@ -2,6 +2,7 @@
 __pycache__/
 */__pycache__/
 **/__pycache__/
+*.pyc
 
 # 툴 무시
 **/Tools/*
