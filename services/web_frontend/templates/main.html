@@ -7,7 +7,6 @@
 {% endblock %}
 
 {% block content %}
-  <!-- 스크롤 컨테이너: 커스텀 오버레이 썸 대상 -->
   <div class="sections-wrapper scroll-area" id="sections-wrapper">
     <!-- Section 0: Hero Slider -->
     <section class="section slider" id="hero-slider">
@@ -69,29 +68,6 @@
     <section class="section" id="footer-section">
       {% include 'common/footer.html' %}
     </section>
-  </div>
-
-  <!-- Chatbot -->
-  <div class="chatbot" id="chatToggle">
-    <div class="chat-icon">
-      <img src="{{ url_for('static', filename='images/chatbot.png') }}" alt="Chatbot" id="chatbot-img">
-    </div>
-  </div>
-
-  <div class="chat-window" id="chatWindow">
-    <div class="chat-header">
-      <span>Libra Assistant</span>
-      <button id="chatCloseBtn">&times;</button>
-    </div>
-    <div class="chat-body" id="chatBody">
-      <div style="color: #666; padding: 10px; text-align: center;">
-        안녕하세요! Libra 챗봇입니다. 무엇을 도와드릴까요?
-      </div>
-    </div>
-    <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
-      <button id="chatSendBtn">전송</button>
-    </div>
   </div>
 {% endblock %}
 

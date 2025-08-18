@@ -1,4 +1,4 @@
-// main.js — 슬라이더/카드/챗봇 전용
+// main.js — 슬라이더/카드 전용
 
 window.addEventListener('DOMContentLoaded', () => {
   // 안전장치: 스크롤 컨테이너 지정
@@ -9,7 +9,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   initializeSlider();
   initializeSubCards();
-  initializeChatbot();
 });
 
 /* 슬라이더 */
@@ -71,62 +70,5 @@ function initializeSubCards() {
     e.preventDefault();
     const isLoggedIn = window.isLoggedIn === true || window.isLoggedIn === 'true';
     window.location.href = isLoggedIn ? window.myServiceUrl : window.loginUrl;
-  });
-}
-
-/* 챗봇 */
-function initializeChatbot() {
-  const chatToggle  = document.getElementById('chatToggle');
-  const chatWindow  = document.getElementById('chatWindow');
-  const chatClose   = document.getElementById('chatCloseBtn');
-  const chatBody    = document.getElementById('chatBody');
-  const chatInput   = document.getElementById('chatInput');
-  const chatSend    = document.getElementById('chatSendBtn');
-
-  const sendMessage = () => {
-    if (!chatInput || !chatBody) return;
-    const txt = chatInput.value.trim();
-    if (!txt) return;
-
-    const userMsg = document.createElement('div');
-    userMsg.style.cssText = `
-      margin:10px 0; padding:10px 15px;
-      background:#007bff; color:#fff;
-      border-radius:20px 20px 5px 20px;
-      max-width:80%; margin-left:auto; word-wrap:break-word;`;
-    userMsg.textContent = txt;
-    chatBody.appendChild(userMsg);
-
-    const botMsg = document.createElement('div');
-    botMsg.style.cssText = `
-      margin:10px 0; padding:10px 15px;
-      background:#f1f1f1; color:#333;
-      border-radius:20px 20px 20px 5px;
-      max-width:80%; margin-right:auto; word-wrap:break-word;`;
-    botMsg.textContent = '안녕하세요! Libra 서비스에 대해 궁금한 것이 있으시면 언제든 문의해 주세요. 현재는 데모 모드입니다.';
-
-    setTimeout(() => {
-      chatBody.appendChild(botMsg);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }, 400);
-
-    chatBody.scrollTop = chatBody.scrollHeight;
-    chatInput.value = '';
-    chatInput.focus();
-  };
-
-  chatToggle?.addEventListener('click', () => {
-    if (!chatWindow) return;
-    chatWindow.classList.toggle('open');
-    if (chatWindow.classList.contains('open') && chatInput) chatInput.focus();
-  });
-
-  chatClose?.addEventListener('click', () => chatWindow?.classList.remove('open'));
-  chatSend?.addEventListener('click', sendMessage);
-  chatInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      sendMessage();
-    }
   });
 }

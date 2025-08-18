@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}Libra | Balancing Infrastructure{% endblock %}</title>
 
-  <!-- ✅ 공통 CSS: 헤더/푸터 (올바른 경로) -->
+  <!-- ✅ 공통 CSS: 헤더/푸터 -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/base.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/common/footer.css') }}" />
-  
+
+  <!-- ✅ 공통 CSS: 챗봇 -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/chatbot.css') }}"/>
 
   <!-- 페이지 전용 head 추가영역 -->
   {% block head_extra %}{% endblock %}
@@ -25,9 +27,15 @@
     {% include 'common/footer.html' %}
   {% endblock %}
 
-  <!-- ✅ 공통 JS: header.js (올바른 경로 - static/js/ 직하위) -->
+  <!-- ✅ 공통 JS -->
   <script src="{{ url_for('static', filename='js/common/header.js') }}"></script>
   <script src="{{ url_for('static', filename='js/common/base.js') }}" defer></script>
+
+  <!-- ✅ 챗봇 마크업(모든 페이지 공통 표시) -->
+  {% include 'common/chatbot.html' %}
+
+  <!-- ✅ 공통 JS: 챗봇 -->
+  <script src="{{ url_for('static', filename='js/common/chatbot.js') }}" defer></script>
 
   <!-- 페이지 전용 스크립트 -->
   {% block scripts %}{% endblock %}
