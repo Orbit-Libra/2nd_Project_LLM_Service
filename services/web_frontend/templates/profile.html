@@ -1,15 +1,14 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Libra | 내정보</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}" />
-</head>
-<body>
-  {% include 'common/header.html' %}
+{% extends "common/base.html" %}
 
+{% block title %}Libra | 내정보{% endblock %}
+
+{% block head_extra %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}" />
+{% endblock %}
+
+{% block body_class %}page-profile{% endblock %}
+
+{% block content %}
   <div class="login-container" style="max-width: 720px;">
     <h2>내 정보</h2>
 
@@ -92,7 +91,7 @@
       <button type="submit" style="margin-top:16px;">저장하기</button>
     </form>
 
-    <!-- ✅ 회원정보 수정 모달: 컨테이너 내부로 이동 -->
+    <!-- ✅ 회원정보 수정 모달 -->
     <dialog id="edit-profile-dialog">
       <form id="edit-profile-form" method="dialog" style="min-width:360px;">
         <h3 style="margin-top:0;">회원정보 수정</h3>
@@ -129,9 +128,8 @@
       </form>
     </dialog>
   </div>
+{% endblock %}
 
-  {% include 'common/footer.html' %}
-
-<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
-</body>
-</html>
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

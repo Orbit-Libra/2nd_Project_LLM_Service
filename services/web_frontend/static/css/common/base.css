@@ -1,0 +1,86 @@
+/* static/css/common/base.css */
+
+/* 전역 */
+html, body {
+  height: 100%;
+  overflow: auto;
+  scroll-behavior: smooth;            /* 기본은 부드럽게 */
+}
+
+/* 네이티브 스크롤바 전역 숨김 */
+* { scrollbar-width: none !important; } /* Firefox */
+*::-webkit-scrollbar { width: 0 !important; height: 0 !important; } /* WebKit */
+
+/* 드래그 중(탄성 제거용) 유틸 */
+.no-snap { scroll-snap-type: none !important; }
+.no-smooth { scroll-behavior: auto !important; }
+
+/* 과도 스크롤/체이닝 방지(바운스 억제) */
+html, body, .scroll-area { overscroll-behavior: contain; }
+
+/* ===== 플로팅 스크롤 UI (전역 공통) ===== */
+.osb-float {
+  position: fixed;
+  top: 0; right: 4px; bottom: 0;      /* 뷰포트 최우측 고정 */
+  width: 12px;
+  z-index: 9999;
+  pointer-events: none;                /* 기본은 이벤트 차단 */
+}
+
+/* 썸(막대) */
+.osb-thumb {
+  position: absolute;
+  right: 2px;
+  width: 8px;
+  min-height: 28px;
+  border-radius: 8px;
+  background: rgba(120,120,120,0);    /* 기본: 투명 */
+  opacity: 0;                          /* 기본: 숨김 */
+  transition: opacity .18s ease, background-color .18s ease, transform .12s ease;
+  cursor: ns-resize;
+  pointer-events: auto;                /* 드래그 가능 */
+  user-select: none;
+}
+
+/* ▲▼ 화살표 */
+.osb-arrow {
+  position: absolute;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  outline: 0;
+  background: rgba(30, 30, 30, 0.25);
+  border-radius: 8px;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity .15s ease, background-color .15s ease, transform .15s ease;
+  pointer-events: auto; cursor: pointer; backdrop-filter: blur(4px);
+}
+.osb-arrow:hover { background: rgba(30, 30, 30, 0.38); }
+.osb-arrow:active { background: rgba(30, 30, 30, 0.48); }
+.osb-arrow.up   { top: 8px; }
+.osb-arrow.down { bottom: 8px; }
+.osb-arrow::before {
+  content: ''; width: 0; height: 0;
+  border-left: 6px solid transparent; border-right: 6px solid transparent;
+}
+.osb-arrow.up::before   { border-bottom: 9px solid #fff; }
+.osb-arrow.down::before { border-top:    9px solid #fff; }
+
+/* 표시 상태 */
+.osb-float.osb--show .osb-thumb {
+  opacity: 1;
+  background: rgba(120,120,120,0.35);
+}
+.osb-float.osb--show .osb-thumb:hover {
+  background: rgba(120,120,120,0.5);
+  transform: scaleX(0.95);
+}
+.osb-float.osb--show .osb-arrow {
+  opacity: 1; transform: translateY(0);
+}
+
+/* 드래그 중 텍스트 선택 방지 */
+.osb-dragging, .osb-dragging * { user-select: none !important; }

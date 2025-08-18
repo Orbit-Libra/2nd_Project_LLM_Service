@@ -539,9 +539,12 @@ async function generateChart() {
         // 정보 업데이트
         updateDataCount(dataForChart.length);
         
-        // 플레이스홀더 숨기기
+        // 플레이스홀더 숨기기 및 차트 그리드 표시
         document.getElementById('chartPlaceholder').style.display = 'none';
-        document.querySelector('.chart-grid').style.display = 'grid';
+        const chartGrid = document.querySelector('.chart-grid');
+        if (chartGrid) {
+            chartGrid.style.display = 'grid';
+        }
         
     } catch (error) {
         console.error('차트 생성 실패:', error);
@@ -867,7 +870,10 @@ function updateDataCount(count) {
 function showLoading() {
     document.getElementById('chartLoading').style.display = 'flex';
     document.getElementById('chartPlaceholder').style.display = 'none';
-    document.querySelector('.chart-grid').style.display = 'none';
+    const chartGrid = document.querySelector('.chart-grid');
+    if (chartGrid) {
+        chartGrid.style.display = 'none';
+    }
 }
 
 function hideLoading() {
@@ -887,7 +893,10 @@ function showError(message) {
         </div>
     `;
     placeholder.style.display = 'flex';
-    document.querySelector('.chart-grid').style.display = 'none';
+    const chartGrid = document.querySelector('.chart-grid');
+    if (chartGrid) {
+        chartGrid.style.display = 'none';
+    }
     hideLoading();
 }
 
@@ -981,7 +990,10 @@ function setupEventListeners() {
     });
     
     // 차트 그리드 초기 숨김
-    document.querySelector('.chart-grid').style.display = 'none';
+    const chartGrid = document.querySelector('.chart-grid');
+    if (chartGrid) {
+        chartGrid.style.display = 'none';
+    }
 }
 
 // 키보드 단축키

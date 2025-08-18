@@ -1,264 +1,419 @@
-/* main.css — 메인/개별 페이지 전용(헤더/푸터 규칙 완전 제거) */
-
-/* TODO: px→rem, width/height→vw/vh 통일 */
+/* main.css — 메인 페이지 전용(헤더 관련 없음) */
 :root {
-  --color-bg-header: #010002;
-  --color-footer-bg: #0d1f2d;
-  --color-logo-text: lab(69.67% -15.03 -23.49); 
   --color-body-bg: #0b5264;
-  --color-nav-text: #0c3f2f;
   --color-highlight: #204461;
   --color-text-shadow: #2e1b8388;
   --font-sans: 'Noto Sans KR', sans-serif;
+  
+  /* 🎯 스크롤 스냅 속도 조절 변수 - 이 값들을 조절하세요! */
+  --snap-speed: 0.8s;        /* 카드가 화면에 맞춰지는 속도 (0.2s~2s) */
+  --snap-timing: ease-out;   /* 스냅 타이밍 (ease, ease-out, ease-in-out) */
 }
 
-/* Reset & scroll-snap */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  height: 100vh;
-  width: 100vw;
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;       /* 가로 스크롤 제거 */
-  overflow-y: hidden;       /* 세로 스크롤 숨김 — sections-wrapper만 스크롤 */
-  scroll-snap-type: y mandatory;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+
+  /* 🎯 전체 스크롤 동작 설정 */
+  scroll-behavior: smooth;
+
+  /* 🎯 스크롤 스냅 속도 제어 */
+  scroll-snap-duration: var(--snap-speed);
+  scroll-snap-timing-function: var(--snap-timing);
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-sans);
+
+  /* 🎯 전체 스크롤 부드럽게 */
   scroll-behavior: smooth;
 }
-body { font-family: var(--font-sans); min-height: 100vh; }
 
-a { text-decoration: none; color: inherit; }
-
-/* 임시 오버레이 */
-#temp-overlay {
-  position: fixed; inset: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.85);
-  color: #fff; display: flex; justify-content: center; align-items: center;
-  font-size: 1.8rem; text-align: center; padding: 2rem;
-  z-index: 9999; visibility: hidden; opacity: 0;
-  transition: opacity .3s ease;
+a {
+  text-decoration: none;
+  color: inherit;
 }
-#temp-overlay.show { visibility: visible; opacity: 1; }
 
-/* sections-wrapper가 스크롤 담당 */
-.sections-wrapper {
+/* 🎯 스크롤 컨테이너 - 스냅 속도 핵심 설정 */
+#sections-wrapper {
   height: 100vh;
-  overflow-y: auto; 
+  overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none;           /* Firefox */
-  -ms-overflow-style: none;        /* IE/Edge */
-  scroll-snap-stop: always;
-}
-.sections-wrapper::-webkit-scrollbar { display: none; }
+  position: relative;
 
-/* Section 공통 */
-.section { 
-  width: 100vw; height: 100vh;
+  /* 🎯 스크롤 스냅이 화면에 맞춰지는 속도 조절 */
+  scroll-behavior: smooth;
+  scroll-snap-duration: var(--snap-speed);
+  scroll-snap-timing-function: var(--snap-timing);
+
+  /* 🎯 WebKit 브라우저용 스냅 속도 */
+  -webkit-scroll-snap-duration: var(--snap-speed);
+  -webkit-scroll-snap-timing-function: var(--snap-timing);
+
+  /* 🎯 스크롤 가속도 제어 */
+  scroll-padding: 0;
+  overscroll-behavior: contain;
+}
+
+/* 🎯 공통 섹션 - 스냅 포인트 설정 */
+.section {
+  width: 100vw;
+  height: 100vh;
   position: relative;
   scroll-snap-align: start;
-  overflow: hidden; 
+  overflow: hidden;
+  min-height: 100vh;
+
+  /* 🎯 섹션 전환 시 부드러운 효과 */
   scroll-snap-stop: always;
+  transition: transform var(--snap-speed) var(--snap-timing);
 }
-.section.slider { height: 100vh; width: 100vw; }
 
 /* HERO SLIDER */
 .slider {
-  position: relative; overflow: hidden;
-  height: 100vh; width: 100vw;
-}
-.slider .slide {
-  position: absolute; inset: 0;
-  width: 100vw; height: 100vh;
-  opacity: 0; z-index: 1;
-  transition: opacity 1.5s ease;
+  position: relative;
   overflow: hidden;
+  height: 100vh;
+  width: 100vw;
 }
-.slider .slide.active { opacity: 1; z-index: 2; }
 
-/* 배경 이미지 */
+.slider .slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 1.2s ease;
+}
+
+.slider .slide.active {
+  opacity: 1;
+  z-index: 2;
+}
+
 .slider .slide img {
-  width: 100vw; height: 100vh;
-  object-fit: cover; object-position: center;
-  display: block;
-  filter: brightness(0.6) blur(1px);
-  transition: filter 0.3s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.4) blur(1px);
 }
 
-/* 텍스트 오버레이 */
+/* 오버레이 */
 .slider-overlay {
-  position: absolute; top: 50%; left: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; color: #fff; z-index: 3;
-  pointer-events: auto; cursor: pointer;
-  transition: transform .3s ease, text-shadow .3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #ffffff;
+  z-index: 3;
+  pointer-events: none;
 }
+
 .slide-title-main {
-  font-size: 3.5rem; font-weight: bold;
+  font-size: 3.2rem;
+  font-weight: 800;
   text-shadow: 0 0 1rem rgba(0,0,0,0.8);
-  margin-bottom: .5rem;
 }
+
 .slide-title-sub {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   text-shadow: 0 0 0.8rem rgba(0,0,0,0.8);
 }
-.slider-overlay .overlay-logo {
-  display: block;
-  max-width: 12rem !important;
-  max-height: 12rem !important;
-  width: auto !important; height: auto !important;
-  margin: 0 auto;
-  filter: brightness(0) invert(1);
-  pointer-events: none; z-index: 4;
-  transition: transform .3s ease, filter .3s ease, opacity .3s ease;
+
+/* 🎯 로고 스타일 수정 */
+.overlay-logo {
+  max-width: 16.8rem;     /* 14rem → 16.8rem (20% 증가) */
+  max-height: 16.8rem;    /* 14rem → 16.8rem (20% 증가) */
+
+  /* 🎯 모든 방법으로 흰색 강제 적용 */
+  filter: brightness(0) invert(1) contrast(100) !important;
+  -webkit-filter: brightness(0) invert(1) contrast(100) !important;
+  color: white !important;
+  background-color: transparent !important;
+
+  /* 🎯 이미지 마스크로 흰색 덮어씌우기 */
+  background-image: none !important;
+
+  /* 🎯 SVG fill 색상 강제 변경 */
+  fill: white !important;
+  stroke: white !important;
 }
 
-/* 첫 슬라이드 로고 연출 */
-.slider-overlay .overlay-logo.logo-only {
-  max-width: 15rem !important;
-  max-height: 15rem !important;
-  filter: brightness(0) invert(1);
-  opacity: 0; transform: translateY(30px);
-  animation: logoFadeIn 2s ease-out 0.5s forwards;
+/* 🎯 첫번째 슬라이드 로고 페이드인 애니메이션 */
+.overlay-logo.logo-only {
+  opacity: 0;
+  transform: translateY(24px);
+
+  /* 페이드인 시작 시간을 0.2초로 단축 */
+  animation: logoFadeIn 1.6s ease-out 0.2s forwards;
 }
+
 @keyframes logoFadeIn {
-  0% { opacity: 0; transform: translateY(30px); }
-  100% { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Hover 효과 */
-.slider-overlay:hover { transform: translate(-50%, -60%) scale(1.03); }
-.slider-overlay:hover .slide-title-main {
-  font-weight: bold;
-  text-shadow: 0 0.2rem 0.4rem rgba(0,0,0,0.9), 0 0.05rem 0.1rem rgba(0,0,0,0.7);
-}
-.slider-overlay:hover .slide-title-sub {
-  text-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.7);
-}
-.slider-overlay:hover .overlay-logo:not(.logo-only) {
-  transform: translateY(-0.5rem) scale(1.1);
-  filter: drop-shadow(0 0.4rem 0.6rem rgba(0,0,0,0.9))
-          drop-shadow(0 0.1rem 0.2rem rgba(0,0,0,0.7));
-}
-
-/* 관리자 버튼 */
-.admin-btn {
-  position: absolute; top: 20px; right: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff; padding: 10px 20px; border-radius: 25px;
-  text-decoration: none; font-weight: bold;
-  transition: all 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-}
-.admin-btn:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
-
-/* Arrow 버튼 */
+/* 화살표 */
 .arrow {
-  position: absolute; top: 50vh; transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.2); color: #fff;
-  padding: 15px 20px; cursor: pointer; z-index: 4;
-  border: none; border-radius: 50px; font-size: 20px;
-  backdrop-filter: blur(10px); transition: all 0.3s ease;
-  font-family: Arial, sans-serif; display: flex; align-items: center; justify-content: center;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 14px 18px;
+  cursor: pointer;
+  z-index: 4;
+  border: none;
+  border-radius: 50px;
+  font-size: 20px;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
 }
-.arrow:hover { background: rgba(255, 255, 255, 0.4); transform: translateY(-50%) scale(1.1); }
-.arrow.left { left: 2rem; }
-.arrow.right { right: 2rem; }
+
+.arrow:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.arrow.left {
+  left: 2rem;
+}
+
+.arrow.right {
+  right: 2rem;
+}
 
 /* THREE-COLUMN */
-.subgrid { 
-  display: flex; width: 100vw; height: 100vh;
-  overflow: hidden; margin: 0; padding: 0; gap: 0;
+.subgrid {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  gap: 0;
 }
-.sub { flex: 1 1 0; position: relative; cursor: pointer; overflow: hidden; }
+
+.sub {
+  flex: 1 1 0;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
 .sub-img {
-  display: block; width: 100%; height: 100vh;
-  object-fit: cover; object-position: center;
-  transition: filter .4s ease, transform .4s ease;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: filter .3s ease, transform .3s ease;
 }
-.sub::before {
-  content: ""; position: absolute; inset: 0;
-  background-image: var(--bg); background-size: cover; background-position: center;
-  transition: filter .4s ease, transform .4s ease; z-index: 0;
-}
+
 .sub-overlay {
-  position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
-  text-align: center; color: #fff !important; font-size: 1.2rem; z-index: 2;
-  text-shadow: 0 0 .5rem rgba(0,0,0,0.7); 
-  transition: transform .4s ease, color .4s ease; pointer-events: none;
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #fff;
+  font-size: 1.2rem;
+  z-index: 2;
+  text-shadow: 0 0 .5rem rgba(0,0,0,0.7);
+  pointer-events: none;
 }
+
 .sub-title-main {
-  display: block; font-size: 3rem; font-weight: bold; color: #fff;
-  text-shadow: 0 0 .5rem rgba(0,0,0,0.7); margin-bottom: .5rem;
+  display: block;
+  font-size: 2.8rem;
+  font-weight: 800;
 }
+
 .sub-title-sub {
-  display: block; font-size: 2rem; color: #fff; opacity: .9;
-  text-shadow: 0 0 .3rem rgba(0,0,0,0.7); font-weight: bold;
+  display: block;
+  font-size: 1.6rem;
+  opacity: .92;
+  font-weight: 700;
 }
 
-/* Hover */
-.sub:hover .sub-img { filter: brightness(50%) blur(.2rem); transform: scale(1.02); }
-.sub:hover .sub-overlay { transform: translateX(-50%) translateY(-1rem); color: #fff; font-weight: bold; }
-.sub:active .sub-title { color: #fff; }
+.sub:hover .sub-img {
+  filter: brightness(55%) blur(.2rem);
+  transform: scale(1.02);
+}
 
-.sub1::before { transform: scaleX(-1); font-weight: bold; }
-.sub1:hover::before { filter: brightness(50%) blur(2px); transform: scaleX(-1) scale(1.02); font-weight: bold; }
-.sub2 .sub-title { bottom: 3rem !important; top: auto !important; color: #fff !important; font-weight: bold; }
+/* FOOTER SECTION */
+#footer-section {
+  background: #0d1f2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-/* CHATBOT */
-.chatbot { position: fixed; bottom: 1rem; right: 1rem; z-index: 200; cursor: pointer; }
-.chat-icon { width: 7.5rem; height: 7.5rem; border-radius: 50%; overflow: hidden; }
-#chatbot-img { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
+/* 챗봇 */
+.chatbot {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 200;
+  cursor: pointer;
+}
+
+.chat-icon {
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+#chatbot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scaleX(-1);
+}
 
 .chat-window {
-  position: fixed; bottom: 1rem; right: 1rem; width: 18.75rem; height: 80vh; 
-  background: #fff; box-shadow: -2px 2px 10px rgba(0,0,0,0.2);
-  display: flex; flex-direction: column; transform: translateY(calc(100% + 2rem));
-  transition: transform .3s ease-in-out; z-index: 29; border-radius: 15px; overflow: hidden;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  width: 18.75rem;
+  height: 80vh;
+  background: #fff;
+  box-shadow: -2px 2px 10px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(100% + 2rem));
+  transition: transform .25s ease-in-out;
+  z-index: 29;
+  border-radius: 15px;
+  overflow: hidden;
 }
-.chat-window.open { transform: translateY(0); }
-.chat-header { background: lab(69.67% -15.03 -23.49); color: #fff; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
-#chatCloseBtn { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+
+.chat-window.open {
+  transform: translateY(0);
+}
+
+.chat-header {
+  background: lab(69.67% -15.03 -23.49);
+  color: #fff;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#chatCloseBtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
 
 .chat-body {
-  background: #f9f9f9; flex: 1; padding: .5rem; overflow-y: auto;
-  scrollbar-width: none; -ms-overflow-style: none;
+  background: #f9f9f9;
+  flex: 1;
+  padding: .5rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.chat-body::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
-.chat-input { display: flex; border-top: 1px solid lab(69.67% -15.03 -23.49); }
-#chatInput { color: #333; font-size: .9rem; flex: 1; border: none; padding: .75rem; }
-#chatInput::placeholder { color: #999; }
-#chatInput:focus { outline: none; }
-#chatSendBtn { padding: 0 1rem; border: none; background: lab(69.67% -15.03 -23.49); color: #fff; cursor: pointer; font-weight: bold; }
-#chatSendBtn:hover { background: rgba(32, 68, 97, 0.9); }
+.chat-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
 
-/* 부드러운 스크롤 */
-@media (prefers-reduced-motion: no-preference) {
-  .sections-wrapper { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.chat-input {
+  display: flex;
+  border-top: 1px solid lab(69.67% -15.03 -23.49);
+}
+
+#chatInput {
+  color: #333;
+  font-size: .9rem;
+  flex: 1;
+  border: none;
+  padding: .75rem;
+}
+
+#chatInput::placeholder {
+  color: #999;
+}
+
+#chatInput:focus {
+  outline: none;
+}
+
+#chatSendBtn {
+  padding: 0 1rem;
+  border: none;
+  background: lab(69.67% -15.03 -23.49);
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#chatSendBtn:hover {
+  background: rgba(32, 68, 97, 0.9);
 }
 
 /* 반응형 */
 @media(max-width: 768px) {
-  .arrow { padding: 10px 15px; font-size: 16px; }
-  .slide-title-main { font-size: 2.5rem; }
-  .sub-title-main { font-size: 2rem; }
-  .sub-title-sub { font-size: 1.5rem; }
-
-  /* 모바일에서 오버레이 로고 축소(헤더 아님) */
-  .slider-overlay .overlay-logo {
-    max-width: 5rem !important;
-    max-height: 5rem !important;
-  }
-  .slider-overlay .overlay-logo.logo-only {
-    max-width: 10rem !important;
-    max-height: 10rem !important;
+  .arrow {
+    padding: 10px 15px;
+    font-size: 16px;
   }
 
-  /* 모바일 스크롤바 얇게 */
-  ::-webkit-scrollbar { width: 6px; }
+  .slide-title-main {
+    font-size: 2.4rem;
+  }
+
+  .sub-title-main {
+    font-size: 2rem;
+  }
+
+  .sub-title-sub {
+    font-size: 1.3rem;
+  }
+
+  .overlay-logo {
+    max-width: 6rem;
+    max-height: 6rem;
+  }
+
+  .overlay-logo.logo-only {
+    max-width: 10rem;
+    max-height: 10rem;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  /* 🎯 모바일에서는 좀 더 빠르게 */
+  :root {
+    --snap-speed: 0.5s;
+  }
 }

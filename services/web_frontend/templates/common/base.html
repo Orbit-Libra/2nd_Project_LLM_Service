@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Libra | Balancing Infrastructure{% endblock %}</title>
+
+  <!-- ✅ 공통 CSS: 헤더/푸터 (올바른 경로) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/footer.css') }}" />
+  
+
+  <!-- 페이지 전용 head 추가영역 -->
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% include 'common/header.html' %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block base_footer %}
+    {% include 'common/footer.html' %}
+  {% endblock %}
+
+  <!-- ✅ 공통 JS: header.js (올바른 경로 - static/js/ 직하위) -->
+  <script src="{{ url_for('static', filename='js/common/header.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/common/base.js') }}" defer></script>
+
+  <!-- 페이지 전용 스크립트 -->
+  {% block scripts %}{% endblock %}
+</body>
+</html>

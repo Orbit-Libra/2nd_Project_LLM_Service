@@ -82,7 +82,7 @@ def create_app():
         return render_template('login.html', error=error)
 
     # 회원가입 페이지 (템플릿 라우트)
-    @app.route('/register', methods=['GET'])
+    @app.route('/register', methods=['GET'], endpoint='register')
     def register_page():
         return render_template('register.html')
 

@@ -1,21 +1,19 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Libra | 로그인</title>
-  <!-- 공통 헤더/푸터는 head에서 1회만 로드 -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
-</head>
-<body class="login-page">
-  {% include 'common/header.html' %}
+{% extends "common/base.html" %}
 
+{% block title %}Libra | 로그인{% endblock %}
+
+{% block head_extra %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
+{% endblock %}
+
+{% block body_class %}login-page header-opaque{% endblock %}
+
+{% block content %}
   <main class="login-main" role="main">
     <section class="login-container" aria-labelledby="login-title">
       <h2 id="login-title" class="login-title">로그인</h2>
 
-      <form method="POST" action="/login" novalidate>
+      <form method="POST" action="{{ url_for('login') }}" novalidate>
         <label for="usr_id">아이디</label>
         <input type="text" id="usr_id" name="usr_id" required autocomplete="username"/>
 
@@ -27,7 +25,7 @@
 
       <div class="divider">또는</div>
 
-      <form method="GET" action="/register">
+      <form method="GET" action="{{ url_for('register') }}">
         <button type="submit" class="signup-btn">회원가입</button>
       </form>
 
@@ -36,7 +34,4 @@
       {% endif %}
     </section>
   </main>
-
-  {% include 'common/footer.html' %}
-</body>
-</html>
+{% endblock %}

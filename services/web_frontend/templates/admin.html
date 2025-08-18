@@ -1,118 +1,115 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>관리자 페이지 | Libra</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}" />
+{% extends "common/base.html" %}
+
+{% block title %}관리자 페이지 | Libra{% endblock %}
+
+{% block head_extra %}
+  <!-- 관리자 페이지 전용 CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
-</head>
-<body>
-  {% include 'common/header.html' %}
+{% endblock %}
 
-  <main class="admin">
-    <header class="admin__header">
-      <h1 class="admin__title">관리자 페이지</h1>
-      <p class="admin__subtitle">Libra 시스템의 관리자 전용 페이지입니다.</p>
-    </header>
+{% block content %}
+<div class="admin">
+  <header class="admin__header">
+    <h1 class="admin__title">관리자 페이지</h1>
+    <p class="admin__subtitle">Libra 시스템의 관리자 전용 페이지입니다.</p>
+  </header>
 
-    <section class="admin__grid">
-      <!-- 1행: 데이터 관리 (좌) -->
-      <article class="card card--half">
-        <div class="card__head">
-          <h2 class="card__title">📊 데이터 관리</h2>
-          <p class="card__desc">머신러닝 예측 결과를 웹 서비스용으로 갱신합니다.</p>
-        </div>
-        <div class="card__actions">
-          <button class="btn btn--primary" id="sync-btn">
-            <span class="btn__spinner" aria-hidden="true"></span>
-            데이터 동기화
-          </button>
-        </div>
-        <div class="note" id="sync-log" aria-live="polite"></div>
-      </article>
+  <section class="admin__grid">
+    <!-- 1행: 데이터 관리 (좌) -->
+    <article class="card card--half">
+      <div class="card__head">
+        <h2 class="card__title">📊 데이터 관리</h2>
+        <p class="card__desc">머신러닝 예측 결과를 웹 서비스용으로 갱신합니다.</p>
+      </div>
+      <div class="card__actions">
+        <button class="btn btn--primary" id="sync-btn">
+          <span class="btn__spinner" aria-hidden="true"></span>
+          데이터 동기화
+        </button>
+      </div>
+      <div class="note" id="sync-log" aria-live="polite"></div>
+    </article>
 
-      <!-- 1행: 시스템 설정 (우) -->
-      <article class="card card--half" id="system-card">
-        <div class="card__head">
-          <h2 class="card__title">⚙️ 시스템 설정</h2>
-          <p class="card__desc">서비스 포트 상태를 확인합니다.</p>
-        </div>
+    <!-- 1행: 시스템 설정 (우) -->
+    <article class="card card--half" id="system-card">
+      <div class="card__head">
+        <h2 class="card__title">⚙️ 시스템 설정</h2>
+        <p class="card__desc">서비스 포트 상태를 확인합니다.</p>
+      </div>
 
-        <div class="ports">
-         <!-- 포트 5050 -->
-          <div class="port-row">
-            <div class="port-label">포트 5050</div>
-            <div class="port-status" id="port-5050-status">
-              <span class="badge badge--muted">확인 중…</span>
-            </div>
-            <!-- ✅ 추가: 연결 텍스트 -->
-            <div class="port-conn" id="port-5050-conn"><span class="muted">확인 중…</span></div>
+      <div class="ports">
+       <!-- 포트 5050 -->
+        <div class="port-row">
+          <div class="port-label">포트 5050</div>
+          <div class="port-status" id="port-5050-status">
+            <span class="badge badge--muted">확인 중…</span>
           </div>
+          <!-- ✅ 추가: 연결 텍스트 -->
+          <div class="port-conn" id="port-5050-conn"><span class="muted">확인 중…</span></div>
+        </div>
 
-          <!-- 포트 5100 -->
-          <div class="port-row">
-            <div class="port-label">포트 5100</div>
-            <div class="port-status" id="port-5100-status">
-              <span class="badge badge--muted">확인 중…</span>
-            </div>
-            <!-- ✅ 추가: 연결 텍스트 -->
-            <div class="port-conn" id="port-5100-conn"><span class="muted">확인 중…</span></div>
+        <!-- 포트 5100 -->
+        <div class="port-row">
+          <div class="port-label">포트 5100</div>
+          <div class="port-status" id="port-5100-status">
+            <span class="badge badge--muted">확인 중…</span>
           </div>
+          <!-- ✅ 추가: 연결 텍스트 -->
+          <div class="port-conn" id="port-5100-conn"><span class="muted">확인 중…</span></div>
         </div>
+      </div>
 
-        <div class="note" id="system-log" aria-live="polite"></div>
-      </article>
+      <div class="note" id="system-log" aria-live="polite"></div>
+    </article>
 
-      <!-- 2행: 사용자 관리 (가로 전체) -->
-      <article class="card card--full" id="user-card">
-        <div class="card__head">
-          <h2 class="card__title">👥 사용자 관리</h2>
-          <p class="card__desc">가입된 유저 목록을 조회/검색/삭제할 수 있습니다.</p>
+    <!-- 2행: 사용자 관리 (가로 전체) -->
+    <article class="card card--full" id="user-card">
+      <div class="card__head">
+        <h2 class="card__title">👥 사용자 관리</h2>
+        <p class="card__desc">가입된 유저 목록을 조회/검색/삭제할 수 있습니다.</p>
+      </div>
+
+      <!-- 검색 & 새로고침 -->
+      <div class="table-actions search-group">
+        <div class="search-field">
+          <span class="search-icon">🔎</span>
+          <input type="text" id="user-search" class="input"
+                placeholder="이름 / 아이디 / 이메일 검색" />
         </div>
+        <button class="btn" id="refresh-users">
+          <span class="btn__spinner" aria-hidden="true"></span>
+          새로고침
+        </button>
+      </div>
 
-        <!-- 검색 & 새로고침 -->
-        <div class="table-actions search-group">
-          <div class="search-field">
-            <span class="search-icon">🔎</span>
-            <input type="text" id="user-search" class="input"
-                  placeholder="이름 / 아이디 / 이메일 검색" />
-          </div>
-          <button class="btn" id="refresh-users">
-            <span class="btn__spinner" aria-hidden="true"></span>
-            새로고침
-          </button>
-        </div>
+      <!-- 유저 테이블 -->
+      <div class="table-wrap">
+        <table class="table" id="user-table" aria-describedby="user-table-caption">
+          <caption id="user-table-caption" class="sr-only">가입 유저 목록</caption>
+          <thead>
+            <tr>
+              <th class="col-id">ID</th>
+              <th class="col-cr">USR_CR</th>
+              <th class="col-id2">USR_ID</th>
+              <th class="col-name">USR_NAME</th>
+              <th class="col-email">USR_EMAIL</th>
+              <th class="col-snm">USR_SNM</th>
+              <th class="col-actions">관리</th>
+            </tr>
+          </thead>
+          <tbody id="user-tbody">
+            <tr><td colspan="7" class="muted">목록을 불러오는 중…</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-        <!-- 유저 테이블 -->
-        <div class="table-wrap">
-          <table class="table" id="user-table" aria-describedby="user-table-caption">
-            <caption id="user-table-caption" class="sr-only">가입 유저 목록</caption>
-            <thead>
-              <tr>
-                <th class="col-id">ID</th>
-                <th class="col-cr">USR_CR</th>
-                <th class="col-id2">USR_ID</th>
-                <th class="col-name">USR_NAME</th>
-                <th class="col-email">USR_EMAIL</th>
-                <th class="col-snm">USR_SNM</th>
-                <th class="col-actions">관리</th>
-              </tr>
-            </thead>
-            <tbody id="user-tbody">
-              <tr><td colspan="7" class="muted">목록을 불러오는 중…</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="note" id="user-note" aria-live="polite"></div>
+    </article>
+  </section>
+</div>
+{% endblock %}
 
-        <div class="note" id="user-note" aria-live="polite"></div>
-      </article>
-    </section>
-  </main>
-
-  {% include 'common/footer.html' %}
-
-  <!-- 분리된 관리자 스크립트 -->
+{% block scripts %}
+  <!-- 관리자 페이지 전용 스크립트 -->
   <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
-</body>
-</html>
+{% endblock %}
