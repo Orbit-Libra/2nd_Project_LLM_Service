@@ -26,3 +26,7 @@ idna==3.7
 alembic==1.11.1
 Flask-Cors==4.0.1
 Flask-Login==0.6.3
+
+transformers
+torch
+tensorflow

@@ -107,3 +107,7 @@
 #chatSendBtn:hover {
   background: rgba(32, 68, 97, 0.9);
 }
+
+
+.chat-window { display: none; }
+.chat-window.open { display: block; }
