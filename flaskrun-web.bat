@@ -17,8 +17,5 @@ REM Flask 서버를 별도 콘솔에서 실행
 start cmd /k "flask run --host=0.0.0.0 --port=5000 --with-threads"
 
 REM 현재 콘솔 종료
-<<<<<<< HEAD
 exit
-=======
-exit
->>>>>>> main
+
