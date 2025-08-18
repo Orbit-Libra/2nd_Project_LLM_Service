@@ -1,11 +1,11 @@
 {% extends "common/base.html" %}
 
-{% block title %}Libra - 환경점수 분석{% endblock %}
+{% block title %}Libra - 환경점수 예측 분석{% endblock %}
 
 {% block head_extra %}
   <!-- 페이지 전용 CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/chartpage.css') }}">
-  <!-- 이 페이지에서만 필요한 CDN (Chart.js) -->
+  <!-- Chart.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
 {% endblock %}
 
@@ -132,8 +132,7 @@
       </div>
 
       <div class="chart-container">
-
-        <!-- ⬇⬇⬇ 필터 툴바: 가로 스크롤 칩/버튼 (여기가 위치야!) ⬇⬇⬇ -->
+        <!-- 필터 툴바: 가로 스크롤 칩/버튼 -->
         <div class="filter-toolbar">
           <button class="arrow-btn" id="fltPrev">‹</button>
           <div class="filter-scroll" id="filterScroll">
@@ -149,7 +148,6 @@
           </div>
           <button class="arrow-btn" id="fltNext">›</button>
         </div>
-        <!-- ⬆⬆⬆ 여기까지 넣으면 가로 스크롤 필터바 복원 ⬆⬆⬆ -->
 
         <!-- 그래프 2컬럼 레이아웃 -->
         <div class="chart-grid chart-grid--two-col">
@@ -236,7 +234,7 @@
 {% endblock %}
 
 {% block scripts %}
-  <!-- (선택) 좌우 버튼으로 필터바 스크롤 -->
+  <!-- 필터바 스크롤 기능 -->
   <script>
     window.addEventListener('DOMContentLoaded', function () {
       const sc = document.getElementById('filterScroll');

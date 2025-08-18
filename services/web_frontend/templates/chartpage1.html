@@ -73,20 +73,71 @@
               <option value="university">대학명 순</option>
             </select>
           </div>
+
+          <div class="form-group">
+            <label for="yAxisMode">Y축 스케일 설정</label>
+            <select id="yAxisMode" onchange="onYAxisModeChange()">
+              <option value="auto">자동 스케일</option>
+              <option value="zero">0부터 시작</option>
+              <option value="manual">수동 설정</option>
+            </select>
+          </div>
+
+          <!-- 수동 Y축 설정 -->
+          <div class="form-group" id="manualYAxisGroup" style="display: none;">
+            <label>Y축 범위 설정</label>
+            <div class="axis-range-container">
+              <div class="axis-input-group">
+                <label for="yAxisMin">최소값</label>
+                <input type="number" id="yAxisMin" value="0" step="0.1" onchange="onManualYAxisChange()">
+              </div>
+              <div class="axis-input-group">
+                <label for="yAxisMax">최대값</label>
+                <input type="number" id="yAxisMax" value="100" step="0.1" onchange="onManualYAxisChange()">
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="panel-section">
-          <h3>📈 출력 범위</h3>
-          <div class="form-group">
-            <label for="dataLimit">표시할 대학 수</label>
-            <select id="dataLimit" onchange="onDataLimitChange()">
-              <option value="10">상위 10개</option>
-              <option value="20">상위 20개</option>
-              <option value="50" selected>상위 50개</option>
-              <option value="100">상위 100개</option>
-              <option value="all">전체</option>
-            </select>
+          <h3>🏫 대학 선택</h3>
+          <div class="selection-mode">
+            <button class="mode-btn active" onclick="setSelectionMode('all')">필터링 후 전체</button>
+            <button class="mode-btn" onclick="setSelectionMode('manual')">수동 선택</button>
           </div>
+
+          <!-- 데이터 출력 범위 슬라이더 -->
+          <div class="form-group" id="dataRangeSliderGroup">
+            <label>출력 범위 (이름순 정렬)</label>
+            <div class="data-count-info" id="dataCountInfo">필터링된 데이터: 0개</div>
+            <div class="data-range-slider">
+              <div class="slider-container">
+                <button class="arrow-btn" onclick="adjustDataRange('start', -1)">◀</button>
+                <input type="range" id="dataStartSlider" class="range-slider" min="1" max="1" value="1" onchange="onDataSliderChange()">
+                <button class="arrow-btn" onclick="adjustDataRange('start', 1)">▶</button>
+                <span>~</span>
+                <button class="arrow-btn" onclick="adjustDataRange('end', -1)">◀</button>
+                <input type="range" id="dataEndSlider" class="range-slider" min="1" max="1" value="1" onchange="onDataSliderChange()">
+                <button class="arrow-btn" onclick="adjustDataRange('end', 1)">▶</button>
+              </div>
+              <div class="range-labels">
+                <span id="dataMinLabel">1</span>
+                <span id="dataMaxLabel">1</span>
+              </div>
+              <div class="selected-range" id="selectedDataRange">전체</div>
+            </div>
+          </div>
+
+          <div class="university-selector" id="universitySelector">
+            <div class="select-all-container">
+              <button class="select-all-btn" onclick="toggleAllUniversities()">전체 선택/해제</button>
+              <span class="selected-count" id="selectedCount">0개 선택됨</span>
+            </div>
+            <div id="universityList">
+              <!-- 동적으로 생성됨 -->
+            </div>
+          </div>
+
           <button class="generate-btn" onclick="generateChart()" type="button">차트 생성</button>
         </div>
 
@@ -126,6 +177,7 @@
               <div class="info-item"><span class="label">지역:</span><span class="value" id="currentRgn">전체</span></div>
               <div class="info-item"><span class="label">규모:</span><span class="value" id="currentUsc">전체</span></div>
               <div class="info-item"><span class="label">차트 타입:</span><span class="value" id="currentChartType">막대 차트</span></div>
+              <div class="info-item"><span class="label">선택 모드:</span><span class="value" id="currentSelectionMode">필터링 후 전체</span></div>
               <div class="info-item"><span class="label">데이터 수:</span><span class="value" id="dataCount">-</span></div>
             </div>
           </div>

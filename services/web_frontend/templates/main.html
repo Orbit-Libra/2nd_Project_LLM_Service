@@ -3,13 +3,12 @@
 {% block title %}Libra | Balancing Infrastructure{% endblock %}
 
 {% block head_extra %}
-  <!-- chatbot.css 경로 제거 (별도 파일이 없으므로) -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
 {% endblock %}
 
 {% block content %}
-  <!-- 스크롤 컨테이너 -->
-  <div class="sections-wrapper" id="sections-wrapper">
+  <!-- 스크롤 컨테이너: 커스텀 오버레이 썸 대상 -->
+  <div class="sections-wrapper scroll-area" id="sections-wrapper">
     <!-- Section 0: Hero Slider -->
     <section class="section slider" id="hero-slider">
       <div class="slide active">
@@ -45,7 +44,7 @@
         <img class="sub-img" src="{{ url_for('static', filename='images/slide01.jpg') }}" alt="환경 점수 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">환경점수 검색</span><br/>
-          <span class="sub-title-sub">>> 대학별 인프라<br/>점수 찾아보기</span>
+          <span class="sub-title-sub">&gt;&gt; 대학별 인프라<br/>점수 찾아보기</span>
         </div>
       </div>
 
@@ -53,7 +52,7 @@
         <img class="sub-img" src="{{ url_for('static', filename='images/slide02.jpg') }}" alt="점수 변환 예측">
         <div class="sub-overlay">
           <span class="sub-title-main">발전도 검색</span><br/>
-          <span class="sub-title-sub">>> 연도 별 점수 추이 찾아보기</span>
+          <span class="sub-title-sub">&gt;&gt; 연도 별 점수 추이 찾아보기</span>
         </div>
       </div>
 
@@ -61,7 +60,7 @@
         <img class="sub-img" src="{{ url_for('static', filename='images/slide03.jpg') }}" alt="로그인 전용">
         <div class="sub-overlay">
           <span class="sub-title-main">마이 서비스</span><br/>
-          <span class="sub-title-sub">>> 나의 데이터로<br/>환경점수 알아보기</span>
+          <span class="sub-title-sub">&gt;&gt; 나의 데이터로<br/>환경점수 알아보기</span>
         </div>
       </div>
     </section>
@@ -96,7 +95,6 @@
   </div>
 {% endblock %}
 
-{# 전역 푸터 중복 방지 #}
 {% block base_footer %}{% endblock %}
 
 {% block scripts %}

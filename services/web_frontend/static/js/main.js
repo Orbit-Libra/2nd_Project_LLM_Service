@@ -1,6 +1,12 @@
-// main.js — 슬라이더/카드/챗봇만 (헤더 관련 로직 제거)
+// main.js — 슬라이더/카드/챗봇 전용
 
 window.addEventListener('DOMContentLoaded', () => {
+  // 안전장치: 스크롤 컨테이너 지정
+  const sections = document.getElementById('sections-wrapper');
+  if (sections && !sections.classList.contains('scroll-area')) {
+    sections.classList.add('scroll-area');
+  }
+
   initializeSlider();
   initializeSubCards();
   initializeChatbot();
@@ -15,33 +21,33 @@ function initializeSlider() {
   if (!slides.length) return;
 
   let idx = 0, timerId = null;
-  const showSlide = (i) => { 
-    slides.forEach(s => s.classList.remove('active')); 
-    slides[i]?.classList.add('active'); 
+  const showSlide = (i) => {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[i]?.classList.add('active');
   };
-  const scheduleNext = () => { 
+  const scheduleNext = () => {
     clearTimeout(timerId);
     if (slides.length > 1) {
-      timerId = setTimeout(() => { 
-        idx = (idx + 1) % slides.length; 
-        showSlide(idx); 
-        scheduleNext(); 
+      timerId = setTimeout(() => {
+        idx = (idx + 1) % slides.length;
+        showSlide(idx);
+        scheduleNext();
       }, SLIDE_INTERVAL);
     }
   };
-  
-  showSlide(idx); 
+
+  showSlide(idx);
   scheduleNext();
-  
-  prevBtn?.addEventListener('click', () => { 
-    idx = (idx - 1 + slides.length) % slides.length; 
-    showSlide(idx); 
-    scheduleNext(); 
+
+  prevBtn?.addEventListener('click', () => {
+    idx = (idx - 1 + slides.length) % slides.length;
+    showSlide(idx);
+    scheduleNext();
   });
-  nextBtn?.addEventListener('click', () => { 
-    idx = (idx + 1) % slides.length; 
-    showSlide(idx); 
-    scheduleNext(); 
+  nextBtn?.addEventListener('click', () => {
+    idx = (idx + 1) % slides.length;
+    showSlide(idx);
+    scheduleNext();
   });
 }
 
@@ -55,12 +61,12 @@ function initializeSubCards() {
     const url = window.chartUrl || sub1.dataset.link;
     if (url) window.location.href = url;
   });
-  
+
   sub2?.addEventListener('click', () => {
     const url = window.predictionUrl || sub2.dataset.link;
     if (url) window.location.href = url;
   });
-  
+
   sub3?.addEventListener('click', (e) => {
     e.preventDefault();
     const isLoggedIn = window.isLoggedIn === true || window.isLoggedIn === 'true';
@@ -70,12 +76,12 @@ function initializeSubCards() {
 
 /* 챗봇 */
 function initializeChatbot() {
-  const chatToggle = document.getElementById('chatToggle');
-  const chatWindow = document.getElementById('chatWindow');
-  const chatCloseBtn = document.getElementById('chatCloseBtn');
-  const chatBody = document.getElementById('chatBody');
-  const chatInput = document.getElementById('chatInput');
-  const chatSendBtn = document.getElementById('chatSendBtn');
+  const chatToggle  = document.getElementById('chatToggle');
+  const chatWindow  = document.getElementById('chatWindow');
+  const chatClose   = document.getElementById('chatCloseBtn');
+  const chatBody    = document.getElementById('chatBody');
+  const chatInput   = document.getElementById('chatInput');
+  const chatSend    = document.getElementById('chatSendBtn');
 
   const sendMessage = () => {
     if (!chatInput || !chatBody) return;
@@ -99,13 +105,13 @@ function initializeChatbot() {
       max-width:80%; margin-right:auto; word-wrap:break-word;`;
     botMsg.textContent = '안녕하세요! Libra 서비스에 대해 궁금한 것이 있으시면 언제든 문의해 주세요. 현재는 데모 모드입니다.';
 
-    setTimeout(() => { 
-      chatBody.appendChild(botMsg); 
-      chatBody.scrollTop = chatBody.scrollHeight; 
+    setTimeout(() => {
+      chatBody.appendChild(botMsg);
+      chatBody.scrollTop = chatBody.scrollHeight;
     }, 400);
-    
+
     chatBody.scrollTop = chatBody.scrollHeight;
-    chatInput.value = ''; 
+    chatInput.value = '';
     chatInput.focus();
   };
 
@@ -115,12 +121,12 @@ function initializeChatbot() {
     if (chatWindow.classList.contains('open') && chatInput) chatInput.focus();
   });
 
-  chatCloseBtn?.addEventListener('click', () => chatWindow?.classList.remove('open'));
-  chatSendBtn?.addEventListener('click', sendMessage);
-  chatInput?.addEventListener('keydown', (e) => { 
-    if (e.key === 'Enter') { 
-      e.preventDefault(); 
-      sendMessage(); 
-    } 
+  chatClose?.addEventListener('click', () => chatWindow?.classList.remove('open'));
+  chatSend?.addEventListener('click', sendMessage);
+  chatInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendMessage();
+    }
   });
 }
