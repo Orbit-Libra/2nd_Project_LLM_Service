@@ -1,0 +1,10 @@
+/* ===== Footer (전역) ===== */
+#site-footer[data-hf]{
+  width:100%;
+  padding:2rem 0;
+  background:#0d1f2d;
+  color:#fff;
+  text-align:center;
+  font-size:1.1rem;
+  font-family:'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
