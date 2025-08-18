@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from flask import Flask, render_template, request, redirect, session, url_for, g
+from flask import Flask, render_template, request, redirect, session, url_for
 from dotenv import load_dotenv
 
 # --- 로깅 기본 설정 (환경변수로 레벨 조절 가능) ---
@@ -82,7 +82,7 @@ def create_app():
         return render_template('login.html', error=error)
 
     # 회원가입 페이지 (템플릿 라우트)
-    @app.route('/register', methods=['GET'])
+    @app.route('/register', methods=['GET'], endpoint='register')
     def register_page():
         return render_template('register.html')
 

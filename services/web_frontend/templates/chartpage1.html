@@ -1,176 +1,193 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Libra - 환경점수 분석</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header-footer.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/chartpage1.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-</head>
-<body>
-    <!-- 공통 헤더 -->
-    {% include 'common/header.html' %}
+{% extends "common/base.html" %}
 
-    <main>
-        <div class="container">
-            <div class="main-layout">
-                <!-- 왼쪽 컨트롤 패널 -->
-                <aside class="control-panel">
-                    <div class="panel-section">
-                        <h3>📊 데이터 설정</h3>
-                        <div class="form-group">
-                            <label for="yearSelect">연도 선택</label>
-                            <select id="yearSelect" onchange="onYearChange()">
-                                <!-- 동적으로 연도 옵션이 추가됨 -->
-                            </select>
-                        </div>
-                    </div>
+{% block title %}Libra - 환경점수 분석{% endblock %}
 
-                    <div class="panel-section">
-                        <h3>🔍 필터 선택</h3>
-                        
-                        <div class="form-group">
-                            <label for="stypFilter">대학유형</label>
-                            <select id="stypFilter" onchange="onFilterChange()">
-                                <option value="전체">전체</option>
-                            </select>
-                        </div>
+{% block head_extra %}
+  <!-- 페이지 전용 CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chartpage.css') }}">
+  <!-- 이 페이지에서만 필요한 CDN (Chart.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+{% endblock %}
 
-                        <div class="form-group">
-                            <label for="fndFilter">설립</label>
-                            <select id="fndFilter" onchange="onFilterChange()">
-                                <option value="전체">전체</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="rgnFilter">지역</label>
-                            <select id="rgnFilter" onchange="onFilterChange()">
-                                <option value="전체">전체</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="uscFilter">규모</label>
-                            <select id="uscFilter" onchange="onFilterChange()">
-                                <option value="전체">전체</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="chartType">차트 타입</label>
-                            <select id="chartType" onchange="onChartTypeChange()">
-                                <option value="bar">막대 차트</option>
-                                <option value="line">선 차트</option>
-                                <option value="scatter">산점도</option>
-                                <option value="pie">원형 차트</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="sortOrder">정렬 방식</label>
-                            <select id="sortOrder" onchange="onSortOrderChange()">
-                                <option value="rank_desc">환경점수 높은 순</option>
-                                <option value="rank_asc">환경점수 낮은 순</option>
-                                <option value="university">대학명 순</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="panel-section">
-                        <h3>📈 출력 범위</h3>
-                        
-                        <div class="form-group">
-                            <label for="dataLimit">표시할 대학 수</label>
-                            <select id="dataLimit" onchange="onDataLimitChange()">
-                                <option value="10">상위 10개</option>
-                                <option value="20">상위 20개</option>
-                                <option value="50" selected>상위 50개</option>
-                                <option value="100">상위 100개</option>
-                                <option value="all">전체</option>
-                            </select>
-                        </div>
-
-                        <button class="generate-btn" onclick="generateChart()" type="button">
-                            차트 생성
-                        </button>
-                    </div>
-
-                    <div class="panel-actions">
-                        <button class="action-btn primary" onclick="exportChart()" type="button">
-                            차트 내보내기
-                        </button>
-                    </div>
-                </aside>
-
-                <!-- 오른쪽 차트 영역 -->
-                <section class="chart-area">
-                    <div class="chart-header">
-                        <h2>환경점수 분석</h2>
-                    </div>
-
-                    <div class="chart-container">
-                        <canvas id="mainChart"></canvas>
-                        <div class="chart-loading" id="chartLoading" style="display: none;">
-                            <div class="loading-spinner"></div>
-                            <p>차트를 생성하고 있습니다...</p>
-                        </div>
-                        <div class="chart-placeholder" id="chartPlaceholder">
-                            <div class="placeholder-content">
-                                <div class="placeholder-icon">📊</div>
-                                <h3>차트가 표시될 영역입니다</h3>
-                                <p>연도와 필터를 선택한 후 '차트 생성' 버튼을 클릭하세요.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="chart-info">
-                        <div class="info-card">
-                            <h4>현재 분석 정보</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="label">연도:</span>
-                                    <span class="value" id="currentYear">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">대학유형:</span>
-                                    <span class="value" id="currentStyp">전체</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">설립:</span>
-                                    <span class="value" id="currentFnd">전체</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">지역:</span>
-                                    <span class="value" id="currentRgn">전체</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">규모:</span>
-                                    <span class="value" id="currentUsc">전체</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">차트 타입:</span>
-                                    <span class="value" id="currentChartType">막대 차트</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">데이터 수:</span>
-                                    <span class="value" id="dataCount">-</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+{% block content %}
+  <div class="container">
+    <div class="main-layout">
+      <!-- 왼쪽 컨트롤 패널 -->
+      <aside class="control-panel">
+        <div class="panel-section">
+          <h3>📊 데이터 설정</h3>
+          <div class="form-group">
+            <label for="yearSelect">연도 선택</label>
+            <select id="yearSelect" onchange="onYearChange()">
+              <!-- 동적으로 연도 옵션이 추가됨 -->
+            </select>
+          </div>
         </div>
-    </main>
 
-    <!-- 공통 푸터 -->
-    {% include 'common/footer.html' %}
+        <div class="panel-section">
+          <h3>🔍 필터 선택</h3>
 
-    <!-- JS 파일들 -->
-    <script src="{{ url_for('static', filename='js/common/utils.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/common/header-footer.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/chartpage1.js') }}"></script>
-</body>
-</html>
+          <div class="form-group">
+            <label for="stypFilter">대학유형</label>
+            <select id="stypFilter" onchange="onFilterChange()">
+              <option value="전체">전체</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fndFilter">설립</label>
+            <select id="fndFilter" onchange="onFilterChange()">
+              <option value="전체">전체</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="rgnFilter">지역</label>
+            <select id="rgnFilter" onchange="onFilterChange()">
+              <option value="전체">전체</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="uscFilter">규모</label>
+            <select id="uscFilter" onchange="onFilterChange()">
+              <option value="전체">전체</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="chartType">차트 타입</label>
+            <select id="chartType" onchange="onChartTypeChange()">
+              <option value="bar">막대 차트</option>
+              <option value="line">선 차트</option>
+              <option value="scatter">산점도</option>
+              <option value="pie">원형 차트</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="sortOrder">정렬 방식</label>
+            <select id="sortOrder" onchange="onSortOrderChange()">
+              <option value="rank_desc">환경점수 높은 순</option>
+              <option value="rank_asc">환경점수 낮은 순</option>
+              <option value="university">대학명 순</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="yAxisMode">Y축 스케일 설정</label>
+            <select id="yAxisMode" onchange="onYAxisModeChange()">
+              <option value="auto">자동 스케일</option>
+              <option value="zero">0부터 시작</option>
+              <option value="manual">수동 설정</option>
+            </select>
+          </div>
+
+          <!-- 수동 Y축 설정 -->
+          <div class="form-group" id="manualYAxisGroup" style="display: none;">
+            <label>Y축 범위 설정</label>
+            <div class="axis-range-container">
+              <div class="axis-input-group">
+                <label for="yAxisMin">최소값</label>
+                <input type="number" id="yAxisMin" value="0" step="0.1" onchange="onManualYAxisChange()">
+              </div>
+              <div class="axis-input-group">
+                <label for="yAxisMax">최대값</label>
+                <input type="number" id="yAxisMax" value="100" step="0.1" onchange="onManualYAxisChange()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>🏫 대학 선택</h3>
+          <div class="selection-mode">
+            <button class="mode-btn active" onclick="setSelectionMode('all')">필터링 후 전체</button>
+            <button class="mode-btn" onclick="setSelectionMode('manual')">수동 선택</button>
+          </div>
+
+          <!-- 데이터 출력 범위 슬라이더 -->
+          <div class="form-group" id="dataRangeSliderGroup">
+            <label>출력 범위 (이름순 정렬)</label>
+            <div class="data-count-info" id="dataCountInfo">필터링된 데이터: 0개</div>
+            <div class="data-range-slider">
+              <div class="slider-container">
+                <button class="arrow-btn" onclick="adjustDataRange('start', -1)">◀</button>
+                <input type="range" id="dataStartSlider" class="range-slider" min="1" max="1" value="1" onchange="onDataSliderChange()">
+                <button class="arrow-btn" onclick="adjustDataRange('start', 1)">▶</button>
+                <span>~</span>
+                <button class="arrow-btn" onclick="adjustDataRange('end', -1)">◀</button>
+                <input type="range" id="dataEndSlider" class="range-slider" min="1" max="1" value="1" onchange="onDataSliderChange()">
+                <button class="arrow-btn" onclick="adjustDataRange('end', 1)">▶</button>
+              </div>
+              <div class="range-labels">
+                <span id="dataMinLabel">1</span>
+                <span id="dataMaxLabel">1</span>
+              </div>
+              <div class="selected-range" id="selectedDataRange">전체</div>
+            </div>
+          </div>
+
+          <div class="university-selector" id="universitySelector">
+            <div class="select-all-container">
+              <button class="select-all-btn" onclick="toggleAllUniversities()">전체 선택/해제</button>
+              <span class="selected-count" id="selectedCount">0개 선택됨</span>
+            </div>
+            <div id="universityList">
+              <!-- 동적으로 생성됨 -->
+            </div>
+          </div>
+
+          <button class="generate-btn" onclick="generateChart()" type="button">차트 생성</button>
+        </div>
+
+        <div class="panel-actions">
+          <button class="action-btn primary" onclick="exportChart()" type="button">차트 내보내기</button>
+        </div>
+      </aside>
+
+      <!-- 오른쪽 차트 영역 -->
+      <section class="chart-area">
+        <div class="chart-header">
+          <h2>환경점수 분석</h2>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="mainChart"></canvas>
+          <div class="chart-loading" id="chartLoading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>차트를 생성하고 있습니다...</p>
+          </div>
+          <div class="chart-placeholder" id="chartPlaceholder">
+            <div class="placeholder-content">
+              <div class="placeholder-icon">📊</div>
+              <h3>차트가 표시될 영역입니다</h3>
+              <p>연도와 필터를 선택한 후 '차트 생성' 버튼을 클릭하세요.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-info">
+          <div class="info-card">
+            <h4>현재 분석 정보</h4>
+            <div class="info-grid">
+              <div class="info-item"><span class="label">연도:</span><span class="value" id="currentYear">-</span></div>
+              <div class="info-item"><span class="label">대학유형:</span><span class="value" id="currentStyp">전체</span></div>
+              <div class="info-item"><span class="label">설립:</span><span class="value" id="currentFnd">전체</span></div>
+              <div class="info-item"><span class="label">지역:</span><span class="value" id="currentRgn">전체</span></div>
+              <div class="info-item"><span class="label">규모:</span><span class="value" id="currentUsc">전체</span></div>
+              <div class="info-item"><span class="label">차트 타입:</span><span class="value" id="currentChartType">막대 차트</span></div>
+              <div class="info-item"><span class="label">선택 모드:</span><span class="value" id="currentSelectionMode">필터링 후 전체</span></div>
+              <div class="info-item"><span class="label">데이터 수:</span><span class="value" id="dataCount">-</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <!-- 페이지 전용 JS -->
+  <script src="{{ url_for('static', filename='js/chartpage1.js') }}" defer></script>
+{% endblock %}

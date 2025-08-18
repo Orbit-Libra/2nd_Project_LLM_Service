@@ -1,0 +1,133 @@
+/* ===== Header (전역, 모든 페이지 동일) ===== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap');
+
+/* 전역 기본 여백 제거 */
+html, body { margin: 0; padding: 0; }
+
+/* 변수 */
+:root{
+  --hf-font-sans: 'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --hf-header-height: 70px;
+  --hf-header-bg-transparent: transparent;
+  --hf-header-bg-floating: rgba(0,0,0,.8); /* 버튼으로 띄울 때만 적용 */
+  --hf-header-text: #fff;
+  --hf-logo-text: lab(69.67% -15.03 -23.49);
+}
+
+/* 헤더 컨테이너 */
+#site-header[data-hf]{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--hf-header-height);
+  width: 100%;
+  padding: 1rem 20px;
+  display: flex; align-items: center;
+  background: var(--hf-header-bg-transparent);
+  color: var(--hf-header-text);
+  z-index: 100;
+  transition: transform .3s ease, opacity .3s ease, background-color .3s ease;
+  will-change: transform, opacity, background-color;
+  box-sizing: border-box;
+  font-family: var(--hf-font-sans);
+  font-size: 16px;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 헤더 내부 가드 */
+#site-header *, #site-header *::before, #site-header *::after{
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: inherit;
+}
+
+/* 링크 기본 */
+#site-header a, #site-header a:visited, #site-header a:hover, #site-header a:focus{
+  color: #fff;
+  text-decoration: none;
+}
+
+/* 상태 */
+#site-header.hidden{ 
+  transform: translateY(-100%); 
+  opacity: 0; 
+  pointer-events: none;
+}
+#site-header.floating-hover{
+  transform: translateY(0);
+  opacity: 1;
+  background: var(--hf-header-bg-floating);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+}
+
+/* 로고 */
+#site-header .logo{ display:flex; align-items:center; cursor:pointer;
+  text-shadow: 0 .1rem .2rem rgba(0,0,0,.5), 0 .05rem .1rem rgba(0,0,0,.3);
+  transition: color .2s ease, transform .2s ease;
+}
+#site-header #logo-link{ display:flex; align-items:center; }
+#site-header #logo-img{
+  height:40px; width:auto; max-width:40px;
+  margin-right:.8rem; transition: transform .3s ease, filter .3s ease;
+}
+#site-header #logo-text{ color: var(--hf-logo-text); font-size:1.3rem; font-weight:700; }
+#site-header .logo:hover #logo-img{ transform: scale(1.05) translateY(-.1rem); filter: brightness(1.1); }
+
+/* 네비 */
+#site-header nav{
+  margin-left:auto; margin-right:2rem;
+  display:flex; align-items:center; gap:2rem;
+}
+#site-header .nav-link{
+  display:inline-flex; align-items:center;
+  margin:0; padding:.25rem 0;
+  font-size:1.1rem; font-weight:700;
+  text-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.7), 0 0.05rem 0.1rem rgba(0,0,0,0.5);
+  transition: color .2s ease, transform .2s ease;
+}
+#site-header .nav-link:hover{
+  color: var(--hf-logo-text); transform: scale(1.05);
+  text-shadow: 0 0.2rem 0.4rem rgba(0,0,0,0.8), 0 0.1rem 0.2rem rgba(0,0,0,0.6);
+}
+
+/* ── 플로팅 헤더 버튼(전 페이지 공통) ── */
+#floating-header-btn{
+  position: fixed; top:20px; right:20px;
+  width:50px; height:50px; display:flex; align-items:center; justify-content:center;
+  background: rgba(255,255,255,.28); border:2px solid rgba(255,255,255,.5);
+  border-radius:50%; color:#fff; font-size:20px; cursor:pointer; z-index:101;
+  backdrop-filter: blur(10px);
+  opacity:0; visibility:hidden; transform: scale(.88);
+  transition: opacity .25s ease, transform .25s ease, visibility .25s ease, background .2s ease;
+  pointer-events: none;
+}
+#floating-header-btn.visible{ 
+  opacity:1; 
+  visibility:visible; 
+  transform: scale(1); 
+  pointer-events: auto;
+}
+#floating-header-btn.hiddenBtn{ 
+  opacity:0; 
+  visibility:hidden; 
+  transform: scale(.9); 
+  pointer-events: none;
+}
+#floating-header-btn:hover{ background: rgba(255,255,255,.45); transform: scale(1.04); }
+#floating-header-btn::before{ content:"☰"; }
+
+/* 반응형 */
+@media (max-width:768px){
+  #site-header{ padding:.8rem 2vw; height:60px; }
+  #site-header #logo-img{ height:35px; max-width:35px; }
+  #site-header #logo-text{ font-size:1.1rem; }
+  #site-header nav{ gap:1rem; margin-right:1rem; }
+  #site-header .nav-link{ font-size:.95rem; }
+  #floating-header-btn{ width:45px; height:45px; font-size:18px; }
+}
+@media (max-width:480px){
+  #site-header #logo-img{ height:30px; max-width:30px; }
+  #site-header #logo-text{ font-size:1rem; }
+}
