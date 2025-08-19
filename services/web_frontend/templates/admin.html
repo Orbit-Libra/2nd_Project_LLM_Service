@@ -38,13 +38,12 @@
       </div>
 
       <div class="ports">
-       <!-- 포트 5050 -->
+        <!-- 포트 5050 -->
         <div class="port-row">
           <div class="port-label">포트 5050</div>
           <div class="port-status" id="port-5050-status">
             <span class="badge badge--muted">확인 중…</span>
           </div>
-          <!-- ✅ 추가: 연결 텍스트 -->
           <div class="port-conn" id="port-5050-conn"><span class="muted">확인 중…</span></div>
         </div>
 
@@ -54,8 +53,16 @@
           <div class="port-status" id="port-5100-status">
             <span class="badge badge--muted">확인 중…</span>
           </div>
-          <!-- ✅ 추가: 연결 텍스트 -->
           <div class="port-conn" id="port-5100-conn"><span class="muted">확인 중…</span></div>
+        </div>
+
+        <!-- ✅ 포트 5150 (챗봇 서버) -->
+        <div class="port-row">
+          <div class="port-label">포트 5150</div>
+          <div class="port-status" id="port-5150-status">
+            <span class="badge badge--muted">확인 중…</span>
+          </div>
+          <div class="port-conn" id="port-5150-conn"><span class="muted">확인 중…</span></div>
         </div>
       </div>
 
@@ -69,12 +76,11 @@
         <p class="card__desc">가입된 유저 목록을 조회/검색/삭제할 수 있습니다.</p>
       </div>
 
-      <!-- 검색 & 새로고침 -->
       <div class="table-actions search-group">
         <div class="search-field">
           <span class="search-icon">🔎</span>
           <input type="text" id="user-search" class="input"
-                placeholder="이름 / 아이디 / 이메일 검색" />
+                 placeholder="이름 / 아이디 / 이메일 검색" />
         </div>
         <button class="btn" id="refresh-users">
           <span class="btn__spinner" aria-hidden="true"></span>
@@ -82,7 +88,6 @@
         </button>
       </div>
 
-      <!-- 유저 테이블 -->
       <div class="table-wrap">
         <table class="table" id="user-table" aria-describedby="user-table-caption">
           <caption id="user-table-caption" class="sr-only">가입 유저 목록</caption>
@@ -110,6 +115,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <!-- 관리자 페이지 전용 스크립트 -->
   <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 {% endblock %}

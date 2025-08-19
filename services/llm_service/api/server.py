@@ -16,21 +16,21 @@ def _ensure_dir(p: str):
 def _load_model():
     """
     환경변수 기반으로 HF 모델을 1회 로딩.
-    캐시 디렉토리는 services/llm_service/huggingface 기본값.
+    캐시 디렉토리는 이 파일 기준 ../huggingface 기본값.
     """
     global _model, _pipe
     if _pipe is not None:
         return _pipe
 
-    # --- 환경변수 읽기
-    HF_TOKEN     = (os.getenv("HUGGINGFACE_TOKEN")).strip()
-    HF_MODEL_ID  = (os.getenv("HF_MODEL_ID")).strip()
+    # --- 환경변수 읽기 (None 방지용 기본값 처리)
+    HF_TOKEN    = (os.getenv("HUGGINGFACE_TOKEN") or "").strip()
+    HF_MODEL_ID = (os.getenv("HF_MODEL_ID") or "MLP-KTLim/Llama-3-Korean-Bllossom-8B").strip()
 
     # 기본 캐시 경로: 이 파일 기준 ../huggingface
-    base_dir     = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    default_cache= os.path.join(base_dir, 'huggingface')
-    HF_CACHE_DIR = (os.getenv("HF_CACHE_DIR") or default_cache)
-    HF_CACHE_DIR = str(pathlib.Path(HF_CACHE_DIR).resolve())
+    base_dir      = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    default_cache = os.path.join(base_dir, 'huggingface')
+    HF_CACHE_DIR  = (os.getenv("HF_CACHE_DIR") or default_cache)
+    HF_CACHE_DIR  = str(pathlib.Path(HF_CACHE_DIR).resolve())
     _ensure_dir(HF_CACHE_DIR)
 
     # (옵션) CPU 스레드 튜닝 - 환경변수로 제어
@@ -62,11 +62,11 @@ def _load_model():
         token=HF_TOKEN or None,
         cache_dir=HF_CACHE_DIR,
         trust_remote_code=True,
-        torch_dtype=torch.bfloat16,   # ★ fp32 → bf16
-        low_cpu_mem_usage=True        # ★ 로딩 피크↓
+        torch_dtype=torch.bfloat16,   # fp32 → bf16 (메모리/대역폭 절감)
+        low_cpu_mem_usage=True        # 로딩 피크↓
     ).eval()
 
-    # CPU 고정(자동도 되지만 명시)
+    # CPU 고정(명시)
     _pipe = pipeline(
         "text-generation",
         model=model,
@@ -79,7 +79,7 @@ def _load_model():
 def create_app():
     app = Flask(__name__)
 
-    # --- .env 로드: 이 파일 기준 ../.env  (요청하신 경로 보정 방식)
+    # --- .env 로드: 이 파일 기준 ../.env (요청한 경로 보정 방식)
     env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
     if os.path.exists(env_path):
         load_dotenv(dotenv_path=env_path)
@@ -91,49 +91,71 @@ def create_app():
     def health():
         return {"status": "ok"}
 
-    @api.post("/generate")
+    @app.post("/generate")
     def generate():
+        """
+        JSON 예:
+        {
+          "message": "질문",
+          "max_new_tokens": 32,
+          "do_sample": false,          # 기본 False (빠름/단호)
+          "temperature": 0.7,
+          "top_p": 0.9,
+          "repetition_penalty": 1.05,
+          "no_repeat_ngram_size": 3
+        }
+        """
         data = request.get_json(silent=True) or {}
         message = (data.get("message") or "").strip()
         if not message:
             return jsonify({"error": "message is required"}), 400
 
-        # 기본값: 빠르게
-        max_new_tokens = int(data.get("max_new_tokens", 32))
-        do_sample      = bool(data.get("do_sample", False))  # 기본 False = 빠른/단호한 답
-        temperature    = float(data.get("temperature", 0.7))
-        top_p          = float(data.get("top_p", 0.9))
+        # 기본값: 속도 우선
+        max_new_tokens      = int(data.get("max_new_tokens", 32))
+        do_sample           = bool(data.get("do_sample", False))  # 기본 False = 빠른/단호한 답
+        temperature         = float(data.get("temperature", 0.7))
+        top_p               = float(data.get("top_p", 0.9))
+        repetition_penalty  = float(data.get("repetition_penalty", 1.05))
+        no_repeat_ngram_sz  = int(data.get("no_repeat_ngram_size", 3))
 
         pipe = _load_model()
         tok  = pipe.tokenizer
-        eos_id = tok.eos_token_id or getattr(getattr(pipe, "model", None), "config", None) and pipe.model.config.eos_token_id
 
-        # (선택) Llama-3 계열은 chat 템플릿 쓰면 품질↑ (길이는 약간 늘어남)
-        # messages = [
-        #   {"role":"system","content":"한국어로 간결하고 정확히 답해라."},
-        #   {"role":"user","content": message}
-        # ]
-        # prompt = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        prompt = message  # 가장 빠른 프롬프트
+        # eos 토큰 안전 획득
+        eos_id = tok.eos_token_id
+        if eos_id is None:
+            model_cfg = getattr(getattr(pipe, "model", None), "config", None)
+            eos_id = getattr(model_cfg, "eos_token_id", None)
 
+        # 프롬프트 최소화 (짧을수록 빠름)
+        # Llama-3 chat 템플릿을 쓰고 싶다면 apply_chat_template 사용을 고려.
+        prompt = message
+
+        # 공통 생성 옵션
         gen_kwargs = dict(
             max_new_tokens=max_new_tokens,
-            eos_token_id=eos_id,
-            pad_token_id=eos_id,
             return_full_text=False,
         )
-        if do_sample:
-            gen_kwargs.update(do_sample=True, temperature=temperature, top_p=top_p,
-                            repetition_penalty=float(data.get("repetition_penalty", 1.05)),
-                            no_repeat_ngram_size=int(data.get("no_repeat_ngram_size", 3)))
-        else:
-            gen_kwargs.update(do_sample=False)  # 샘플링 인자 전달 X → 경고 사라짐
+        if eos_id is not None:
+            gen_kwargs.update(eos_token_id=eos_id, pad_token_id=eos_id)
 
-        import torch
+        # 샘플링 조건부 적용(경고 방지: do_sample=False면 temperature/top_p 안 보냄)
+        if do_sample:
+            gen_kwargs.update(
+                do_sample=True,
+                temperature=temperature,
+                top_p=top_p,
+                repetition_penalty=repetition_penalty,
+                no_repeat_ngram_size=no_repeat_ngram_sz,
+            )
+        else:
+            gen_kwargs.update(do_sample=False)
+
         with torch.no_grad():
             out = pipe(prompt, **gen_kwargs)[0]["generated_text"]
 
-        return jsonify({"message": message, "answer": (out or '').strip()})
+        answer = (out or "").strip()
+        return jsonify({"message": message, "answer": answer})
 
     return app
 

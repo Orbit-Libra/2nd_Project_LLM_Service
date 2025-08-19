@@ -41,7 +41,6 @@ function initSyncCard() {
 }
 
 // ───────── 시스템 설정 (포트 상태) ─────────
-
 function renderConn(el, isOpen, onText, offText) {
   if (!el) return;
   if (isOpen === true) {
@@ -52,12 +51,15 @@ function renderConn(el, isOpen, onText, offText) {
     el.innerHTML = `<span class="muted">알 수 없음</span>`;
   }
 }
+
 async function refreshPorts() {
   const systemLog = document.getElementById("system-log");
   const el5050 = document.getElementById("port-5050-status");
   const el5100 = document.getElementById("port-5100-status");
+  const el5150 = document.getElementById("port-5150-status"); // ✅ 추가
   const conn5050 = document.getElementById("port-5050-conn");
   const conn5100 = document.getElementById("port-5100-conn");
+  const conn5150 = document.getElementById("port-5150-conn"); // ✅ 추가
 
   try {
     const res = await fetch("/admin/ports");
@@ -67,16 +69,20 @@ async function refreshPorts() {
 
     const open5050 = map.get(5050);
     const open5100 = map.get(5100);
+    const open5150 = map.get(5150); // ✅ 추가
 
     renderBadge(el5050, open5050);
     renderBadge(el5100, open5100);
+    renderBadge(el5150, open5150);   // ✅ 추가
 
     renderConn(conn5050, open5050, "데이터서버 연결 on", "데이터서버 연결 off");
     renderConn(conn5100, open5100, "예측서버 연결 on", "예측서버 연결 off");
+    renderConn(conn5150, open5150, "챗봇서버 연결 on", "챗봇서버 연결 off"); // ✅ 추가
   } catch (err) {
     systemLog && (systemLog.textContent = `❌ 포트 조회 실패: ${err.message || err}`);
     renderConn(conn5050, undefined);
     renderConn(conn5100, undefined);
+    renderConn(conn5150, undefined); // ✅ 추가
   }
 }
 

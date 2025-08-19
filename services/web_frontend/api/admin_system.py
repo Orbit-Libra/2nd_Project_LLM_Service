@@ -27,11 +27,11 @@ def _is_port_open(port: int, host: str = "127.0.0.1", timeout: float = 0.5) -> b
 @admin_system_bp.get("/admin/ports")
 def ports_status():
     """
-    5050, 5100 포트 열림 여부 반환
-    응답 예: {"ports":[{"port":5050,"open":true},{"port":5100,"open":false}]}
+    5050, 5100, 5150 포트 열림 여부 반환
+    응답 예: {"ports":[{"port":5050,"open":true},{"port":5100,"open":false},{"port":5150,"open":true}]}
     """
     _require_admin()
-    ports = [5050, 5100]
+    ports = [5050, 5100, 5150]
     return jsonify({"ports": [{"port": p, "open": _is_port_open(p)} for p in ports]})
 
 # ─────────────────────────────────────────────────────────────
