@@ -91,42 +91,49 @@ def create_app():
     def health():
         return {"status": "ok"}
 
-    @app.post("/generate")
+    @api.post("/generate")
     def generate():
-        """
-        JSON: { "message": "질문", "max_new_tokens": 32, "temperature": 0.0, "top_p": 1.0 }
-        """
         data = request.get_json(silent=True) or {}
         message = (data.get("message") or "").strip()
         if not message:
             return jsonify({"error": "message is required"}), 400
 
-        # 속도 최우선 기본값
-        max_new_tokens = int(data.get("max_new_tokens", 32))   # ★ 32 ~ 64 권장
-        temperature    = float(data.get("temperature", 0.0))   # ★ 탐욕적 디코딩
-        top_p          = float(data.get("top_p", 1.0))
+        # 기본값: 빠르게
+        max_new_tokens = int(data.get("max_new_tokens", 32))
+        do_sample      = bool(data.get("do_sample", False))  # 기본 False = 빠른/단호한 답
+        temperature    = float(data.get("temperature", 0.7))
+        top_p          = float(data.get("top_p", 0.9))
 
         pipe = _load_model()
-        tok = pipe.tokenizer
+        tok  = pipe.tokenizer
         eos_id = tok.eos_token_id or getattr(getattr(pipe, "model", None), "config", None) and pipe.model.config.eos_token_id
 
-        # 프롬프트 최소화 (짧을수록 빠름)
-        prompt = message
+        # (선택) Llama-3 계열은 chat 템플릿 쓰면 품질↑ (길이는 약간 늘어남)
+        # messages = [
+        #   {"role":"system","content":"한국어로 간결하고 정확히 답해라."},
+        #   {"role":"user","content": message}
+        # ]
+        # prompt = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        prompt = message  # 가장 빠른 프롬프트
 
+        gen_kwargs = dict(
+            max_new_tokens=max_new_tokens,
+            eos_token_id=eos_id,
+            pad_token_id=eos_id,
+            return_full_text=False,
+        )
+        if do_sample:
+            gen_kwargs.update(do_sample=True, temperature=temperature, top_p=top_p,
+                            repetition_penalty=float(data.get("repetition_penalty", 1.05)),
+                            no_repeat_ngram_size=int(data.get("no_repeat_ngram_size", 3)))
+        else:
+            gen_kwargs.update(do_sample=False)  # 샘플링 인자 전달 X → 경고 사라짐
+
+        import torch
         with torch.no_grad():
-            out = pipe(
-                prompt,
-                max_new_tokens=max_new_tokens,
-                do_sample=False,                 # ★ 샘플링 OFF → 빠르고 안정
-                temperature=temperature,         # do_sample=False면 무시되지만 인터페이스 유지
-                top_p=top_p,                     # 동일
-                eos_token_id=eos_id,             # ★ 종료 강제
-                pad_token_id=eos_id,             # 경고 방지
-                return_full_text=False           # ★ 답변만 반환
-            )[0]["generated_text"]
+            out = pipe(prompt, **gen_kwargs)[0]["generated_text"]
 
-        answer = (out or "").strip()
-        return jsonify({"message": message, "answer": answer})
+        return jsonify({"message": message, "answer": (out or '').strip()})
 
     return app
 

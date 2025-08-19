@@ -20,5 +20,5 @@
     <button id="chatSendBtn">전송</button>
   </div>
 </div>
-
+<script>window.LIBRA_USER="{{ session.get('user','guest') }}";</script>
 <script src="{{ url_for('static', filename='js/common/chatbot.js') }}"></script>
