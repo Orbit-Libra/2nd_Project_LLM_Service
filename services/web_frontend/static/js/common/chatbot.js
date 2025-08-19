@@ -1,5 +1,4 @@
 // static/js/common/chatbot.js — 모든 페이지 공통
-
 (() => {
   // 중복 초기화 방지
   if (window.__chatbotInitialized) return;
@@ -13,12 +12,29 @@
   const chatInput   = $('chatInput');
   const chatSend    = $('chatSendBtn');
 
-  // 마크업이 없는 페이지면 종료
+  // 마크업이 없는 페이지면 조용히 종료
   if (!chatToggle || !chatWindow || !chatBody) return;
 
-  // 열고/닫기는 "open" 클래스로만 제어 (CSS에서 .chat-window.open { display:block } 등 처리)
-  const openChat  = () => { chatWindow.classList.add('open'); chatInput?.focus(); };
-  const closeChat = () => { chatWindow.classList.remove('open'); };
+  // 🔧 인라인 display:none;이 남아있어도 강제로 보정
+  //   (transform으로 슬라이드-숨김, display는 항상 보이도록 유지해야 애니메이션이 동작)
+  const ensureVisible = () => {
+    const st = window.getComputedStyle(chatWindow);
+    if (st.display === 'none' || chatWindow.style.display === 'none') {
+      chatWindow.style.display = 'flex';   // flex 레이아웃 유지
+    }
+  };
+  ensureVisible();
+
+  // 열고/닫기는 transform 기반(open 클래스)으로만 제어
+  const openChat  = () => {
+    ensureVisible();
+    chatWindow.classList.add('open');
+    chatInput && chatInput.focus();
+  };
+  const closeChat = () => {
+    chatWindow.classList.remove('open');
+    // display는 건드리지 않음(애니메이션 유지)
+  };
 
   // 버블 렌더링
   function appendBubble(text, role = 'bot') {
@@ -95,9 +111,10 @@
     }
   }
 
-  // 이벤트 바인딩 (한 번만)
+  // 이벤트 바인딩
   chatToggle.addEventListener('click', () => {
-    if (chatWindow.classList.contains('open')) closeChat(); else openChat();
+    if (chatWindow.classList.contains('open')) closeChat();
+    else openChat();
   });
   chatClose?.addEventListener('click', closeChat);
   chatSend?.addEventListener('click', sendMessage);
@@ -108,8 +125,6 @@
     }
   });
 
-  // DOM 로드 상태 고려 (현재 즉시 실행형이라 불필요하지만 안전망)
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {});
-  }
+  // 혹시 렌더 타이밍에 따라 display가 다시 none이 되면 한 번 더 보정
+  document.addEventListener('visibilitychange', ensureVisible);
 })();

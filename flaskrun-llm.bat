@@ -11,7 +11,7 @@ set PYTHONPATH=%cd%
 REM === Flask 앱 (팩토리 함수 사용) ===
 set FLASK_APP=services.llm_service.api.server:create_app
 set FLASK_ENV=development
-set FLASK_DEBUG=1
+set FLASK_DEBUG=0
 
 REM === 캐시 디렉토리(없으면 만들어두기) - .env에도 동일 경로 선언됨 ===
 if not exist "%ROOT%\services\llm_service\huggingface" mkdir "%ROOT%\services\llm_service\huggingface"
