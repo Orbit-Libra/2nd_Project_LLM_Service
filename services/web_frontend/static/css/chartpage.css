@@ -66,6 +66,35 @@ main {
   margin-bottom: 15px;
 }
 
+/* 유저 정보 스타일 추가 */
+.table-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-item .label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.info-item .value {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 600;
+}
+
 .form-group {
   margin-bottom: 15px;
 }
@@ -116,6 +145,9 @@ main {
 
 .panel-actions {
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .action-btn {
@@ -126,12 +158,18 @@ main {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 10px;
+  font-weight: 500;
 }
 
 .action-btn.primary {
   background: var(--primary-color);
   color: white;
+}
+
+.action-btn.secondary {
+  background: #f8f9fa;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
 }
 
 .action-btn:hover {
@@ -166,6 +204,127 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* ===== 유저 분석 페이지 전용 차트 스타일 ===== */
+.chart-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 20px;
+}
+
+.chart-block {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.chart-block-header {
+  background: linear-gradient(45deg, var(--primary-color), #29b6f6);
+  color: white;
+  padding: 15px 20px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.chart-block-content {
+  padding: 15px;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+.bar-charts-container {
+  flex: 3;
+  display: flex;
+  gap: 5px;
+  height: 290px;
+  min-width: 0;
+}
+
+.individual-bar-chart {
+  flex: 1;
+  position: relative;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.individual-bar-chart canvas {
+  flex: 1;
+  min-height: 180px !important;
+  max-width: 100%;
+}
+
+.donut-charts-container {
+  flex: 2;
+  display: flex;
+  gap: 5px;
+  height: 290px;
+  min-width: 0;
+}
+
+.donut-chart-item {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 5px;
+  min-width: 0;
+}
+
+.donut-chart {
+  width: 60px;
+  height: 60px;
+  position: relative;
+}
+
+.chart-title {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 5px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.donut-label {
+  font-size: 0.65rem;
+  color: #666;
+  margin-top: 3px;
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.score-comparison-block {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.user-score-chart {
+  flex: 1;
+  height: 250px;
+  position: relative;
+}
+
+.similar-scores-chart {
+  flex: 1;
+  height: 250px;
+  position: relative;
 }
 
 /* Filter Toolbar - 가로 스크롤 필터 */
@@ -262,11 +421,6 @@ main {
 }
 
 /* Chart Grid Layout */
-.chart-grid {
-  display: none; /* 초기에는 숨김 */
-  width: 100%;
-}
-
 .chart-grid--two-col {
   display: grid;
   grid-template-columns: 3fr 1fr;
@@ -653,7 +807,7 @@ main {
   gap: 15px;
 }
 
-.info-item {
+.info-grid .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -662,16 +816,45 @@ main {
   border-radius: 6px;
 }
 
-.info-item .label {
+.info-grid .info-item .label {
   font-size: 0.9rem;
   color: #666;
   font-weight: 500;
 }
 
-.info-item .value {
+.info-grid .info-item .value {
   font-size: 0.9rem;
   color: #333;
   font-weight: 600;
+}
+
+/* 모바일 반응형 스타일 */
+@media (max-width: 768px) {
+  .chart-block-content {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .bar-charts-container {
+    height: auto;
+    min-height: 200px;
+  }
+  
+  .donut-charts-container {
+    flex-direction: row;
+    height: auto;
+    justify-content: space-around;
+    min-height: 120px;
+  }
+  
+  .score-comparison-block {
+    flex-direction: column;
+  }
+  
+  .user-score-chart,
+  .similar-scores-chart {
+    height: 200px;
+  }
 }
 
 /* Responsive Design */
