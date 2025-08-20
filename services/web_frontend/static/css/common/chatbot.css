@@ -28,6 +28,10 @@
   right: 1rem;
   width: 18.75rem;
   height: 80vh;
+  min-width: 250px;           /* 최소 크기 제한 */
+  min-height: 300px;
+  max-width: 90vw;           /* 최대 크기 제한 */
+  max-height: 90vh;
   background: #fff;
   box-shadow: -2px 2px 10px rgba(0,0,0,0.2);
   display: flex;                 /* ★ flex 유지 */
@@ -37,11 +41,89 @@
   z-index: 10000;               /* ★ 아이콘/다른 요소 위에 뜨도록 충분히 높임 */
   border-radius: 15px;
   overflow: hidden;
+  resize: none;                 /* 기본 브라우저 리사이즈 비활성화 */
 }
 
 /* 열렸을 때 */
 .chat-window.open {
   transform: translateY(0);
+}
+
+/* 리사이즈 핸들 스타일 */
+.resize-handle {
+  position: absolute;
+  background: transparent;
+  transition: background-color 0.2s ease;
+  z-index: 10001;
+}
+
+.resize-handle:hover {
+  background: rgba(32, 68, 97, 0.3);
+}
+
+/* 각 방향별 핸들 */
+.resize-n {
+  top: -3px;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: n-resize;
+}
+
+.resize-s {
+  bottom: -3px;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: s-resize;
+}
+
+.resize-w {
+  left: -3px;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: w-resize;
+}
+
+.resize-e {
+  right: -3px;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: e-resize;
+}
+
+.resize-nw {
+  top: -3px;
+  left: -3px;
+  width: 12px;
+  height: 12px;
+  cursor: nw-resize;
+}
+
+.resize-ne {
+  top: -3px;
+  right: -3px;
+  width: 12px;
+  height: 12px;
+  cursor: ne-resize;
+}
+
+.resize-sw {
+  bottom: -3px;
+  left: -3px;
+  width: 12px;
+  height: 12px;
+  cursor: sw-resize;
+}
+
+.resize-se {
+  bottom: -3px;
+  right: -3px;
+  width: 12px;
+  height: 12px;
+  cursor: se-resize;
 }
 
 /* 헤더 */
@@ -54,6 +136,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  user-select: none;              /* 리사이즈 중 텍스트 선택 방지 */
 }
 
 #chatCloseBtn {
@@ -62,6 +145,12 @@
   color: #fff;
   font-size: 1.2rem;
   cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+#chatCloseBtn:hover {
+  background: rgba(255,255,255,0.2);
 }
 
 /* 본문 */
@@ -70,13 +159,25 @@
   flex: 1;
   padding: .5rem;
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
 }
+
 .chat-body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
+  width: 6px;
+}
+
+.chat-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-body::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.chat-body::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 /* 입력 영역 */
@@ -112,6 +213,9 @@
 /* 접근성: 모션 최소화 선호 시 애니메이션 제거 */
 @media (prefers-reduced-motion: reduce) {
   .chat-window {
+    transition: none;
+  }
+  .resize-handle {
     transition: none;
   }
 }
