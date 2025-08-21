@@ -1,4 +1,5 @@
 # services/user_service/init_oracle_llm_data.py
+# -*- coding: utf-8 -*-
 import os
 import cx_Oracle
 from dotenv import load_dotenv
@@ -17,9 +18,9 @@ if env_path:
 else:
     print("[경고] .env를 찾지 못했습니다. 환경변수를 직접 사용합니다.")
 
-ORACLE_USER = os.getenv("ORACLE_USER")
-ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD")
-ORACLE_DSN = os.getenv("ORACLE_DSN")
+ORACLE_USER = os.getenv("ORACLE_USER", "LIBRA_USER")
+ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD", "1234")
+ORACLE_DSN = os.getenv("ORACLE_DSN", "localhost:1521/XE")
 ORACLE_CLIENT_PATH = os.getenv("ORACLE_CLIENT_PATH")
 
 # 2) Instant Client 초기화 (이미 init된 경우 무시)
@@ -35,16 +36,23 @@ else:
     print("[경고] ORACLE_CLIENT_PATH 미설정. SQL*Net이 PATH에 잡혀있어야 합니다.")
 
 # 3) 연결
-conn = cx_Oracle.connect(user=ORACLE_USER, password=ORACLE_PASSWORD, dsn=ORACLE_DSN, encoding="UTF-8", nencoding="UTF-8")
+conn = cx_Oracle.connect(
+    user=ORACLE_USER,
+    password=ORACLE_PASSWORD,
+    dsn=ORACLE_DSN,
+    encoding="UTF-8",
+    nencoding="UTF-8",
+)
 cur = conn.cursor()
 
-# 4) 객체 생성 (존재하면 무시) — FK는 USER_DATA(USER_ID) = VARCHAR2(50) 가정
+# 4) 객체 생성 (존재하면 무시)
+#    USER_DATA(USR_ID VARCHAR2(50))를 참조한다고 가정
 create_table_sql = """
 BEGIN
   EXECUTE IMMEDIATE '
     CREATE TABLE LLM_DATA (
       CONV_ID               NUMBER       NOT NULL,
-      USR_ID                VARCHAR2(50) NOT NULL,
+      USR_ID               VARCHAR2(50) NOT NULL,
       MSG_ID                NUMBER       NOT NULL,
       ROLE                  VARCHAR2(16) CHECK (ROLE IN (''user'',''assistant'',''system'',''summary'')) NOT NULL,
       CONTENT               CLOB         NOT NULL,
@@ -62,29 +70,32 @@ EXCEPTION
 END;
 """
 
--- -- FK는 별도의 블록에서 (USER_DATA가 먼저 있어야 함)
+# FK는 별도의 블록에서 (USER_DATA가 먼저 생성되어 있어야 함)
 create_fk_sql = """
 DECLARE
-  v_count NUMBER := 0;
+  v_cnt NUMBER := 0;
 BEGIN
-  SELECT COUNT(*) INTO v_count
+  SELECT COUNT(*)
+    INTO v_cnt
     FROM user_constraints
    WHERE table_name = 'LLM_DATA'
      AND constraint_name = 'FK_LLM_DATA_USER';
 
-  IF v_count = 0 THEN
+  IF v_cnt = 0 THEN
     EXECUTE IMMEDIATE '
       ALTER TABLE LLM_DATA
         ADD CONSTRAINT FK_LLM_DATA_USER
-        FOREIGN KEY (USER_ID) REFERENCES USER_DATA(USER_ID)
+        FOREIGN KEY (USR_ID)
+        REFERENCES USER_DATA(USR_ID)
     ';
   END IF;
 END;
 """
 
+# 인덱스 (USR_ID, CREATED_AT DESC) - Oracle은 DESC 인덱스 지원
 create_index_sql = """
 BEGIN
-  EXECUTE IMMEDIATE 'CREATE INDEX IX_LLM_USER_UPDATED ON LLM_DATA (USER_ID, CREATED_AT DESC)';
+  EXECUTE IMMEDIATE 'CREATE INDEX IX_LLM_USER_UPDATED ON LLM_DATA (USR_ID, CREATED_AT DESC)';
 EXCEPTION
   WHEN OTHERS THEN
     IF SQLCODE != -955 THEN
@@ -120,7 +131,7 @@ try:
     cur.execute(create_table_sql)
     print("✅ LLM_DATA 테이블 준비 완료(있으면 스킵).")
 
-    # FK (USER_DATA.USER_ID 타입/길이 일치 필요: VARCHAR2(50))
+    # FK (USER_DATA.USR_ID 타입/길이 일치 필요: VARCHAR2(50))
     cur.execute(create_fk_sql)
     print("✅ FK_LLM_DATA_USER 준비 완료(있으면 스킵).")
 
