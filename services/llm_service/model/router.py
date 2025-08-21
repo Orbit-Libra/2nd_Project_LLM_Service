@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import List, Dict, Any
 from .prompts import render_messages
 from .backends.gguf_llamacpp import GGUFBackend
 from .backends.hf_transformers import HFBackend
@@ -46,5 +46,9 @@ class ModelRouter:
         roles = prompts.get("roles", [])
         variables = prompts.get("variables", {})
         messages = render_messages(roles, variables) + [{"role": "user", "content": user_text}]
+        result = self._backend.generate(messages, overrides or {})
+        return self._postprocess(result)
+    
+    def generate_messages(self, messages: List[Dict[str, str]], overrides: Dict[str, Any] | None = None) -> str:
         result = self._backend.generate(messages, overrides or {})
         return self._postprocess(result)

@@ -161,6 +161,21 @@ IF %FOUND_USERDATA%==1 (
     python services\user_service\init_oracle_user_data.py
 )
 
+REM ==============================
+REM 8. LLM_DATA 테이블/시퀀스 초기화
+REM ==============================
+echo [🔍] LLM_DATA 초기화 스크립트 실행...
+call .venv\libra_env\Scripts\activate.bat
+python services\user_service\init_oracle_llm_data.py
+IF ERRORLEVEL 1 (
+    echo [❌] LLM_DATA 초기화 실패. 로그를 확인하세요.
+    pause
+    EXIT /B 1
+) ELSE (
+    echo [✅] LLM_DATA 초기화 완료.
+)
+
+
 echo [✅] Libra Setup End.
 pause
 ENDLOCAL
