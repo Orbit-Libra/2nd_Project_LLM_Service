@@ -1,0 +1,98 @@
+:root{
+    --hf-header-bg-floating: #142a3a; /* 버튼으로 띄울 때만 적용 */--c-header:#0d1f2d; --c-bg:#ecf0f1; --c-out1:#6c757d; --c-out2:#666; --c-white:#fff; --c-acc:rgba(66,165,245,.3);
+}
+#subheader.floating-hover{
+  transform: translateY(0);
+  opacity: 1;
+  background: var(--hf-header-bg-floating);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+}
+/* ========== 투명 드롭다운, 로고 아래 정렬 ========== */
+.subheader{
+  position: fixed; 
+  top: calc(var(--hf-header-height)); /* header 바로 아래 */
+  left: var(--sub-left, 20px);          /* JS가 로고 위치로 맞춰줌 */
+  width: auto;                           /* 내용만큼 */
+  background: transparent;               /* ★ 투명 */
+  border: none;
+  box-shadow: none;
+  z-index: 99;
+  opacity:0; 
+  transform: translateY(-2vh); 
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;                  /* 닫힐 때 클릭 방지 */
+}
+.subheader.is-open{ opacity:1; transform: translateY(0); pointer-events: auto;}
+/* 헤더 숨김이면 같이 숨김 */
+#site-header.hidden + #subheader.subheader{ display:none !important; }
+/* ========== 세로 스택(로고 밑으로 세로줄 정렬) ========== */
+.subheader-list{
+  display: flex;
+  flex-direction: column;      /* ★ 세로 */
+  gap: .25rem;              /*글자 상하 자간 간격  */
+  margin: 0;
+  padding: .3rem 0;         /* 상하 패딩 ↓ */
+  list-style: none;
+}
+/* ========== 아이템: 흰 글씨 + 호버 시 배경만 살짝 ========== */
+.subheader-item{
+  position: relative;
+  display: flex; align-items: center; gap: .55rem;  /* 살짝 타이트 */
+  padding: .35rem .6rem;                        /* 내부 패딩 ↓ */
+  border-radius: .5rem;                         /* 라운드 살짝 축소 */
+  color: #fff;                          /* ★ 전부 흰색 */
+  background: transparent;
+  text-decoration: none;
+  text-shadow: 0 0 .6rem rgba(0,0,0,.35);
+  transition: transform .12s ease, background-color .12s ease, filter .12s ease;
+}
+.subheader-item:hover{
+  transform: scale(1.03);
+  background: rgba(255,255,255,.12);    /* ★ 나머지 투명, 살짝 하이라이트 */
+}
+#subheader :hover{
+  color: var(--hf-logo-text); transform: scale(1.05);
+  text-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.8), 0 0.1rem 0.2rem rgba(0,0,0,0.6);
+}
+.subheader-item .icon{
+  width: 1.4rem; height: 1.4rem; object-fit: contain;
+  filter: invert(1) brightness(1.1);    /* 어두운 배경에서도 흰 톤 */
+  opacity: .95;
+  background: #fff;                /* ★ 흰 배경 */
+  border-radius: .4rem;
+  padding: .15rem;
+  box-shadow: 0 .15rem .4rem rgba(0,0,0,.25);
+  filter: none;                    /* ★ invert 제거 */
+  opacity: 1;
+}
+/* 기본 텍스트 */
+.subheader-item .texts strong{ color:#fff; font-weight:800; }
+/* ========== 서브 설명: 평소엔 숨김, 호버 시 오른쪽으로 표시 ========== */
+.subheader-item .texts span{
+  position: absolute;
+  left: 12rem;                          /* 제목 오른쪽 옆에 뜨도록 */
+  top: 50%; transform: translateY(-50%) translateX(.1rem);
+  opacity: 1;                           /* 기본 숨김 */
+  white-space: nowrap;
+  color: var(--hf-logo-text);
+  text-shadow: 0 0 .6rem rgba(0,0,0,.35);
+  transition: opacity .12s ease, transform .12s ease;
+  pointer-events: none;
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 768px){
+.subheader-grid{ grid-template-columns:1fr; } 
+.subheader-item .texts span{
+    position: static;
+    opacity: .9;
+    transform: none;
+    white-space: normal;
+    display: block;
+    margin-left: 2.4rem; /* 아이콘 여백만큼 들여쓰기 */
+  } 
+    }

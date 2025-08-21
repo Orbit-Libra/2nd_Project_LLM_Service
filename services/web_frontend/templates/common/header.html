@@ -1,8 +1,8 @@
-<header id="site-header" data-hf>
+<header id="site-header" data-hf role="banner">
   <div class="logo" id="logo-area" aria-label="Libra Home">
-    <a href="{{ url_for('index') }}" id="logo-link">
+    <a href="{{ url_for('index') }}" id="logo-link" aria-haspopup="true" aria-controls="subheader" aria-expanded="false">
       <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="Libra Logo" id="logo-img">
-      <span id="logo-text">Libra</span>
+      <span id="logo-text" class="has-subheader" tabindex="0" aria-describedby="subheader">Libra</span>
     </a>
   </div>
 

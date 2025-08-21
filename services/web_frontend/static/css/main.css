@@ -23,10 +23,7 @@ html {
   /* 🎯 전체 스크롤 동작 설정 */
   scroll-behavior: smooth;
 
-  /* 🎯 스크롤 스냅 속도 제어 */
-  scroll-snap-duration: var(--snap-speed);
-  scroll-snap-timing-function: var(--snap-timing);
-}
+
 
 body {
   height: 100%;

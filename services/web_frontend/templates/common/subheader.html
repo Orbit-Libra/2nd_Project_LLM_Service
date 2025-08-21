@@ -1,0 +1,33 @@
+<!-- templates/common/subheader.html -->
+<aside id="subheader" class="subheader" role="complementary" aria-live="polite" hidden>
+  <ul class="subheader-list" role="menu" aria-label="Libra shortcuts">
+    <li role="none">
+      <a role="menuitem" href="{{ url_for('index') }}" class="subheader-item">
+        <img class="icon" alt="" src="{{ url_for('static', filename='images/info.gif') }}">
+        <div class="texts">
+        <strong>공지사항</strong>
+        <span>업데이트 & 알림</span>
+        </div>
+      </a>
+    </li>
+
+    <li role="none">
+      <a role="menuitem" href="{{ url_for('qna.qna_list') }}" class="subheader-item">
+        <img class="icon" alt="" src="{{ url_for('static', filename='images/qna.gif') }}">
+        <div class="texts">
+        <strong>Q&amp;A</strong>
+        <span>문의/의견 남기기</span>
+        </div>
+      </a>
+    </li>
+    <li role="none">
+      <a role="menuitem" href="{{ url_for('prediction') }}" class="subheader-item">
+        <img class="icon" alt="" src="{{ url_for('static', filename='images/project.gif') }}">
+        <div class="texts">
+        <strong>프로젝트 정보</strong>
+        <span>서비스/모델 소개</span>
+        </div>
+      </a>
+    </li>
+  </ul>
+</aside>

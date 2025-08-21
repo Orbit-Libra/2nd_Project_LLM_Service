@@ -1,0 +1,60 @@
+{% extends "common/base.html" %}
+{% block title %}Libra | Q&A 문의하기{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/question.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="qna-hero fade-in" aria-labelledby="qnaTitle">
+  <div class="container">
+    <h1 id="qnaTitle">Q&amp;A 문의하기</h1>
+    <p class="lead">프로젝트/서비스 관련 문의를 남겨주세요. 가능한 빠르게 회신드리겠습니다.</p>
+  </div>
+</section>
+
+<section class="qna-form-section fade-in" aria-label="문의 작성">
+  <div class="container">
+    <form id="qnaForm" class="qna-form" method="post" action="{{ url_for('qna.qna_create') }}" novalidate>
+      <div class="field">
+        <label for="title">제목<span aria-hidden="true">*</span></label>
+        <input type="text" id="title" name="title" required minlength="2" maxlength="100"
+               placeholder="문의 제목을 입력하세요" value="{{ (form.title if form else '')|default('') }}">
+        {% if errors and errors.title %}<small class="error">{{ errors.title }}</small>{% endif %}
+      </div>
+
+      <div class="field">
+        <label for="email">이메일<span aria-hidden="true">*</span></label>
+        <input type="email" id="email" name="email" required
+               placeholder="example@domain.com" value="{{ (form.email if form else '')|default('') }}">
+        {% if errors and errors.email %}<small class="error">{{ errors.email }}</small>{% endif %}
+      </div>
+
+      <div class="field">
+        <label for="content">문의 내용<span aria-hidden="true">*</span></label>
+        <textarea id="content" name="content" rows="10" required minlength="10" maxlength="5000"
+                  placeholder="세부 내용을 입력해주세요.">{{ (form.content if form else '')|default('') }}</textarea>
+        {% if errors and errors.content %}<small class="error">{{ errors.content }}</small>{% endif %}
+      </div>
+
+      <div class="field checkbox">
+        <label>
+          <input type="checkbox" id="agree" name="agree" required>
+          개인정보 수집 및 이용에 동의합니다.<span aria-hidden="true">*</span>
+        </label>
+        {% if errors and errors.agree %}<small class="error">{{ errors.agree }}</small>{% endif %}
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn primary">문의 등록</button>
+        <a class="btn ghost" href="{{ url_for('qna.qna_list') }}">목록으로</a>
+        <button type="button" class="btn link" id="scrollTopBtn">맨 위로</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/question.js') }}" defer></script>
+{% endblock %}

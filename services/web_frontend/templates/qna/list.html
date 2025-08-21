@@ -1,0 +1,132 @@
+{% extends "common/base.html" %}
+{% block title %}Libra | Q&A 목록{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/question.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="qna-hero fade-in">
+  <div class="container">
+    <h1>Q&amp;A</h1>
+    <p class="lead">Libra 이용과 관련된 문의나 의견을 남기는 곳입니다. </p>
+    <a class="btn primary" href="{{ url_for('qna.qna_new') }}">문의하기</a>
+  </div>
+</section>
+
+<!-- 상단 필터바 (구조만; 추후 서버 연동 시 GET 파라미터 사용) -->
+<section class="qna-filterbar fade-in" aria-label="검색/필터">
+  <div class="container">
+    <form method="get" action="{{ url_for('qna.qna_list') }}" class="filter-form" role="search">
+      <div class="filters-left">
+        <select name="kind">
+          <option value="">검색구분(전체)</option>
+          <option value="일반">일반</option>
+          <option value="민원">민원</option>
+        </select>
+        <select name="public">
+          <option value="">공개여부(전체)</option>
+          <option value="1">공개</option>
+          <option value="0">비공개</option>
+        </select>
+        <select name="status">
+          <option value="">처리상황(전체)</option>
+          <option value="답변완료">답변완료</option>
+          <option value="처리중">처리중</option>
+        </select>
+      </div>
+      <div class="filters-right">
+        <select name="field">
+          <option value="title">제목</option>
+        </select>
+        <input type="text" name="q" placeholder="검색어" aria-label="검색어">
+        <button type="submit" class="btn small">검색</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="qna-list-section fade-in" aria-label="문의 목록">
+  <div class="container">
+    <table class="qna-table" aria-describedby="qnaListCaption">
+      <caption id="qnaListCaption" class="sr-only">(총 {{ total }}건)</caption>
+      <thead>
+        <tr>
+          <th style="width:7rem;">번호</th>
+          <th style="width:7rem;">구분</th>
+          <th style="width:7rem;">공개여부</th>
+          <th>제목</th>
+          <th style="width:6rem;">첨부</th>
+          <th style="width:8rem;">질문자</th>
+          <th style="width:10rem;">등록일</th>
+          <th style="width:8rem;">처리상황</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set no = start_no %}
+        {% for it in items %}
+          <tr>
+            <td>{{ no - loop.index0 }}</td>
+            <td>{{ it.kind }}</td>
+            <td>{{ '공개' if it.is_public else '비공개' }}</td>
+
+    
+            <td class="qna-title-cell">
+            <td>{{ '📎' if it.has_file else '' }}</td>
+            <td>{{ it.author }}</td>
+            <td>{{ it.created_at.strftime('%Y-%m-%d') }}</td>
+            <td class="status {{ 'done' if it.status=='답변완료' else 'doing' }}">{{ it.status }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" style="padding:1.6rem;">아직 등록된 문의가 없습니다.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <nav aria-label="페이지 탐색">
+  <ul class="pager">
+    <!-- 처음/이전: 비활성도 항상 표시 -->
+    <li class="{{ 'disabled' if page==1 else '' }}">
+      {% if page>1 %}<a href="{{ url_for('qna.qna_list', page=1) }}" aria-label="첫 페이지">«</a>
+      {% else %}<span aria-disabled="true">«</span>{% endif %}
+    </li>
+    <li class="{{ 'disabled' if page==1 else '' }}">
+      {% if page>1 %}<a href="{{ url_for('qna.qna_list', page=page-1) }}" aria-label="이전 페이지">‹</a>
+      {% else %}<span aria-disabled="true">‹</span>{% endif %}
+    </li>
+
+    <!-- 1..N 전부 노출 -->
+    {% for p in range(1, pages+1) %}
+      <li>
+        {% if p == page %}
+          <span class="current" aria-current="page">{{ p }}</span>
+        {% else %}
+          <a href="{{ url_for('qna.qna_list', page=p) }}">{{ p }}</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+
+    <!-- 다음/마지막: 비활성도 항상 표시 -->
+    <li class="{{ 'disabled' if page==pages else '' }}">
+      {% if page<pages %}<a href="{{ url_for('qna.qna_list', page=page+1) }}" aria-label="다음 페이지">›</a>
+      {% else %}<span aria-disabled="true">›</span>{% endif %}
+    </li>
+    <li class="{{ 'disabled' if page==pages else '' }}">
+      {% if page<pages %}<a href="{{ url_for('qna.qna_list', page=pages) }}" aria-label="마지막 페이지">»</a>
+      {% else %}<span aria-disabled="true">»</span>{% endif %}
+    </li>
+  </ul>
+</nav>
+
+  </div>
+</section>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+  // 섹션 페이드인
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('appear'); }), {threshold:.15});
+  document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+</script>
+{% endblock %}

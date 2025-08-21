@@ -1,0 +1,71 @@
+{% extends "common/base.html" %}
+{% block title %}Libra | Q&A 상세{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/question.css') }}">
+
+{% endblock %}
+
+{% block content %}
+<section class="qna-hero fade-in">
+  <div class="container">
+    <a class="btn ghost" href="{{ url_for('qna.qna_list') }}">목록으로</a>
+  </div>
+</section>
+
+<section class="fade-in">
+  <div class="container">
+    <article class="qna-detail" aria-labelledby="qnaTitle">
+      <h2 id="qnaTitle">{{ it.title }}</h2>
+      <p class="qna-meta">
+        {{ it.kind }} · {{ '공개' if it.is_public else '비공개' }} · {{ it.author }} · {{ it.created_at.strftime('%Y-%m-%d %H:%M') }}
+        · 상태: <strong class="status {{ 'done' if it.status=='답변완료' else 'doing' }}">{{ it.status }}</strong>
+      </p>
+      <div class="qna-body">{{ it.content }}</div>
+
+      <!-- 댓글 리스트 -->
+      <h3 style="margin-top:1rem;">댓글</h3>
+      <ul class="c-list">
+        {% for c in comments %}
+          <li class="c-item {{ 'admin' if c.is_admin else '' }} c-indent-{{ c.depth }}">
+            <span class="c-head">{{ c.author }}</span>
+            <span class="c-time">{{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            <div class="c-text" style="white-space:pre-wrap; margin-top:.25rem;">{{ c.content }}</div>
+            <!-- 대댓글 버튼 -->
+            <form class="c-form" method="post" action="{{ url_for('qna.qna_comment', qid=it.id) }}">
+              <input type="hidden" name="parent_id" value="{{ c.id }}">
+              <div class="c-actions">
+                <input type="text" name="author" placeholder="닉네임(선택)" maxlength="20">
+                <textarea name="content" rows="2" placeholder="대댓글 입력..." required></textarea>
+                <button type="submit" class="btn primary">등록</button>
+              </div>
+            </form>
+          </li>
+        {% else %}
+          <li class="c-item">첫 댓글을 남겨보세요.</li>
+        {% endfor %}
+      </ul>
+
+      <!-- 새 댓글 -->
+      <form id="c-end" class="c-form" method="post" action="{{ url_for('qna.qna_comment', qid=it.id) }}">
+        <div class="c-actions">
+          <input type="text" name="author" placeholder="닉네임(선택)" maxlength="20">
+          <textarea name="content" rows="3" placeholder="댓글을 입력하세요." required></textarea>
+          <button type="submit" class="btn primary">댓글 등록</button>
+        </div>
+      </form>
+
+      <!-- 관리자 답변 전용 -->
+      {% if session.get('user') == 'libra_admin' %}
+        <hr style="margin:1rem 0; border:none; border-top:.12rem solid #e4e9ef;">
+        <form class="c-form" method="post" action="{{ url_for('qna.qna_answer', qid=it.id) }}">
+          <label><strong>관리자 답변</strong></label>
+          <textarea name="content" rows="3" placeholder="관리자 답변을 입력하세요." required></textarea>
+          <div class="c-actions">
+            <button type="submit" class="btn primary">답변 등록</button>
+          </div>
+        </form>
+      {% endif %}
+    </article>
+  </div>
+</section>
+{% endblock %}
