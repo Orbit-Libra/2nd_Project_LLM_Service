@@ -51,7 +51,22 @@ def create_app():
         roles = prompts.get("roles", [])
         variables = prompts.get("variables", {})
         merged = {**variables, **(runtime_vars or {})}
-        return render_messages(roles, merged)
+        base = render_messages(roles, merged)
+
+        # 사용자 프로필(참조용) 시스템 카드 추가: 필요할 때만 모델이 활용
+        ua = (merged.get("user_affiliation") or "").strip()
+        un = (merged.get("user_name") or "").strip()
+        if ua or un:
+            base += [{
+                "role": "system",
+                "content": (
+                    "[사용자 프로필]\n"
+                    f"이름: {un or '미상'}\n"
+                    f"소속: {ua or '미상'}\n"
+                    "※ 프로필은 질문과 직접 관련 있을 때만 간단히 활용."
+                )
+            }]
+        return base
 
     def _sanitize_user_text(t: str) -> str:
         t = (t or "").strip()
@@ -77,6 +92,18 @@ def create_app():
         if t.startswith(prefix):
             return t
         return f"{prefix}{t[0].lower() if t[:2].startswith(', ') else ''}{t}"
+
+    def _should_address_user(text: str, overrides: dict) -> bool:
+        """
+        이름/호칭을 붙일지 조건부 판단:
+        - 프론트에서 force_salutation을 명시하면 항상 적용
+        - 확인/정오/승인/선택 등 사용자 결정을 유도하는 표현이 있을 때만 자동 적용
+        """
+        if overrides.get("force_salutation"):
+            return True
+        triggers = ["맞을까요", "맞습니까", "확인", "정오", "승인", "괜찮을까요", "고르시겠습니까", "선택하시겠어요"]
+        t = (text or "")
+        return any(k in t for k in triggers)
 
     # ---------- endpoints ----------
     @app.get("/health")
@@ -111,7 +138,8 @@ def create_app():
 
         base = _base_messages({
             "user_name": usr_name,
-            "salutation_prefix": salutation_prefix
+            "salutation_prefix": salutation_prefix,
+            "user_affiliation": usr_snm or ""
         })
 
         messages = base + [
@@ -137,8 +165,8 @@ def create_app():
             })
         except Exception as e:
             log.exception("LLM error(greet): %s", e)
-            fallback = "안녕하세요! Libra 챗봇입니다. 무엇을 도와드릴까요?" if is_guest else f"{usr_name}님, 무엇을 도와드릴까요?"
-            return jsonify({"greeting": fallback, "guest": is_guest}), 200
+        fallback = "안녕하세요! Libra 챗봇입니다. 무엇을 도와드릴까요?" if is_guest else f"{usr_name}님, 무엇을 도와드릴까요?"
+        return jsonify({"greeting": fallback, "guest": is_guest}), 200
 
     @app.post("/generate")
     def generate():
@@ -156,17 +184,24 @@ def create_app():
         # ----- 게스트 -----
         if not usr_id:
             try:
-                base = _base_messages({"user_name": "게스트", "salutation_prefix": ""})
+                base = _base_messages({
+                    "user_name": "게스트",
+                    "salutation_prefix": "",
+                    "user_affiliation": ""
+                })
                 messages = base + [
-                    {"role": "system", "content": "아래 질문에 간결히 답하라. 2~3문장, 280자 이내. 불확실하면 모른다고 답하라."},
+                    {"role": "system", "content": "요청 주제가 일반 상식/백과 수준이면, 학습한 일반 지식을 바탕으로 핵심 사실을 요약하라. 불확실하거나 최신 수치가 필요한 부분은 단서를 달아라."},
+                    {"role": "system", "content": "아래 질문에 간결히 답하라. 2~3문장, 300자 이내. 불확실하면 모른다고 답하라."},
                     {"role": "user", "content": user_text},
                 ]
                 ov = {**(overrides or {})}
                 ov.setdefault("enforce_max_sentences", 3)
-                ov.setdefault("enforce_max_chars", 280)
-                # 옵션: 살짝 더 빠르게
+                ov.setdefault("enforce_max_chars", 300)  # 소속/맥락 보강 여유
                 ov.setdefault("max_new_tokens", 180)
                 answer = _ROUTER.generate_messages(messages, overrides=ov)
+                # 필요할 때만 이름/호칭 사용 (게스트는 기본 비활성)
+                if _should_address_user(user_text, ov):
+                    answer = _ensure_salutation("", answer)
                 return jsonify({"message": user_text, "answer": answer, "guest": True})
             except Exception as e:
                 log.exception("LLM error(guest): %s", e)
@@ -207,30 +242,41 @@ def create_app():
                 hist = hist[:-1]
             ctx = hist[-CONTEXT_TURNS:] if hist else []
 
-            ctx_msgs = []
+            # 일반 상식은 답하도록 힌트를 컨텍스트 맨 앞에 둔다
+            general_knowledge_hint = {
+                "role": "system",
+                "content": (
+                    "요청 주제가 일반 상식/백과 수준이면, 네가 학습한 일반 지식을 바탕으로 핵심 사실을 요약하라. "
+                    "불확실하거나 최신 수치가 필요한 부분은 단서를 달아라."
+                )
+            }
+
+            ctx_msgs = [general_knowledge_hint]
             if summary_txt:
                 ctx_msgs.append({"role": "system", "content": f"[이전 요약]\n{_clip(summary_txt)}"})
             for m in ctx:
                 role = m.get("role", "")
                 if role in ("user", "assistant"):
                     ctx_msgs.append({"role": role, "content": _clip(m.get("content", ""))})
-            ctx_msgs.append({"role": "system", "content": "아래 질문에 간결히 답하라. 2~3문장, 280자 이내. 불확실하면 모른다고 답하라."})
+            ctx_msgs.append({"role": "system", "content": "아래 질문에 간결히 답하라. 2~3문장, 300자 이내. 불확실하면 모른다고 답하라."})
             ctx_msgs.append({"role": "user", "content": user_text})
 
             base = _base_messages({
                 "user_name": usr_name,
-                "salutation_prefix": salutation_prefix
+                "salutation_prefix": salutation_prefix,
+                "user_affiliation": usr_snm or ""
             })
             messages = base + ctx_msgs
 
             ov = {**(overrides or {})}
             ov.setdefault("enforce_max_sentences", 3)
-            ov.setdefault("enforce_max_chars", 280)
+            ov.setdefault("enforce_max_chars", 300)  # 소속/맥락 보강 여유
             ov.setdefault("max_new_tokens", 180)  # 살짝 더 빠르게
             answer = _ROUTER.generate_messages(messages, overrides=ov)
 
-            # ✅ 항상 호칭 보정
-            answer = _ensure_salutation(salutation_prefix, answer)
+            # 필요할 때만 이름/호칭 사용 (확인/승인 류)
+            if _should_address_user(user_text, ov):
+                answer = _ensure_salutation(salutation_prefix, answer)
 
         except Exception as e:
             log.exception("LLM error(auth): %s", e)
@@ -253,7 +299,8 @@ def create_app():
 
                 base = _base_messages({
                     "user_name": usr_name,
-                    "salutation_prefix": salutation_prefix
+                    "salutation_prefix": salutation_prefix,
+                    "user_affiliation": usr_snm or ""
                 })
                 sum_messages = base + [
                     {"role": "system", "content": "다음 대화를 5줄 이내 한국어 bullet로 요약하라. 불확실한 내용은 생략."},

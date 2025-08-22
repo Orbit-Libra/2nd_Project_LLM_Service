@@ -1,10 +1,9 @@
-# services/user_service/init_oracle_llm_data.py
 # -*- coding: utf-8 -*-
 import os
 import cx_Oracle
 from dotenv import load_dotenv
 
-# 1) .env 로드 (프로젝트/서비스 경로 우선 탐색)
+# 1) .env 로드
 here = os.path.dirname(os.path.abspath(__file__))
 candidate_env_paths = [
     os.path.join(here, ".env"),
@@ -23,7 +22,7 @@ ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD", "1234")
 ORACLE_DSN = os.getenv("ORACLE_DSN", "localhost:1521/XE")
 ORACLE_CLIENT_PATH = os.getenv("ORACLE_CLIENT_PATH")
 
-# 2) Instant Client 초기화 (이미 init된 경우 무시)
+# 2) Instant Client 초기화
 if ORACLE_CLIENT_PATH:
     try:
         cx_Oracle.init_oracle_client(lib_dir=ORACLE_CLIENT_PATH)
@@ -45,14 +44,14 @@ conn = cx_Oracle.connect(
 )
 cur = conn.cursor()
 
-# 4) 객체 생성 (존재하면 무시)
-#    USER_DATA(USR_ID VARCHAR2(50))를 참조한다고 가정
+# 4) 객체 생성 (있으면 스킵)
+#    USER_DATA.USR_ID (VARCHAR2(50))를 참조한다고 가정
 create_table_sql = """
 BEGIN
   EXECUTE IMMEDIATE '
     CREATE TABLE LLM_DATA (
       CONV_ID               NUMBER       NOT NULL,
-      USR_ID               VARCHAR2(50) NOT NULL,
+      USR_ID                VARCHAR2(50) NOT NULL,
       MSG_ID                NUMBER       NOT NULL,
       ROLE                  VARCHAR2(16) CHECK (ROLE IN (''user'',''assistant'',''system'',''summary'')) NOT NULL,
       CONTENT               CLOB         NOT NULL,
@@ -64,35 +63,56 @@ BEGIN
     )';
 EXCEPTION
   WHEN OTHERS THEN
-    IF SQLCODE != -955 THEN -- ORA-00955: name is already used by an existing object
+    IF SQLCODE != -955 THEN
       RAISE;
     END IF;
 END;
 """
 
-# FK는 별도의 블록에서 (USER_DATA가 먼저 생성되어 있어야 함)
-create_fk_sql = """
+
+create_or_fix_fk_sql = """
 DECLARE
-  v_cnt NUMBER := 0;
+  v_fk_exists    NUMBER := 0;
+  v_delete_rule  VARCHAR2(10);
 BEGIN
   SELECT COUNT(*)
-    INTO v_cnt
+    INTO v_fk_exists
     FROM user_constraints
-   WHERE table_name = 'LLM_DATA'
-     AND constraint_name = 'FK_LLM_DATA_USER';
+   WHERE table_name      = 'LLM_DATA'
+     AND constraint_name = 'FK_LLM_DATA_USER'
+     AND constraint_type = 'R';
 
-  IF v_cnt = 0 THEN
+  IF v_fk_exists = 1 THEN
+    SELECT delete_rule
+      INTO v_delete_rule
+      FROM user_constraints
+     WHERE table_name      = 'LLM_DATA'
+       AND constraint_name = 'FK_LLM_DATA_USER'
+       AND constraint_type = 'R';
+
+    IF v_delete_rule <> 'CASCADE' THEN
+      EXECUTE IMMEDIATE 'ALTER TABLE LLM_DATA DROP CONSTRAINT FK_LLM_DATA_USER';
+      EXECUTE IMMEDIATE '
+        ALTER TABLE LLM_DATA
+          ADD CONSTRAINT FK_LLM_DATA_USER
+          FOREIGN KEY (USR_ID)
+          REFERENCES USER_DATA(USR_ID)
+          ON DELETE CASCADE
+      ';
+    END IF;
+  ELSE
     EXECUTE IMMEDIATE '
       ALTER TABLE LLM_DATA
         ADD CONSTRAINT FK_LLM_DATA_USER
         FOREIGN KEY (USR_ID)
         REFERENCES USER_DATA(USR_ID)
+        ON DELETE CASCADE
     ';
   END IF;
 END;
 """
 
-# 인덱스 (USR_ID, CREATED_AT DESC) - Oracle은 DESC 인덱스 지원
+# 인덱스 (USR_ID, CREATED_AT DESC)
 create_index_sql = """
 BEGIN
   EXECUTE IMMEDIATE 'CREATE INDEX IX_LLM_USER_UPDATED ON LLM_DATA (USR_ID, CREATED_AT DESC)';
@@ -127,13 +147,12 @@ END;
 """
 
 try:
-    # 테이블
     cur.execute(create_table_sql)
     print("✅ LLM_DATA 테이블 준비 완료(있으면 스킵).")
 
-    # FK (USER_DATA.USR_ID 타입/길이 일치 필요: VARCHAR2(50))
-    cur.execute(create_fk_sql)
-    print("✅ FK_LLM_DATA_USER 준비 완료(있으면 스킵).")
+    # FK: ON DELETE CASCADE 보장
+    cur.execute(create_or_fix_fk_sql)
+    print("✅ FK_LLM_DATA_USER(CASCADE) 적용/수정 완료.")
 
     # 인덱스
     cur.execute(create_index_sql)
