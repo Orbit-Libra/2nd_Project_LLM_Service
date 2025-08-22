@@ -1,3 +1,5 @@
+# model/backends/hf_transformers.py
+
 from typing import List, Dict, Any
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline

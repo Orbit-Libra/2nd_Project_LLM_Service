@@ -1,4 +1,4 @@
-# services/llm_service/model/backends/gguf_llamacpp.py
+# model/backends/gguf_llamacpp.py
 import os
 import threading
 from typing import List, Dict, Any, Optional

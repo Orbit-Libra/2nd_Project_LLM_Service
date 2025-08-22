@@ -200,17 +200,52 @@
 │   │   │
 │   │   └── .env 
 │   │
-│   └── llm_service/           # LLM 챗봇 서비스
+│   └── llm_service/                         # LLM 챗봇 서비스
 │       │
 │       ├── api/
+│       │   │  
+│       │   └── server.py                    # 플라스크 api 서버 진입점
 │       │
-│       └── .env
+│       ├── chains/                          # Langchain 로직구현
+│       │   │  
+│       │   ├── base_chat_chain.py           # 랭체인 기반 추론 클래스
+│       │   └── 
+│       │
+│       ├── db/                              # 플라스크 웹서버 블루프린트 폴더
+│       │   │  
+│       │   ├── llm_repository_cx.py         # 멀티턴 기능 모듈
+│       │   └── oracle_cx.py                 # 오라클DB 데이터 핸들링 모듈
+│       │
+│       ├── huggingface/                     # 허깅페이스 모델 캐시 폴더
+│       │   │  
+│       │   └──
+│       │
+│       ├── model/                           # LLM 모델 엔진
+│       │   │  
+│       │   ├── backends/                    # LLM 모델 백엔드
+│       │   │   │
+│       │   │   ├── base.py
+│       │   │   ├── gguf_llamacpp.py         # 양자화 LLM 모델 호출 클래스
+│       │   │   └── hf_transformers.py       # 허깅페이스 모델 호출 클래스
+│       │   │  
+│       │   ├── configs/                     # LLM 모델 설정값
+│       │   │   │
+│       │   │   ├── gguf.json
+│       │   │   └──
+│       │   │     
+│       │   ├── __init__.py 
+│       │   ├── config_loader.py             # 컨피그 로더
+│       │   ├── prompts.py                   # 매세지 랜더링 모듈
+│       │   └── router.py                    # 플라스크 모델 라우터 클래스
+│       │
+│       └── .env                             # 엑세스토큰 및 오라클 스키마 설정값
 │   
-├── tools/                 # 필수유틸 폴더
+├── tools/                                   # 필수유틸 폴더
 │   │
 │   └── instantclient-basic-windows.x64-19.25.0.0.0dbru/
 │
 ├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
+├── flaskrun-llm.bat           # 플라스크 챗봇서버 실행 스크립트
 ├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트
 ├── flaskrun-web.bat           # 플라스크 웹서버 실행 스크립트
 ├── requirements.txt           # 라이브러리 목록

@@ -1,4 +1,4 @@
-# services/llm_service/db/oracle_cx.py
+# db/oracle_cx.py
 import os
 import cx_Oracle
 
