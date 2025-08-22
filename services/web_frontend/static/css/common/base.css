@@ -6,6 +6,14 @@ html, body {
   overflow: auto;
   scroll-behavior: smooth;            /* 기본은 부드럽게 */
 }
+body{      /*body를 컬럼 플렉스로 만들고>>main을 flex:1로 키워 여백을 먹게*/
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+     /*main을 flex:1로 키워 여백줘야>>콘텐츠가 적어도 푸터가 항상 뷰포트 바닥 */
+main{ flex: 1 0 auto; }  
+#site-footer{ margin-top: auto; }
 
 /* 네이티브 스크롤바 전역 숨김 */
 * { scrollbar-width: none !important; } /* Firefox */

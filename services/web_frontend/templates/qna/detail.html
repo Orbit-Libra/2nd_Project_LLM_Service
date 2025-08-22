@@ -1,8 +1,8 @@
+<!--services/web_frontend/templates/qna/detail.html-->
 {% extends "common/base.html" %}
 {% block title %}Libra | Q&A 상세{% endblock %}
 {% block head_extra %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/question.css') }}">
-
 {% endblock %}
 
 {% block content %}
@@ -16,37 +16,56 @@
   <div class="container">
     <article class="qna-detail" aria-labelledby="qnaTitle">
       <h2 id="qnaTitle">{{ it.title }}</h2>
-      <p class="qna-meta">
-        {{ it.kind }} · {{ '공개' if it.is_public else '비공개' }} · {{ it.author }} · {{ it.created_at.strftime('%Y-%m-%d %H:%M') }}
-        · 상태: <strong class="status {{ 'done' if it.status=='답변완료' else 'doing' }}">{{ it.status }}</strong>
+        <p class="qna-meta">
+        <span class="badge kind">{{ it.kind }}</span>
+        {% if it.is_public %}
+          <span class="badge public">공개</span>
+        {% else %}
+          <span class="badge private">비공개</span>
+        {% endif %}
+        <span>작성자 {{ it.author }}</span>
+        <span>{{ it.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        <strong class="status {{ 'done' if it.status=='답변완료' else 'doing' }}">상태: {{ it.status }}</strong>
       </p>
       <div class="qna-body">{{ it.content }}</div>
+    </article>
 
       <!-- 댓글 리스트 -->
-      <h3 style="margin-top:1rem;">댓글</h3>
+      <section id="comments" class="c-wrap" aria-label="댓글">
+      <div class="c-head">댓글</div>
+
       <ul class="c-list">
-        {% for c in comments %}
-          <li class="c-item {{ 'admin' if c.is_admin else '' }} c-indent-{{ c.depth }}">
-            <span class="c-head">{{ c.author }}</span>
-            <span class="c-time">{{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-            <div class="c-text" style="white-space:pre-wrap; margin-top:.25rem;">{{ c.content }}</div>
-            <!-- 대댓글 버튼 -->
-            <form class="c-form" method="post" action="{{ url_for('qna.qna_comment', qid=it.id) }}">
-              <input type="hidden" name="parent_id" value="{{ c.id }}">
-              <div class="c-actions">
-                <input type="text" name="author" placeholder="닉네임(선택)" maxlength="20">
-                <textarea name="content" rows="2" placeholder="대댓글 입력..." required></textarea>
-                <button type="submit" class="btn primary">등록</button>
+        {% if comments %}
+          {% for c in comments %}
+            {% set d = c.depth or 0 %}
+            <li class="c-item c-indent-{{ d }} {{ 'admin' if c.is_admin else '' }}">
+              <div class="c-head">
+                {{ '관리자' if c.is_admin else c.author }}
+                <span class="c-time">{{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
               </div>
-            </form>
-          </li>
+              <div class="c-body">{{ c.content | e }}</div>
+
+              <!-- 대댓글 폼 -->
+              <form class="c-form" method="post" action="{{ url_for('qna.qna_comment', qid=it.id) }}">
+                <input type="hidden" name="parent_id" value="{{ c.id }}">
+                <div class="c-actions">
+                  <input type="text" name="author" placeholder="닉네임(선택)" maxlength="20">
+                  <textarea name="content" rows="2" placeholder="대댓글 입력..." required></textarea>
+                  <button type="submit" class="btn primary">등록</button>
+                </div>
+              </form>
+            </li>
+          {% endfor %}
         {% else %}
-          <li class="c-item">첫 댓글을 남겨보세요.</li>
-        {% endfor %}
+          <li class="c-item">
+            <div class="c-body" style="color:#6c757d;">첫 댓글을 남겨보세요.</div>
+          </li>
+        {% endif %}
+        <a id="c-end"></a>
       </ul>
 
       <!-- 새 댓글 -->
-      <form id="c-end" class="c-form" method="post" action="{{ url_for('qna.qna_comment', qid=it.id) }}">
+      <form class="c-form" method="post" action="{{ url_for('qna.qna_comment', qid=it.id) }}">
         <div class="c-actions">
           <input type="text" name="author" placeholder="닉네임(선택)" maxlength="20">
           <textarea name="content" rows="3" placeholder="댓글을 입력하세요." required></textarea>
@@ -56,16 +75,37 @@
 
       <!-- 관리자 답변 전용 -->
       {% if session.get('user') == 'libra_admin' %}
-        <hr style="margin:1rem 0; border:none; border-top:.12rem solid #e4e9ef;">
-        <form class="c-form" method="post" action="{{ url_for('qna.qna_answer', qid=it.id) }}">
-          <label><strong>관리자 답변</strong></label>
-          <textarea name="content" rows="3" placeholder="관리자 답변을 입력하세요." required></textarea>
-          <div class="c-actions">
-            <button type="submit" class="btn primary">답변 등록</button>
-          </div>
-        </form>
+      <form class="c-form" method="post" action="{{ url_for('qna.qna_answer', qid=it.id) }}">
+        <label><strong>관리자 답변</strong></label>
+        <textarea name="content" rows="3" placeholder="관리자 답변을 입력하세요." required></textarea>
+        <div class="c-actions">
+          <button type="submit" class="btn primary">답변 등록</button>
+        </div>
+      </form>
       {% endif %}
-    </article>
+    </section>
   </div>
 </section>
 {% endblock %}
+
+{% block scripts %}
+<script>
+ // 섹션 페이드인
+  (function () {
+  // 페이지마다 스크롤 컨테이너가 다를 수 있으니 보정
+  const rootScroller = document.getElementById('sections-wrapper') || null;
+  const els = document.querySelectorAll('.fade-in');
+  if (!('IntersectionObserver' in window)) {
+    // 폴백: 바로 보여주기 (JS 미지원/구형 브라우저)
+    els.forEach(el => el.classList.add('appear'));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {e.target.classList.add('appear');io.unobserve(e.target);}
+    });
+  }, { root: rootScroller, threshold: 0.15 });els.forEach(el => io.observe(el));
+})();
+</script>
+{% endblock %}
+

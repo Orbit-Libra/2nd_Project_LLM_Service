@@ -1,9 +1,12 @@
+
+<!--services/web_frontend/templates/chartpage1.html-->
 {% extends "common/base.html" %}
 
 {% block title %}Libra - 환경점수 분석{% endblock %}
 
 {% block head_extra %}
   <!-- 페이지 전용 CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common/header.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/chartpage.css') }}">
   <!-- 이 페이지에서만 필요한 CDN (Chart.js) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>

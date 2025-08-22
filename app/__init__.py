@@ -27,7 +27,7 @@ from services.web_frontend.api.register_api import bp_register
 from services.web_frontend.api.user_api import bp_user
 from services.web_frontend.api.admin_system import admin_system_bp
 from services.web_frontend.api.chatbot_api import chatbot_bp
-from services.web_frontend.api.qna_api import qna_bp
+from services.web_frontend.api.qna import qna_bp
 from services.user_service.predict_sync import bp_predict_sync
 from services.user_service.user_analysis import bp_user_analysis
 

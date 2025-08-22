@@ -5,6 +5,28 @@
   --background-gradient: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
   --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
   --border-radius: 15px;
+
+  --c-header:#214369; 
+  --c-bg:#ecf0f1;   /* 페이지 배경 */
+  --c-out1:#6c757d;  /* 서브 텍스트 */
+  --c-out2:#666;     /* 본문 텍스트 */
+  --c-white:#fff;
+  --c-accent: rgba(66, 165, 245, 0.3);    /* 포커스 하이라이트 */
+}
+/* 공용 Primary 버튼 */
+.btn.primary{
+  background: var(--c-header);
+  color: #fff;
+  border: 1px solid var(--c-header);
+  padding: .55rem .9rem;
+  border-radius: .6rem;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn.primary:hover{
+  transform: scale(1.03);
+  box-shadow: 0 .8rem 1.6rem rgba(0,0,0,.12);
+  background: #113247;
 }
 
 * {
@@ -25,6 +47,31 @@ body {
   margin: 0 auto;
   padding: 0 20px;
 }
+/* ===== 차트 페이지 2-컬럼: .container 바로 아래에 aside가 있을 때만 적용 ===== */
+.container:has(> aside){
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr); /* 왼쪽 고정, 오른쪽 유동 */
+  gap: clamp(12px, 2vw, 20px);
+  align-items: start;
+  position: relative;
+}
+
+/* 공통 바닥(투명한 한 장) — 통일감 */
+.container:has(> aside)::before{
+  content: "";
+  position: absolute;
+  inset: -8px;
+  background: rgba(255,255,255,.25);
+  filter: blur(18px);
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 카드들이 바닥 위로 */
+.container:has(> aside) > *{ position: relative; z-index: 1; }
+.container:has(> aside) > aside{ min-width: 0; }
+.container:has(> aside) > :not(aside){ min-width: 0; }
 
 /* Main Layout */
 main {
@@ -829,6 +876,22 @@ main {
 }
 
 /* 모바일 반응형 스타일 */
+/* 반응형 */
+@media (max-width: 1140px){
+  .container:has(> aside){ grid-template-columns: 300px 1fr; }
+}
+@media (max-width: 880px){
+  .container:has(> aside){ grid-template-columns: 1fr; }
+  .container:has(> aside) > aside{ order: 1; }
+  .container:has(> aside) > :not(aside){ order: 2; }
+}
+
+/* (선택) 차트 카드/패널 흰 바탕으로 통일감 */
+.chart-card, .panel, .analysis-box{
+  background: var(--c-white);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.05);
+}
 @media (max-width: 768px) {
   .chart-block-content {
     flex-direction: column;

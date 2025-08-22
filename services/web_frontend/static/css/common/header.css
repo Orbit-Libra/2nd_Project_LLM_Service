@@ -1,17 +1,40 @@
+/*services/web_frontend/static/css/common/header.css*/
 /* ===== Header (전역, 모든 페이지 동일) ===== */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap');
 
 /* 전역 기본 여백 제거 */
-html, body { margin: 0; padding: 0; }
-
+html, body { background: var(--c-bg); margin: 0; padding: 0; }
+/* 불투명 헤더를 강제하고 플로팅 버튼 숨김 */
+body.header-opaque #site-header{ background: var(--c-header) !important; }
+body.header-opaque #floating-header-btn{ display:none !important; }
 /* 변수 */
 :root{
   --hf-font-sans: 'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --hf-header-height: 70px;
   --hf-header-bg-transparent: transparent;
-  --hf-header-bg-floating: #0d1f2d; /* 버튼으로 띄울 때만 적용 */
+  --hf-header-bg-floating: var(--c-header); /* 버튼으로 띄울 때만 적용 */
   --hf-header-text: #fff;
   --hf-logo-text: lab(69.67% -15.03 -23.49);
+  /* ▼ question.css와 공통화 (테마 핵심 2개) */
+  --c-header: #214369;
+  --c-bg: #ecf0f1;
+  --c-white:#fff;
+  --c-accent: rgba(66, 165, 245, 0.3);    /* 포커스 하이라이트 */
+}
+/* 공용 Primary 버튼 */
+.btn.primary{
+  background: var(--c-header);
+  color: #fff;
+  border: 1px solid var(--c-header);
+  padding: .55rem .9rem;
+  border-radius: .6rem;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn.primary:hover{
+  transform: scale(1.03);
+  box-shadow: 0 .8rem 1.6rem rgba(0,0,0,.12);
+  background: #113247;
 }
 
 /* 헤더 컨테이너 */
@@ -118,6 +141,50 @@ html, body { margin: 0; padding: 0; }
 #floating-header-btn:hover{ background: rgba(255,255,255,.45); transform: scale(1.04); }
 #floating-header-btn::before{ content:"☰"; }
 
+/* ===== Chart Pages (chartpage1/2 공통) ===== */
+
+/* 전체 래퍼: 하나의 투명 컬럼 위에 좌/우를 올리는 느낌 */
+.chartpage-grid{
+  display:grid;
+  grid-template-columns: 320px 1fr;  /* 좌측 패널 | 우측 메인 */
+  gap: 24px;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(var(--hf-header-height,70px) + 20px) 16px 40px; /* 헤더 높이 보정 */
+  background: transparent; /* 바닥은 투명 */
+}
+
+/* 좌측 패널(반응형에서 고정 높이 느낌) */
+.chartpage-side{
+  position: sticky;
+  top: calc(var(--hf-header-height,70px) + 16px);
+}
+
+/* 카드 공통 */
+.chart-card{
+  background: var(--c-white);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+/* 카드 상단 헤더 */
+.chart-card .card-head{
+  padding: 12px 16px;
+  font-weight: 800;
+  color:#111;
+  background:#f7f9fb;
+  border-bottom:1px solid #eef2f6;
+}
+
+/* 우측 차트 묶음(예측 페이지의 추세+파이) */
+.chart-grid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
 /* 반응형 */
 @media (max-width:768px){
   #site-header{ padding:.8rem 2vw; height:60px; }
@@ -130,4 +197,24 @@ html, body { margin: 0; padding: 0; }
 @media (max-width:480px){
   #site-header #logo-img{ height:30px; max-width:30px; }
   #site-header #logo-text{ font-size:1rem; }
+}
+@media (min-width: 1100px){
+  .chart-grid{ grid-template-columns: 2fr 1fr; } /* 추세:파이 = 2:1 */
+}
+/* 캔버스 높이 유틸 */
+.chart-area{ min-height: 420px; }
+/* 버튼 프라이머리(테마 따라가기) */
+.btn.primary, .button.primary{
+  background: var(--c-header);
+  color:#fff;
+  border:1px solid var(--c-header);
+  padding:.55rem .9rem;
+  border-radius:.6rem;
+  font-weight:700;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn.primary:hover, .button.primary:hover{
+  transform:scale(1.03);
+  box-shadow:0 .8rem 1.6rem rgba(0,0,0,.12);
+  background:#113247;
 }

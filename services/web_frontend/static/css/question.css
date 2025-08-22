@@ -1,10 +1,14 @@
+/*services/web_frontend/static/css/question.css*/
+/*qna폴더의 css  >> 작성폼/목록/상세*/
+/*검색 버튼은 .qna-filterbar .btn.search에 primary 스타일로 강조*/
+/* --c-header:#0d1f2d;   */
 :root{
-  --c-header:#0d1f2d;
-  --c-bg:#ecf0f1;
-  --c-out1:#6c757d;
-  --c-out2:#666;
+  --c-header:#214369; 
+  --c-bg:#ecf0f1;   /* 페이지 배경 */
+  --c-out1:#6c757d;  /* 서브 텍스트 */
+  --c-out2:#666;     /* 본문 텍스트 */
   --c-white:#fff;
-  --c-accent: rgba(66, 165, 245, 0.3);
+  --c-accent: rgba(66, 165, 245, 0.3);    /* 포커스 하이라이트 */
 
   --r-gap: 1.2rem;
   --r-radius: 1rem;
@@ -13,126 +17,142 @@
 }
 
 body{ background: var(--c-bg); }
-
 .container{ width: min(92vw, 72rem); margin: 0 auto; padding: 2rem 1rem; }
 
+/* ====================== 공통 버튼/효과 ====================== */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+  border:1px solid #dde3ea; background:#fff; padding:.55rem .9rem; border-radius:.6rem;
+  font-weight:700; transition:transform .12s ease, box-shadow .12s ease, background .12s ease, color .12s ease;
+  text-decoration:none; cursor:pointer; color:#222;
+}
+.btn:hover{ transform:scale(1.03); box-shadow:0 .8rem 1.6rem rgba(0,0,0,.12); }
+.btn.primary{ background:var(--c-header); color:#fff; border-color:var(--c-header); }
+.btn.primary:hover{ background:#113247; }
+.btn.ghost{ background:#fff; color:var(--c-header); border:.1rem solid var(--c-header); }
+.btn.link{ background:transparent; border:0; color:#204461; }
+/* ================== Q&A 헤더 밑줄 제거 ================== */
+/* 이전에 추가했던 장식 라인이 있다면 끄기 */
+.qna-hero::after{ content:none !important; }
+.qna-hero hr{ display:none !important; }
 .qna-hero{
-  padding-top: calc(var(--hf-header-height) + 4vh);
-  padding-bottom: 2vh;
+  /* 고정 헤더 높이만큼 여백을 주어 겹침 방지 */
+  padding-top: calc(var(--hf-header-height, 70px) + 18px);
+  padding-bottom: .8rem;  /* 섹션 하단 여백 */
   color: var(--c-out2);
 }
 .qna-hero h1{ font-size: 2rem; margin-bottom: .6rem; }
 .qna-hero .lead{ color: var(--c-out1); }
-
+/* 스크롤로 올라올 때 헤더에 안가려지도록 */
+.qna-hero, .qna-list-section{ scroll-margin-top: calc(var(--hf-header-height, 70px) + 8px); }
+/* ====================== 문의 작성(question) ====================== */
 .qna-form{
   background: var(--c-white);
   border-radius: var(--r-radius);
   box-shadow: var(--shadow);
   padding: 2rem;
 }
-
 .field{ display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.2rem; }
 .field label{ font-weight: 700; color: var(--c-out2); }
 .field input[type="text"],
 .field input[type="email"],
 .field textarea{
-  font-size: 1rem;
-  padding: .9rem 1rem;
-  border: .1rem solid #ddd;
-  border-radius: .8rem;
-  outline: none;
-  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
-  background: #fff;
+  font-size:1rem; padding:.9rem 1rem; border:.1rem solid #ddd; border-radius:.8rem; outline:none;
+  background:#fff; transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
 }
-.field input:focus,
-.field textarea:focus{
-  border-color: #8ab6ff;
-  box-shadow: 0 0 0 .35rem rgba(66,165,245,.15);
+.field input:focus,.field textarea:focus{
+  border-color: #8ab6ff; box-shadow: 0 0 0 .35rem rgba(66,165,245,.15);
 }
-.field input:hover,
-.field textarea:hover{ transform: scale(1.01); }
-
-.field.checkbox label{
-  display: inline-flex; align-items: center; gap: .6rem;
+.field input:hover, .field textarea:hover{ transform: scale(1.01); }
+.field.checkbox label{ display: inline-flex; align-items: center; gap: .6rem;
   font-weight: 500; color: var(--c-out2);
 }
-
 .error{ color: #c0392b; font-size: .9rem; }
+/* .actions{ display: flex; gap: .8rem; flex-wrap: wrap; } */
 
-.actions{ display: flex; gap: .8rem; flex-wrap: wrap; }
-.btn{
-  padding: .8rem 1.2rem; border-radius: .8rem; border: none; cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease;
-  text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
-}
-.btn:hover{ transform: scale(1.04); box-shadow: var(--shadow); }
-.btn.primary{ background: var(--c-header); color: #fff; }
-.btn.ghost{ background: #fff; color: var(--c-header); border: .1rem solid var(--c-header); }
-.btn.link{ background: transparent; color: var(--c-out2); text-decoration: underline; }
-
-.qna-list{ list-style: none; display: grid; gap: 1rem; padding: 0; margin: 0; }
-.qna-card{
-  background: #fff; border-radius: var(--r-radius); box-shadow: var(--shadow); padding: 1.2rem;
-  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
-}
-.qna-card:hover{ transform: scale(1.01); box-shadow: 0 1.6rem 3rem rgba(0,0,0,.1); background: #fdfefe; }
-.qna-title{ font-size: 1.1rem; margin-bottom: .4rem; color: #222; }
-.qna-meta{ font-size: .9rem; color: var(--c-out1); margin-bottom: .5rem; }
-.qna-empty{ color: var(--c-out1); }
-
-
-
-.fade-in{ opacity: 0; transform: translateY(1.2vh); transition: opacity .6s ease, transform .6s ease; }
-.fade-in.appear{ opacity: 1; transform: translateY(0); }
-
-/*list.css*/
-/* 목록 테이블 스타일(질감만 추가) */
-.qna-table{ width:100%; border-collapse: collapse; background:#fff; border-radius:1rem; overflow:hidden; box-shadow:0 1.2rem 2.4rem rgba(0,0,0,.08); }
-.qna-table thead th{ background:#f6f8fa; color:#333; font-weight:700; padding:1rem .8rem; border-bottom:.1rem solid #e6e9ec; text-align:center; }
-.qna-table tbody td{ padding:.9rem .8rem; border-bottom:.1rem solid #f0f3f6; text-align:center; color:#444; }
-.qna-table tbody tr:hover{ background:#fdfefe; }
-.qna-title-cell{ text-align:left; }
-
-.status.done{ color:#0077cc; font-weight:700; }
-.status.doing{ color:#a65; font-weight:700; }
-
-/* 페이징 */
-.pager{ display:flex; gap:.4rem; justify-content:center; margin:1.2rem 0; }
-.pager a, .pager span{
-  min-width:2rem; padding:.4rem .7rem; border-radius:.5rem; text-decoration:none; text-align:center;
-  border:.1rem solid #dde3ea; background:#fff; color:#333; transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-}
-.pager a:hover{ transform:scale(1.04); box-shadow:0 .8rem 1.6rem rgba(0,0,0,.08); background:#f7fbff; }
-.pager .current{ background:#0d1f2d; color:#fff; border-color:#0d1f2d; }
-
+/* ====================== 목록(list) ====================== */
 /* ====== Q&A 필터바 ====== */
 .qna-filterbar .filter-form{
   display:flex; justify-content:space-between; gap:1rem; align-items:center;
-  padding: .6rem .2rem 1rem .2rem;
+  padding: .1rem .1rem .1rem .1rem !important; 
 }
 .qna-filterbar select, .qna-filterbar input[type="text"]{
-  padding:.6rem .8rem; border:.1rem solid #dde3ea; border-radius:.6rem; background:#fff;
+  padding:.8rem .8rem; border:.1rem solid #dde3ea; border-radius:.6rem; background:#fff;
 }
 .qna-filterbar .filters-left{ display:flex; gap:.6rem; flex-wrap:wrap; }
 .qna-filterbar .filters-right{ display:flex; gap:.6rem; align-items:center; }
 
-/* ====== 테이블 헤더(참고 스샷 분위기) ====== */
-.qna-table{ width:100%; border-collapse: separate; border-spacing:0; background:#fff; border-radius:1rem; overflow:hidden; box-shadow:0 1.2rem 2.4rem rgba(0,0,0,.08); }
+/* 검색 버튼 강조 */
+.qna-filterbar .btn.search{ background:var(--c-header); 
+  color:#fff; border-color:var(--c-header); }
+.qna-filterbar .btn.search:hover{transform:scale(1.03); background:#113247;
+  box-shadow:0 .8rem 1.6rem rgba(0,0,0,.12);}
+
+
+/* ====== 테이블 헤더(목록 테이블) ====== */
+.qna-table{ table-layout: fixed; /* thead의 width를 강제 반영 */
+  width:100%; border-collapse: separate; 
+  border-spacing:0; background:#fff;
+   border-radius:1rem; overflow:hidden; 
+   box-shadow:0 1.2rem 2.4rem rgba(0,0,0,.08); }
+/* 표 구분선 더 두껍게(헤더/바디) */
 .qna-table thead th{
-  background: linear-gradient(to bottom, #f2f5f7 0%, #e9eef2 100%);
-  color:#333; font-weight:700; padding:1rem .8rem; border-bottom:.1rem solid #e6e9ec; text-align:center;
+  background: linear-gradient(to bottom, #f2f5f7 0%, #e4eaef 100%);
+  color:#444; font-weight:700; padding:1rem .8rem; text-align:center;
+  border-top:.18rem solid #444; /* ← 굵기 조절 지점(헤더 아래선) */
+  border-bottom:.18rem solid #444; /* ← 굵기 조절 지점(헤더 아래선) */
 }
-.qna-table thead th:first-child{ border-top-left-radius:1rem; }
-.qna-table thead th:last-child{ border-top-right-radius:1rem; }
-.qna-table tbody td{ padding:.9rem .8rem; border-bottom:.1rem solid #f0f3f6; text-align:center; color:#444; }
+.qna-table,
+.qna-table thead th:first-child,
+.qna-table thead th:last-child{ border-radius:0 !important; }
+.qna-table tbody td{ padding:.9rem .8rem; text-align:center; color:#444;
+  border-bottom:.14rem solid #dfe6ec;  /* ← 굵기 조절 지점(행 구분선) */ }
 .qna-table tbody tr:hover{ background:#fdfefe; }
-.qna-title-cell{ text-align:left; }
+.qna-title-cell{ text-align:left; white-space: normal;/* 제목만 여러 줄 허용 */ }
+/* 셀 폭 타이트하게 고정 (제목만 유연) */
+.qna-table td:nth-child(1), .qna-table th:nth-child(1){ width:7rem; }
+.qna-table td:nth-child(2), .qna-table th:nth-child(2){ width:7rem; }
+.qna-table td:nth-child(3), .qna-table th:nth-child(3){ width:7rem; }
+.qna-table td:nth-child(5), .qna-table th:nth-child(5){ width:6rem; }
+.qna-table td:nth-child(6), .qna-table th:nth-child(6){ width:8rem; }
+.qna-table td:nth-child(7), .qna-table th:nth-child(7){ width:10rem; }
+.qna-table td:nth-child(8), .qna-table th:nth-child(8){ width:8rem; }
+
+/* 제목: 2줄까지, 넘치면 말줄임 + 조금 작게 (길이 30자↑) */
+.qna-title-cell .tt{
+  display:-webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 실제 동작(크롬/사파리/엣지) */
+  line-clamp: 2;         /* 표준 속성(지원 브라우저 한정, 있어도 무해) */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.25;
+  max-height: 2.5em;     /* 2줄 */
+}
+/* (선택) 행 높이를 어느 정도 유지하고 싶다면 */
+.qna-table tbody td{ padding: .9rem .8rem; }
+/*제목 링크/비공개 잠금 표시 */
+.qna-title-cell a.qna-link{ color:#2b2f36; text-decoration:none; }
+.qna-title-cell a.qna-link:hover{ color:#0d57a1; text-decoration:underline; }
+.qna-title-cell .locked{ color:#999; }
+.qna-title-cell .tt.long{ font-size: .95rem; } /* 30자↑에 서버에서 long 클래스 붙였을 때 */
+/* ===== 제목바(밑줄) + 총건수 ===== */
+.qna-titlebar{ position:relative; margin-bottom: 10px; }
+.qna-titlebar h1{ margin:0; padding-bottom:.35rem; font-weight:800;
+  border-bottom:.15rem solid var(--c-header);  
+}
+.qna-titlebar .lead{ margin:.4rem 0 0; color:var(--c-out1); }
+.qna-titlebar::after{content: none !important;   /* 긴 가로 라인 OFF */
+  content:''; position:absolute; left:0; right:0; bottom:-6px;
+  height:4px; background:#0d1f2d; border-radius:2px;}
+.q-total{ margin:.4rem 0 0 !important; color:var(--c-out1); font-weight:700; }
 
 /* 상태색 */
 .status.done{ color:#0d57a1; font-weight:700; }
 .status.doing{ color:#a65; font-weight:700; }
 
-/* ====== 페이징: <ul class="pager"> (점 제거 + pill) ====== */
+/* ====== 페이지네이션: <ul class="pager"> ====== */
 .pager{ display:flex; gap:.5rem; justify-content:center; margin:1.2rem 0; list-style:none; padding-left:0; }
 .pager li{ display:inline-flex; }
 .pager a, .pager .current{
@@ -151,22 +171,28 @@ body{ background: var(--c-bg); }
 }
 .pager .disabled{ pointer-events:none; }
 
-/* 표 구분선 더 진하게(참고 스샷 느낌) */
-.qna-table thead th{
-  background: linear-gradient(to bottom, #f1f4f7 0%, #e4eaef 100%);
-  border-bottom: .12rem solid #d7dde2;           /* ★ 진한 헤더 하단선 */
-}
-.qna-table tbody td{
-  border-bottom: .1rem solid #e4e9ef;            /* ★ 로우 분할선 진하게 */
-}
+
 
 /*===================================================*/
+/*================상세(detail) ====================*/
 /*detail.html의 css*/
 .qna-detail{ background:#fff; border-radius:1rem; box-shadow:0 1.2rem 2.4rem rgba(0,0,0,.08); padding:1.4rem; }
 .qna-detail h2{ font-size:1.2rem; margin-bottom:.6rem; }
 .qna-meta{ color:#6c757d; font-size:.92rem; margin-bottom:1rem; }
 .qna-body{ white-space:pre-wrap; line-height:1.6; color:#333; padding: .6rem 0 1.2rem 0; border-top:.12rem solid #e4e9ef; border-bottom:.12rem solid #e4e9ef; }
+
+/* 상세 메타/배지 */
+.qna-meta{ color:#6c757d; font-size:.92rem; margin-bottom:1rem; display:flex; flex-wrap:wrap; gap:.6rem 1rem;  }
+.qna-meta .badge{ display:inline-block; padding:.28rem .55rem; border-radius:.5rem; font-weight:700; }
+.badge.kind{ background:rgba(66,165,245,.15); color:#204461; }
+.badge.public{ background:rgba(33,150,83,.12); color:#1b5e20;}
+.badge.private{ background:rgba(244,67,54,.12); color:#b71c1c;}
+
+
 /* 댓글 */
+.c-wrap{ margin-top:18px; background:#fff; border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.05); }
+.c-head{ padding:14px 18px; border-bottom:1px solid #eef2f6; font-weight:800; color:#204461; }
+
 .c-list{ list-style:none; padding-left:0; }
 .c-item{ padding:.7rem .6rem; border-bottom:.1rem solid #e4e9ef; }
 .c-item .c-head{ font-weight:700; color:#333; }
@@ -176,25 +202,71 @@ body{ background: var(--c-bg); }
 .c-indent-1{ margin-left:1.2rem; }
 .c-indent-2{ margin-left:2.0rem; }
 .c-indent-3{ margin-left:2.6rem; }
+.c-item .c-body{ white-space:pre-line; color:#1d2229; }
+
 .c-form{ display:flex; flex-direction:column; gap:.6rem; margin-top:1rem; }
 .c-form input[type="text"], .c-form textarea{
-  padding:.7rem .9rem; border:.1rem solid #dde3ea; border-radius:.6rem; background:#fff;
+  padding:.7rem .9rem; border:.1rem solid #dde3ea; border-radius:.6rem; 
+  background:#fff; box-sizing: border-box;/* 테두리+패딩 포함해서 100% 계산 */
+}
+/* ================== 댓글 폼: 입력 넓게, 버튼 오른쪽 ================== */
+.c-form textarea{ width:100%; min-height: 44px;
+  resize: vertical;           /* 필요시 아래로만 늘리기 */ }
+.c-form .c-actions{
+  display: grid !important;                 /* 혹시 다른 규칙보다 우선 */
+  grid-template-columns: 200px 1fr 110px; /* 닉네임 | 본문 | 버튼 */
+  gap:.6rem;
+  align-items:start;
 }
 .c-actions{ display:flex; gap:.6rem; align-items:center; }
-.c-actions .btn{ padding:.6rem 1rem; border-radius:.6rem; }
-.reply-btn{ font-size:.9rem; color:#0d57a1; cursor:pointer; margin-left:.6rem; }
-/*===================================================*/
+.c-actions .btn{ padding:.6rem 1rem; border-radius:.6rem; justify-self:end;}
+/* 버튼은 셀 안에서 오른쪽 정렬 */
+.c-form .c-actions .btn{
+  width: 110px;               /* 위 그리드와 동일 */
+  justify-self: end;
+}
 
-/* 반응형 */
+/*상세전용 미세스타일*/
+.qna-wrap{ max-width: 1080px; margin: 0 auto; padding: calc(var(--hf-header-height,70px) + 18px) 16px 32px; }
+.qna-detail-card{ background:#fff; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.06); overflow:hidden; }
+.qna-detail-head{ padding:18px 22px; background:linear-gradient(#f7f9fb,#ffffff);}
+.qna-title{ font-size:1.25rem; font-weight:800; margin:0 0 .25rem 0; color:#111;}
+
+.badge.status.done{ background:rgba(13,31,45,.12); color:#0d1f2d;}
+.badge.status.doing{ background:rgba(255,193,7,.2); color:#8a6d00;}
+.qna-detail-body{ padding:22px; line-height:1.7; color:#222; white-space:pre-line; }
+.qna-detail-foot{ padding:16px 22px; background:#fafbfc; display:flex; gap:.6rem; justify-content:flex-end; }
+
+
+.reply-btn{ font-size:.9rem; color:#0d57a1; cursor:pointer; margin-left:.6rem; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+          border:1px solid #dde3ea; background:#fff; padding:.55rem .9rem; border-radius:.6rem;
+          font-weight:700; transition:transform .12s ease, box-shadow .12s ease, background .12s ease; }
+.btn:hover{ transform:scale(1.03); box-shadow:0 .8rem 1.6rem rgba(0,0,0,.08); }
+.btn.primary{ background:#0d1f2d; color:#fff; border-color:#0d1f2d; }
+.btn.link{ background:transparent; border:0; color:#204461; }
+
+/*===================================================*/
+/*===================================================*/
+/* 애니메이션/반응형 */
+.fade-in{ opacity: 0; transform: translateY(1.2vh); transition: opacity .6s ease, transform .6s ease; }
+.fade-in.appear{ opacity: 1; transform: translateY(0); }
+
 @media (max-width: 768px){
   .container{ width: min(94vw, 92vw); padding: 1.4rem .8rem; }
   .qna-hero h1{ font-size: 1.6rem; }
-
-/*list.css*/
-    .qna-table thead{ display:none; }
+    /* 목록 테이블 → 모바일 카드화 */
+    /*list.css*/
+  .qna-table thead{ display:none; }
   .qna-table, .qna-table tbody, .qna-table tr, .qna-table td{ display:block; width:100%; }
   .qna-table tr{ border-bottom:.1rem solid #eef2f6; padding:.6rem .8rem; }
   .qna-table td{ text-align:left; border:none; padding:.3rem 0; }
   .qna-title-cell{ font-weight:700; margin:.2rem 0; }
-
+  /* 모바일: 세로 스택으로 바꾸기 */
+  .c-form .c-actions{
+    grid-template-columns: 1fr;   /* 한 칼럼 */
+  }
+  .c-form .c-actions .btn{
+    justify-self: end;            /* 버튼만 오른쪽 */
+  }
 }
