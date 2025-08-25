@@ -1,4 +1,4 @@
-# db/llm_repository_cx.py
+# services/llm_service/db/llm_repository_cx.py
 from typing import Optional, List, Tuple, Dict, Any
 import logging
 from .oracle_cx import ConnCtx
@@ -19,7 +19,6 @@ def _as_text(v) -> str:
 
 # --- 유저 프로필 (USER_DATA) ---
 def get_user_profile(user_id: str) -> Optional[Tuple[str, str]]:
-    # 📌 번호 바인드(:1) 사용으로 통일
     sql = "SELECT USR_NAME, USR_SNM FROM USER_DATA WHERE USR_ID = :1"
     with ConnCtx() as conn:
         cur = conn.cursor()
@@ -28,6 +27,23 @@ def get_user_profile(user_id: str) -> Optional[Tuple[str, str]]:
         if not row:
             return None
         return (_as_text(row[0]), _as_text(row[1]))
+
+# --- (신규) user_schema 기반 확장 조회 ---
+def get_user_traits(user_id: str, schema_path: str) -> Optional[Dict[str, Any]]:
+    from .user_schema_loader import load_user_schema, build_select_from_schema, map_row_to_aliases
+    schema = load_user_schema(schema_path)
+    sql, _, alias_map = build_select_from_schema(schema)
+    with ConnCtx() as conn:
+        cur = conn.cursor()
+        cur.execute(sql, [user_id])
+        row = cur.fetchone()
+        if not row:
+            return None
+        alias_dict = map_row_to_aliases(row, cur.description, alias_map)
+        # LOB 안전 변환
+        for k, v in list(alias_dict.items()):
+            alias_dict[k] = _as_text(v)
+        return alias_dict
 
 # --- 시퀀스 ---
 def next_conv_id() -> int:
@@ -44,13 +60,8 @@ def next_msg_id() -> int:
 
 # --- 대화/메시지 ---
 def latest_conv_id(user_id: str) -> Optional[int]:
-    """
-    usr_id별로 msg_id가 가장 큰 conv_id 하나를 반환.
-    (ROWNUM 방식: 11g 호환)
-    """
     log = logging.getLogger("llm_repo")
     log.info("latest_conv_id called (user_id=%r)", user_id)
-
     sql = """
         SELECT conv_id
           FROM (
@@ -76,7 +87,6 @@ def append_message(conv_id: int, user_id: str, role: str, content: str, tokens: 
     """
     with ConnCtx() as conn:
         cur = conn.cursor()
-        # CLOB 바인딩(가능 시)
         try:
             import oracledb
             cur.setinputsizes(None, None, None, None, oracledb.DB_TYPE_CLOB, None)
@@ -141,7 +151,6 @@ def upsert_summary_on_latest_row(conv_id: int, summary_text: str, cover_to_msg_i
     """
     with ConnCtx() as conn:
         cur = conn.cursor()
-        # CLOB 바인딩 시도
         try:
             import oracledb
             cur.setinputsizes(oracledb.DB_TYPE_CLOB, None, None)

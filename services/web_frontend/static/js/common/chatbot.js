@@ -199,11 +199,11 @@
   }
 
   // --- 서버 호출 ---
-  async function callAssistant(message) {
-    const res = await fetch('/api/chat', {
+  async function callAssistant(message, firstTurn) {
+    const res = await fetch('/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message, first_turn: !!firstTurn })
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => '');
@@ -217,6 +217,8 @@
     const msg = (chatInput?.value || '').trim();
     if (!msg) return;
 
+    const isFirstTurn = history.length === 0; // 세션 기준 첫 질문 여부
+
     appendBubble(msg, 'user'); // 저장됨
     if (chatInput) { chatInput.value = ''; chatInput.focus(); }
 
@@ -224,18 +226,17 @@
     loader.textContent = '생각중...';
     loader.style.color = '#888';
     loader.style.margin = '6px 12px';
-    
-    // scrollContainer가 있으면 사용, 없으면 chatBody 사용
+
     const container = scrollContainer || chatBody;
     container.appendChild(loader);
     container.scrollTop = container.scrollHeight;
-    
+
     if (scrollContainer && updateScrollbar) {
       updateScrollbar();
     }
 
     try {
-      const data = await callAssistant(msg);
+      const data = await callAssistant(msg, isFirstTurn);
       loader.remove();
       const answer = (data && data.answer) ? String(data.answer).trim() : '';
       appendBubble(answer || '죄송해요, 응답이 비었습니다.', 'bot'); // 저장됨

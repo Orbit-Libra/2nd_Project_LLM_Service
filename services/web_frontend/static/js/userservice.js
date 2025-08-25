@@ -348,13 +348,20 @@
   }
 
   window.addEventListener('DOMContentLoaded', function () {
-    (async function () {
+    (function () {
       try {
-        await loadAndRender();
+        // 페이지 진입 시엔 자동 로드/차팅하지 않음
+        // 세션에서 주입된 기본 정보만 상단에 표시
+        if (window.__USER__) {
+          renderUserBasics(window.__USER__.name, window.__USER__.univ);
+        }
+        // 안내 플레이스홀더 노출
+        showPlaceholder('왼쪽에서 “예측 점수 동기화”를 눌러 분석을 시작하세요.');
       } catch (e) {
         console.error(e);
         showPlaceholder('초기화 중 오류가 발생했습니다.');
       }
+      // 버튼 액션만 연결
       initActions();
     })();
   });

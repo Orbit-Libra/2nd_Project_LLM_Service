@@ -1,4 +1,3 @@
-# services/llm_service/api/server.py
 import os
 import pathlib
 import logging
@@ -39,13 +38,14 @@ def create_app():
     # === 라우터 준비 ===
     global _ROUTER, _CFG
     if _ROUTER is None:
-        cfg_path = os.getenv("MODEL_CONFIG")
-        if not cfg_path:
-            raise RuntimeError("MODEL_CONFIG is not set in .env")
-        _CFG = load_config(cfg_path, os.environ)
+        # 분리 구성 필수: MODEL_PARAMS_CONFIG + MODEL_PROMPTS_CONFIG
+        _CFG = load_config(os.environ)
         _ROUTER = ModelRouter.from_config(_CFG, os.environ)
 
     # ---------- helpers ----------
+    def _get_snip(key: str, default: str = "") -> str:
+        return (_CFG.get("prompts", {}).get("snippets", {}) or {}).get(key, default)
+
     def _base_messages(runtime_vars: dict | None = None):
         prompts = _CFG.get("prompts", {})
         roles = prompts.get("roles", [])
@@ -53,18 +53,18 @@ def create_app():
         merged = {**variables, **(runtime_vars or {})}
         base = render_messages(roles, merged)
 
-        # 사용자 프로필(참조용) 시스템 카드 추가: 필요할 때만 모델이 활용
+        # 사용자 프로필(참조용) 시스템 카드: 필요시에만 모델이 활용
         ua = (merged.get("user_affiliation") or "").strip()
         un = (merged.get("user_name") or "").strip()
         if ua or un:
+            profile_text = f"이름: {un or '미상'}\n소속: {ua or '미상'}"
+            profile_tmpl = _get_snip(
+                "user_profile_header",
+                "[사용자 프로필]\n{profile_text}\n※ 프로필은 질문과 직접 관련 있을 때만 간단히 활용."
+            )
             base += [{
                 "role": "system",
-                "content": (
-                    "[사용자 프로필]\n"
-                    f"이름: {un or '미상'}\n"
-                    f"소속: {ua or '미상'}\n"
-                    "※ 프로필은 질문과 직접 관련 있을 때만 간단히 활용."
-                )
+                "content": profile_tmpl.replace("{profile_text}", profile_text)
             }]
         return base
 
@@ -88,7 +88,6 @@ def create_app():
         if not prefix:
             return (text or "").lstrip()
         t = (text or "").lstrip()
-        # 이미 붙어 있으면 중복 방지
         if t.startswith(prefix):
             return t
         return f"{prefix}{t[0].lower() if t[:2].startswith(', ') else ''}{t}"
@@ -105,6 +104,28 @@ def create_app():
         t = (text or "")
         return any(k in t for k in triggers)
 
+    def _affiliation_override_from(text: str) -> str | None:
+        """사용자 질문에 '○○대학교'가 있으면 이번 턴만 해당 소속으로 덮어씀."""
+        import re
+        m = re.search(r'([가-힣A-Za-z]+대학교)', text)
+        return m.group(1) if m else None
+
+    def _compose_greeting(is_guest: bool, user_name: str, first_turn: bool) -> tuple[str, str]:
+        """
+        (head, tail) 반환.
+        - 로그인 사용자: 첫 턴이면 "안녕하세요! {이름}님!", tail 없음
+        - 게스트: 첫 턴이면 head + tail, 그 외에는 둘 다 공백
+        """
+        if not first_turn:
+            return "", ""
+        if is_guest:
+            head = _get_snip("greet_guest_prefix", "안녕하세요! 저는 Libra 챗봇입니다!")
+            tail = _get_snip("greet_guest_suffix", "로그인 시 더 많은 정보와 기능을 활용할 수 있음을 알려드려요!")
+            return head, tail
+        else:
+            tmpl = _get_snip("greet_member_prefix", "안녕하세요! {usr_name}님!")
+            return tmpl.replace("{usr_name}", (user_name or "").strip()), ""
+
     # ---------- endpoints ----------
     @app.get("/health")
     def health():
@@ -117,58 +138,10 @@ def create_app():
             "summary_turns": SUMMARY_TURNS,
         }
 
-    @app.get("/greet")
-    def greet():
-        usr_id = request.headers.get("X-User-Id")
-        log.info("[greet] X-User-Id=%r", usr_id)
-
-        usr_name, usr_snm = ("게스트", "")
-        salutation_prefix = ""
-        is_guest = True
-
-        if usr_id:
-            try:
-                prof = repo.get_user_profile(str(usr_id))
-                if prof:
-                    usr_name, usr_snm = prof
-                    salutation_prefix = f"{usr_name}님, "
-                    is_guest = False
-            except Exception as e:
-                log.exception("DB error(get_user_profile in greet): %s", e)
-
-        base = _base_messages({
-            "user_name": usr_name,
-            "salutation_prefix": salutation_prefix,
-            "user_affiliation": usr_snm or ""
-        })
-
-        messages = base + [
-            {"role": "system",
-             "content": (
-                 "페이지 첫 인사를 1~2문장으로 작성하라. "
-                 "게스트면 자기소개(예: Libra 챗봇)와 도움 가능한 범주를 간단히 말하고, "
-                 "로그인 사용자는 '{salutation_prefix}'로 시작하라(비어있으면 생략). "
-                 "과장/허위 약속 금지, 친근하되 공손하게."
-             )},
-            {"role": "user", "content": "[초기 인사 요청]"}
-        ]
-
-        ov = {"temperature": 0.6, "enforce_max_sentences": 2, "enforce_max_chars": 140}
-        try:
-            greeting = _ROUTER.generate_messages(messages, overrides=ov)
-            # 안전 보정
-            greeting = _ensure_salutation(salutation_prefix, greeting)
-            return jsonify({
-                "greeting": greeting,
-                "guest": is_guest,
-                "used_profile": None if is_guest else {"usr_name": usr_name, "usr_snm": usr_snm}
-            })
-        except Exception as e:
-            log.exception("LLM error(greet): %s", e)
-        fallback = "안녕하세요! Libra 챗봇입니다. 무엇을 도와드릴까요?" if is_guest else f"{usr_name}님, 무엇을 도와드릴까요?"
-        return jsonify({"greeting": fallback, "guest": is_guest}), 200
-
-    @app.post("/generate")
+    # generate 엔드포인트(별칭 포함)
+    @app.route("/generate", methods=["POST"])
+    @app.route("/api/generate", methods=["POST"])
+    @app.route("/api/chat", methods=["POST"])
     def generate():
         data = request.get_json(silent=True) or {}
         raw_user_text = (data.get("message") or "").strip()
@@ -178,8 +151,27 @@ def create_app():
 
         user_text = _sanitize_user_text(raw_user_text)
 
+        # ⚑ 세션 첫 턴 플래그: 헤더/오버라이드 중 하나라도 True면 True
+        first_turn_flag = False
+        try:
+            if request.headers.get("X-First-Turn", "").strip() == "1":
+                first_turn_flag = True
+            elif bool(overrides.get("first_turn")):
+                first_turn_flag = True
+        except Exception:
+            pass
+
         usr_id = request.headers.get("X-User-Id")
-        log.info("[generate] X-User-Id=%r", usr_id)
+        log.info("[generate] X-User-Id=%r, first_turn_flag=%r", usr_id, first_turn_flag)
+
+        gk_hint = _get_snip(
+            "general_knowledge_hint",
+            "요청 주제가 일반 상식/백과 수준이면, 네가 학습한 일반 지식을 바탕으로 핵심 사실을 요약하라. 불확실하거나 최신 수치가 필요한 부분은 단서를 달아라."
+        )
+        concise_rule = _get_snip(
+            "concise_rule",
+            "아래 질문에 간결히 답하라. 2~3문장, 300자 이내. 불확실하면 모른다고 답하라."
+        )
 
         # ----- 게스트 -----
         if not usr_id:
@@ -190,19 +182,29 @@ def create_app():
                     "user_affiliation": ""
                 })
                 messages = base + [
-                    {"role": "system", "content": "요청 주제가 일반 상식/백과 수준이면, 학습한 일반 지식을 바탕으로 핵심 사실을 요약하라. 불확실하거나 최신 수치가 필요한 부분은 단서를 달아라."},
-                    {"role": "system", "content": "아래 질문에 간결히 답하라. 2~3문장, 300자 이내. 불확실하면 모른다고 답하라."},
+                    {"role": "system", "content": gk_hint},
+                    {"role": "system", "content": concise_rule},
                     {"role": "user", "content": user_text},
                 ]
                 ov = {**(overrides or {})}
                 ov.setdefault("enforce_max_sentences", 3)
-                ov.setdefault("enforce_max_chars", 300)  # 소속/맥락 보강 여유
+                ov.setdefault("enforce_max_chars", 300)
                 ov.setdefault("max_new_tokens", 180)
-                answer = _ROUTER.generate_messages(messages, overrides=ov)
-                # 필요할 때만 이름/호칭 사용 (게스트는 기본 비활성)
+
+                body = _ROUTER.generate_messages(messages, overrides=ov)
+
+                # ⚑ 첫 턴이면 인사 앞/뒤를 programmatic으로 붙임
+                head, tail = _compose_greeting(is_guest=True, user_name="", first_turn=first_turn_flag)
+                final = body
+                if head:
+                    final = f"{head}\n\n{final}"
+                if tail:
+                    final = f"{final}\n\n{tail}"
+
                 if _should_address_user(user_text, ov):
-                    answer = _ensure_salutation("", answer)
-                return jsonify({"message": user_text, "answer": answer, "guest": True})
+                    final = _ensure_salutation("", final)
+
+                return jsonify({"message": user_text, "answer": final, "guest": True})
             except Exception as e:
                 log.exception("LLM error(guest): %s", e)
                 return jsonify({"error": str(e)}), 500
@@ -219,20 +221,26 @@ def create_app():
         usr_name, usr_snm = prof if prof else ("사용자", "미상")
         salutation_prefix = f"{usr_name}님, "
 
+        # conv_id 결정: 헤더 우선 → 없으면 latest or 신규
         try:
-            conv_id = repo.latest_conv_id(usr_id)
-            if conv_id is None:
-                conv_id = repo.next_conv_id()
+            conv_id_hdr = request.headers.get("X-Conv-Id")
+            if conv_id_hdr:
+                conv_id = int(conv_id_hdr)
+            else:
+                prev = repo.latest_conv_id(usr_id)
+                conv_id = prev if prev is not None else repo.next_conv_id()
         except Exception as e:
             log.exception("DB error(conv): %s", e)
             return jsonify({"error": f"DB error(conv): {e}"}), 500
 
+        # 사용자 메시지 저장
         try:
             repo.append_message(conv_id, usr_id, "user", user_text)
         except Exception as e:
             log.exception("DB error(append user msg): %s", e)
             return jsonify({"error": f"DB error(append user msg): {e}"}), 500
 
+        # 컨텍스트 구성 + 답변 생성
         try:
             summary_info = repo.get_latest_summary(conv_id)
             summary_txt = (summary_info[0].strip() if summary_info and summary_info[0] else "")
@@ -242,39 +250,41 @@ def create_app():
                 hist = hist[:-1]
             ctx = hist[-CONTEXT_TURNS:] if hist else []
 
-            # 일반 상식은 답하도록 힌트를 컨텍스트 맨 앞에 둔다
-            general_knowledge_hint = {
-                "role": "system",
-                "content": (
-                    "요청 주제가 일반 상식/백과 수준이면, 네가 학습한 일반 지식을 바탕으로 핵심 사실을 요약하라. "
-                    "불확실하거나 최신 수치가 필요한 부분은 단서를 달아라."
-                )
-            }
-
-            ctx_msgs = [general_knowledge_hint]
+            ctx_msgs = [{"role": "system", "content": gk_hint}]
             if summary_txt:
                 ctx_msgs.append({"role": "system", "content": f"[이전 요약]\n{_clip(summary_txt)}"})
             for m in ctx:
                 role = m.get("role", "")
                 if role in ("user", "assistant"):
                     ctx_msgs.append({"role": role, "content": _clip(m.get("content", ""))})
-            ctx_msgs.append({"role": "system", "content": "아래 질문에 간결히 답하라. 2~3문장, 300자 이내. 불확실하면 모른다고 답하라."})
-            ctx_msgs.append({"role": "user", "content": user_text})
+            ctx_msgs.append({"role": "system", "content": concise_rule})
 
+            # 질문 내 명시 소속(예: 서울대학교)이 있으면 이번 턴만 덮어쓰기
+            aff_override = _affiliation_override_from(user_text)
+            aff_to_use = (aff_override or usr_snm or "")
             base = _base_messages({
                 "user_name": usr_name,
                 "salutation_prefix": salutation_prefix,
-                "user_affiliation": usr_snm or ""
+                "user_affiliation": aff_to_use
             })
+            ctx_msgs.append({"role": "user", "content": user_text})
+
             messages = base + ctx_msgs
 
             ov = {**(overrides or {})}
             ov.setdefault("enforce_max_sentences", 3)
-            ov.setdefault("enforce_max_chars", 300)  # 소속/맥락 보강 여유
-            ov.setdefault("max_new_tokens", 180)  # 살짝 더 빠르게
-            answer = _ROUTER.generate_messages(messages, overrides=ov)
+            ov.setdefault("enforce_max_chars", 300)
+            ov.setdefault("max_new_tokens", 180)
 
-            # 필요할 때만 이름/호칭 사용 (확인/승인 류)
+            body = _ROUTER.generate_messages(messages, overrides=ov)
+
+            # ⚑ 첫 턴이면 로그인 인사(head)만 앞에 붙임
+            head, tail = _compose_greeting(is_guest=False, user_name=usr_name, first_turn=first_turn_flag)
+            answer = body
+            if head:
+                answer = f"{head}\n\n{body}"
+            # 로그인 사용자는 tail 없음
+
             if _should_address_user(user_text, ov):
                 answer = _ensure_salutation(salutation_prefix, answer)
 
@@ -282,13 +292,14 @@ def create_app():
             log.exception("LLM error(auth): %s", e)
             return jsonify({"error": f"LLM error: {e}"}), 500
 
+        # 어시스턴트 메시지 저장
         try:
             repo.append_message(conv_id, usr_id, "assistant", answer)
         except Exception as e:
             log.exception("DB error(append assistant msg): %s", e)
             return jsonify({"error": f"DB error(append assistant msg): {e}"}), 500
 
-        # 요약 롤링
+        # (요약 롤링은 필요 시 기존 로직 사용 가능. 여기서는 생략/유지 선택)
         summary_rotated = False
         try:
             history_for_rotate = repo.fetch_history(conv_id, limit=SUMMARY_TURNS)
@@ -300,7 +311,7 @@ def create_app():
                 base = _base_messages({
                     "user_name": usr_name,
                     "salutation_prefix": salutation_prefix,
-                    "user_affiliation": usr_snm or ""
+                    "user_affiliation": aff_to_use
                 })
                 sum_messages = base + [
                     {"role": "system", "content": "다음 대화를 5줄 이내 한국어 bullet로 요약하라. 불확실한 내용은 생략."},

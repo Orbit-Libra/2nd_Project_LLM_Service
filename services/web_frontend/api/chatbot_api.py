@@ -7,25 +7,34 @@ import requests
 chatbot_bp = Blueprint("chatbot_bp", __name__)
 log = logging.getLogger("chatbot_api")
 
-LLM_API_URL = os.getenv("LLM_API_URL", "http://localhost:5150/generate")  # .env에 명시 권장
+LLM_API_URL = os.getenv("LLM_API_URL", "http://localhost:5150/generate")
 
-
-@chatbot_bp.post("/api/chat")
+# 호환용 alias
+@chatbot_bp.route("/api/chat", methods=["POST"])
+@chatbot_bp.route("/api/generate", methods=["POST"])
+@chatbot_bp.route("/generate", methods=["POST"])
 def chat_proxy():
     data = request.get_json(silent=True) or {}
     message = (data.get("message") or "").strip()
     overrides = data.get("overrides") or {}
-
     if not message:
         return jsonify({"error": "message is required"}), 400
 
-    # 로그인 세션이 있으면 usr_id와 conv_id를 헤더로 전달
     headers = {"Content-Type": "application/json"}
+
+    # 로그인 유저라면 세션 usr_id 전달
     usr_id = session.get("user")
     if usr_id:
         headers["X-User-Id"] = str(usr_id)
 
-    # conv_id를 세션에 고정해 사용 (없으면 서버가 latest/new를 선택)
+    # 세션 기준 "첫 호출"이면 명시적으로 플래그 전달
+    # (세션에 conv_id가 아직 없으면 첫 턴)
+    if not session.get("conv_id"):
+        headers["X-First-Turn"] = "1"
+        # body override도 함께(양쪽 다 지원)
+        overrides = {**overrides, "first_turn": True}
+
+    # conv_id가 이미 있으면 함께 전달(선택 사항)
     conv_id = session.get("conv_id")
     if conv_id:
         headers["X-Conv-Id"] = str(conv_id)
@@ -37,12 +46,12 @@ def chat_proxy():
             headers=headers,
             timeout=300,
         )
-        # LLM 서버 응답을 그대로 전달
+        # 그대로 전달
         payload = resp.json()
 
-        # 서버가 conv_id를 반환하면 세션에 저장(최초 대화 시작 시)
+        # 응답에 conv_id 있으면 세션에 저장 → 이후부턴 첫 턴 아님
         try:
-            if isinstance(payload, dict) and not session.get("conv_id") and "conv_id" in payload:
+            if isinstance(payload, dict) and "conv_id" in payload:
                 session["conv_id"] = payload["conv_id"]
         except Exception:
             pass
