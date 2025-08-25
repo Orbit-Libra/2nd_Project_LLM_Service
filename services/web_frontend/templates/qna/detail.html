@@ -14,18 +14,17 @@
 
 <section class="fade-in">
   <div class="container">
-    <article class="qna-detail" aria-labelledby="qnaTitle">
-      <h2 id="qnaTitle">{{ it.title }}</h2>
+    <article class="qna-detail" id="qnaDetail" data-post-id="{{ it.id }}" aria-labelledby="qnaTitle">
         <p class="qna-meta">
         <span class="badge kind">{{ it.kind }}</span>
         {% if it.is_public %}
           <span class="badge public">공개</span>
-        {% else %}
-          <span class="badge private">비공개</span>
-        {% endif %}
+        {% else %}<span class="badge private">비공개</span>{% endif %}
         <span>작성자 {{ it.author }}</span>
         <span>{{ it.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
         <strong class="status {{ 'done' if it.status=='답변완료' else 'doing' }}">상태: {{ it.status }}</strong>
+        <!-- ✅ 좋아요 버튼은 HTML에 -->
+        <button id="likeBtn" class="btn" data-post-id="{{ it.id }}">좋아요 👍 <span id="likeCnt">{{ it.like_count or 0 }}</span></button>
       </p>
       <div class="qna-body">{{ it.content }}</div>
     </article>
@@ -87,25 +86,7 @@
   </div>
 </section>
 {% endblock %}
-
 {% block scripts %}
-<script>
- // 섹션 페이드인
-  (function () {
-  // 페이지마다 스크롤 컨테이너가 다를 수 있으니 보정
-  const rootScroller = document.getElementById('sections-wrapper') || null;
-  const els = document.querySelectorAll('.fade-in');
-  if (!('IntersectionObserver' in window)) {
-    // 폴백: 바로 보여주기 (JS 미지원/구형 브라우저)
-    els.forEach(el => el.classList.add('appear'));
-    return;
-  }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) {e.target.classList.add('appear');io.unobserve(e.target);}
-    });
-  }, { root: rootScroller, threshold: 0.15 });els.forEach(el => io.observe(el));
-})();
-</script>
+<script src="{{ url_for('static', filename='js/question.js') }}"></script>
 {% endblock %}
 

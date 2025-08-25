@@ -1,3 +1,4 @@
+#app/__init__.py
 import os
 import sys
 import logging
@@ -28,6 +29,7 @@ from services.web_frontend.api.user_api import bp_user
 from services.web_frontend.api.admin_system import admin_system_bp
 from services.web_frontend.api.chatbot_api import chatbot_bp
 from services.web_frontend.api.qna import qna_bp
+from services.web_frontend.api.qna_api import bp_qna
 from services.user_service.predict_sync import bp_predict_sync
 from services.user_service.user_analysis import bp_user_analysis
 
@@ -63,8 +65,9 @@ def create_app():
     app.register_blueprint(bp_user_analysis)
     app.register_blueprint(admin_system_bp)
     app.register_blueprint(chatbot_bp)
-    app.register_blueprint(qna_bp)
-
+    app.register_blueprint(qna_bp)      #라우트/템플릿용(Q&A)
+    app.register_blueprint(bp_qna)      #REST API(api/qna_api)
+    
     # 메인 페이지
     @app.route('/')
     def index():

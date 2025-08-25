@@ -1,5 +1,5 @@
 #services/web_frontend/api/qna_list.py
-#목록/페이지네이션
+#목록/페이지네이션(템플릿 라우트)
 from flask import render_template, request
 from .qna import qna_bp
 from .qna_storage import seed_if_empty, items_sorted

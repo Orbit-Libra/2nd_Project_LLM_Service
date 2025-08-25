@@ -1,5 +1,5 @@
 #services/web_frontend/api/qna_detail.py
-#상세/댓글/관리자 답변
+#상세/댓글/관리자 답변(템플릿 라우트)
 
 from flask import render_template, redirect, url_for, flash, request, session
 from .qna import qna_bp

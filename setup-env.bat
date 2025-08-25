@@ -1,3 +1,4 @@
+REM setup-env.bat
 @echo off
 SETLOCAL ENABLEDELAYEDEXPANSION
 chcp 65001 >nul
@@ -148,10 +149,11 @@ echo EXIT;
 ) > %CHECK_USERDATA_SQL%
 
 SET FOUND_USERDATA=0
-FOR /F "tokens=*" %%C IN ('sqlplus -s libra_user/1234@XE @%CHECK_USERDATA_SQL% 2^>nul') DO (
+FOR /F "tokens=*" %%C IN ('sqlplus -s -L libra_user/1234@XE @%CHECK_USERDATA_SQL% 2^>nul') DO (
     IF "%%C"=="1" SET FOUND_USERDATA=1
 )
 del %CHECK_USERDATA_SQL% >nul 2>nul
+echo [ℹ] USER_DATA 존재 여부: %FOUND_USERDATA%
 
 IF %FOUND_USERDATA%==1 (
     echo [⏭️] USER_DATA 테이블 이미 존재. 초기화 스크립트 생략합니다.
@@ -160,6 +162,36 @@ IF %FOUND_USERDATA%==1 (
     call .venv\libra_env\Scripts\activate.bat
     python services\user_service\init_oracle_user_data.py
 )
+
+REM ==============================
+REM 8. QNA 테이블 존재 확인 및 초기화 스크립트 실행
+REM ==============================
+echo [🔍] QNA_POSTS 테이블 존재 확인 중...
+SET CHECK_QNA_SQL=check_qna.sql
+(
+echo SET HEADING OFF
+echo SET FEEDBACK OFF
+echo SET PAGESIZE 0
+echo SELECT COUNT^(*^) FROM user_tables WHERE table_name = 'QNA_POSTS';
+echo EXIT;
+) > %CHECK_QNA_SQL%
+
+SET FOUND_QNA=0
+FOR /F "tokens=*" %%D IN ('sqlplus -s -L libra_user/1234@XE @%CHECK_QNA_SQL% 2^>nul') DO (
+    IF "%%D"=="1" SET FOUND_QNA=1
+)
+del %CHECK_QNA_SQL% >nul 2>nul
+echo [ℹ] QNA_POSTS 존재 여부: %FOUND_QNA%
+
+IF %FOUND_QNA%==1 (
+    echo [⏭️] QNA_POSTS 테이블 이미 존재. QNA 초기화 스크립트 생략합니다.
+) ELSE (
+    echo [🚀] QNA 스키마 초기화(테이블/시퀀스/인덱스) 실행...
+    call .venv\libra_env\Scripts\activate.bat
+    python -m services.user_service.init_oracle_qna
+    REM 또는: python services\user_service\init_oracle_qna.py
+)
+
 
 echo [✅] Libra Setup End.
 pause

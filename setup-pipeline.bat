@@ -1,3 +1,4 @@
+REM setup-pipeline.bat
 @echo off
 REM --- UTF-8 환경 강제 ---
 chcp 65001 >nul

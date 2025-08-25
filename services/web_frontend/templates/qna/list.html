@@ -1,3 +1,4 @@
+<!--services/web_frontend/templates/qna/list.hltml-->
 {% extends "common/base.html" %}
 {% block title %}Libra | Q&A 목록{% endblock %}
 
@@ -140,11 +141,7 @@
   </div>
 </section>
 {% endblock %}
-
 {% block scripts %}
-<script>
-  // 섹션 페이드인
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('appear'); }), {threshold:.15});
-  document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
-</script>
+<script src="{{ url_for('static', filename='js/question.js') }}"></script>
 {% endblock %}
+

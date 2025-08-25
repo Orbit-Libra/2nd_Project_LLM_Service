@@ -1,3 +1,4 @@
+<!--services/web_frontend/templates/qna/question.hltml-->
 {% extends "common/base.html" %}
 {% block title %}Libra | Q&A 문의하기{% endblock %}
 
@@ -15,7 +16,7 @@
 
 <section class="qna-form-section fade-in" aria-label="문의 작성">
   <div class="container">
-    <form id="qnaForm" class="qna-form" method="post" action="{{ url_for('qna.qna_create') }}" novalidate>
+    <form id="qnaForm" class="qna-form" method="post" action="{{ url_for('qna.qna_create') }}" enctype="multipart/form-data" novalidate>
       <div class="field">
         <label for="title">제목<span aria-hidden="true">*</span></label>
         <input type="text" id="title" name="title" required minlength="2" maxlength="100"
@@ -37,6 +38,31 @@
         {% if errors and errors.content %}<small class="error">{{ errors.content }}</small>{% endif %}
       </div>
 
+      <div class="field">
+      <label for="kind">종류</label>
+      <select id="kind" name="kind" required>
+        <option value="일반" {{ 'selected' if (form.kind or '일반') == '일반' else '' }}>일반</option>
+        <option value="민원" {{ 'selected' if (form.kind or '') == '민원' else '' }}>민원</option>
+      </select>
+      {% if errors and errors.kind %}<small class="error">{{ errors.kind }}</small>{% endif %}
+    </div>
+
+    <div class="field">
+      <label><input type="checkbox" name="is_public" value="1" {{ 'checked' if (form.is_public or '1') == '1' else '' }}> 공개글로 등록</label>
+    </div>
+
+    <div class="field">
+      <label for="author_name">작성자 표시명(선택)</label>
+      <input type="text" id="author_name" name="author_name" maxlength="50"
+            placeholder="표시할 이름 (미입력 시 아이디 마스킹)">
+    </div>
+
+    <div class="field">
+      <label for="files">첨부파일</label>
+      <input type="file" id="files" name="files" multiple>
+      <small class="help">최대 10MB, 5개까지 권장 (jpg, png, pdf 등)</small>
+    </div>
+
       <div class="field checkbox">
         <label>
           <input type="checkbox" id="agree" name="agree" required>
@@ -54,7 +80,6 @@
   </div>
 </section>
 {% endblock %}
-
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/question.js') }}" defer></script>
 {% endblock %}

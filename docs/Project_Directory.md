@@ -132,6 +132,7 @@
 │   │   │   └── USER_DB.DBF                  # 유저 데이터베이스
 │   │   │
 │   │   ├── .env 
+│   │   ├── init_oracle_qna.py               # 초기 Q&A 데이터베이스 세팅 스크립트
 │   │   ├── init_oracle_user_data.py         # 초기 유저 데이터베이스 세팅 스크립트
 │   │   ├── login_manager.py                 # 로그인 유효성 검사 스크립트
 │   │   ├── predict_sync.py                  # 유저 데이터 예측 블루프린트
@@ -145,6 +146,12 @@
 │   │   │   ├── chart_data.py                # 차트페이지 블루프린트
 │   │   │   ├── Oracle_utils.py              # 오라클DB 커넥션 모듈
 │   │   │   ├── profile_api.py               # 마이페이지 블루프린트
+│   │   │   ├── qna_api.py                   # Q&A 블루프린트
+│   │   │   ├── qna_detail.py                # Q&A 상세 라우트
+│   │   │   ├── qna_list.py                  # Q&A 목록 라우트
+│   │   │   ├── qna_storage.py               # Q&A DB저장 템플릿라우트들 호출DAO
+│   │   │   ├── qna_write.py                 # Q&A 작성폼 라우트
+│   │   │   ├── qna.py                       # 각 Q&A들의 공용 라우트
 │   │   │   ├── register_api.py              # 회원가입 페이지 블루프린트
 │   │   │   ├── sync.py                      # 예측데이터 api 콜 블루프린트
 │   │   │   └── user_api.py                  # 유저 입력정보 api콜 플루프린트
