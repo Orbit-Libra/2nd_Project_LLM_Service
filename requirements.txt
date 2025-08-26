@@ -31,4 +31,9 @@ llama-cpp-python
 transformers
 torch
 tensorflow
+huggingface_hub
 langchain-core
+openvino_genai
+optimum.intel
+tf-keras
+nncf

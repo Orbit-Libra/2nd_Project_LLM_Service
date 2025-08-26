@@ -40,6 +40,63 @@ function initSyncCard() {
   });
 }
 
+// ───────── LLM 데이터베이스 관리 ─────────
+function initLLMDBCard() {
+  const clearBtn = document.getElementById("clear-llm-data-btn");
+  const llmDbLog = document.getElementById("llm-db-log");
+  if (!clearBtn) return;
+
+  clearBtn.addEventListener("click", async () => {
+    if (!confirm("정말로 LLM_DATA 테이블의 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
+      return;
+    }
+
+    setLoading(clearBtn, true);
+    llmDbLog && (llmDbLog.textContent = "LLM 데이터 삭제 중…");
+    
+    try {
+      const res = await fetch("/admin/clear-llm-data", { method: "POST" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        llmDbLog && (llmDbLog.textContent = `✅ ${data.message || "LLM 데이터가 성공적으로 삭제되었습니다."}`);
+      } else {
+        throw new Error(data.error || "삭제 실패");
+      }
+    } catch (err) {
+      llmDbLog && (llmDbLog.textContent = `❌ 삭제 실패: ${err.message || err}`);
+    } finally {
+      setLoading(clearBtn, false);
+    }
+  });
+}
+function initLLMCard() {
+  const llmBtn = document.getElementById("llm-reload-btn");
+  const llmLog = document.getElementById("llm-log");
+  if (!llmBtn) return;
+
+  llmBtn.addEventListener("click", async () => {
+    setLoading(llmBtn, true);
+    llmLog && (llmLog.textContent = "LLM 함수 초기화 중…");
+    try {
+      const res = await fetch("/admin/llm/reload", { method: "POST" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      
+      if (data.status === "success") {
+        llmLog && (llmLog.textContent = `✅ ${data.message || "LLM 함수 초기화가 완료되었습니다."}`);
+      } else {
+        throw new Error(data.message || "초기화 실패");
+      }
+    } catch (err) {
+      llmLog && (llmLog.textContent = `❌ LLM 초기화 실패: ${err.message || err}`);
+    } finally {
+      setLoading(llmBtn, false);
+    }
+  });
+}
+
 // ───────── 시스템 설정 (포트 상태) ─────────
 function renderConn(el, isOpen, onText, offText) {
   if (!el) return;
@@ -56,10 +113,10 @@ async function refreshPorts() {
   const systemLog = document.getElementById("system-log");
   const el5050 = document.getElementById("port-5050-status");
   const el5100 = document.getElementById("port-5100-status");
-  const el5150 = document.getElementById("port-5150-status"); // ✅ 추가
+  const el5150 = document.getElementById("port-5150-status");
   const conn5050 = document.getElementById("port-5050-conn");
   const conn5100 = document.getElementById("port-5100-conn");
-  const conn5150 = document.getElementById("port-5150-conn"); // ✅ 추가
+  const conn5150 = document.getElementById("port-5150-conn");
 
   try {
     const res = await fetch("/admin/ports");
@@ -69,20 +126,20 @@ async function refreshPorts() {
 
     const open5050 = map.get(5050);
     const open5100 = map.get(5100);
-    const open5150 = map.get(5150); // ✅ 추가
+    const open5150 = map.get(5150);
 
     renderBadge(el5050, open5050);
     renderBadge(el5100, open5100);
-    renderBadge(el5150, open5150);   // ✅ 추가
+    renderBadge(el5150, open5150);
 
     renderConn(conn5050, open5050, "데이터서버 연결 on", "데이터서버 연결 off");
     renderConn(conn5100, open5100, "예측서버 연결 on", "예측서버 연결 off");
-    renderConn(conn5150, open5150, "챗봇서버 연결 on", "챗봇서버 연결 off"); // ✅ 추가
+    renderConn(conn5150, open5150, "챗봇서버 연결 on", "챗봇서버 연결 off");
   } catch (err) {
     systemLog && (systemLog.textContent = `❌ 포트 조회 실패: ${err.message || err}`);
     renderConn(conn5050, undefined);
     renderConn(conn5100, undefined);
-    renderConn(conn5150, undefined); // ✅ 추가
+    renderConn(conn5150, undefined);
   }
 }
 
@@ -132,7 +189,7 @@ async function fetchUsers() {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || "조회 실패");
 
-    // 🔒 관리자 계정은 프론트에서도 가려줌(백엔드에서도 가드)
+    // 관리자 계정은 프론트에서도 가려줌
     usersCache = (data.rows || []).filter(
       r => String(r.USR_ID || '').toLowerCase() !== 'libra_admin'
     );
@@ -193,6 +250,8 @@ function initUserCard() {
 // ───────── 부트스트랩 ─────────
 document.addEventListener("DOMContentLoaded", () => {
   initSyncCard();
+  initLLMCard();
+  initLLMDBCard(); // 새로 추가
   initSystemCard();
   initUserCard();
 });

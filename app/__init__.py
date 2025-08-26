@@ -27,6 +27,7 @@ from services.web_frontend.api.register_api import bp_register
 from services.web_frontend.api.user_api import bp_user
 from services.web_frontend.api.admin_system import admin_system_bp
 from services.web_frontend.api.chatbot_api import chatbot_bp
+from services.web_frontend.api.agent_ui import agent_bp
 from services.user_service.predict_sync import bp_predict_sync
 from services.user_service.user_analysis import bp_user_analysis
 
@@ -62,6 +63,7 @@ def create_app():
     app.register_blueprint(bp_user_analysis)
     app.register_blueprint(admin_system_bp)
     app.register_blueprint(chatbot_bp)
+    app.register_blueprint(agent_bp)
 
     # 메인 페이지
     @app.route('/')

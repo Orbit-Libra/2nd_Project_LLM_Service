@@ -1,6 +1,7 @@
 # web_frontend/api/admin_system.py
 from flask import Blueprint, jsonify, request, session, abort
 import socket
+import requests
 
 # Oracle 유틸
 from .oracle_utils import get_connection, get_table_data
@@ -110,3 +111,58 @@ def delete_user(user_id: int):
             cur and cur.close()
         finally:
             conn and conn.close()
+
+@admin_system_bp.post("/admin/clear-llm-data")
+def clear_llm_data():
+    """
+    LLM_DATA 테이블의 모든 멀티턴 대화 데이터 삭제 (개발용)
+    응답 예: { success: true, message: "N건의 데이터가 삭제되었습니다." }
+    """
+    _require_admin()
+
+    conn = None
+    cur = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        # 먼저 현재 데이터 개수 확인
+        cur.execute("SELECT COUNT(*) FROM LLM_DATA")
+        count_before = cur.fetchone()[0] or 0
+
+        # 모든 데이터 삭제
+        cur.execute("DELETE FROM LLM_DATA")
+        deleted_count = cur.rowcount or 0
+        
+        conn.commit()
+
+        return jsonify({
+            "success": True, 
+            "message": f"{deleted_count}건의 LLM 대화 데이터가 삭제되었습니다.",
+            "deleted": deleted_count,
+            "count_before": count_before
+        })
+        
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+        
+    finally:
+        try:
+            cur and cur.close()
+        finally:
+            conn and conn.close()
+            
+@admin_system_bp.post("/admin/llm/reload")
+def proxy_llm_reload():
+    """
+    LLM /dev/reload 프록시 (관리자만)
+    """
+    _require_admin()
+    try:
+        r = requests.post("http://127.0.0.1:5150/dev/reload", timeout=10)
+        # LLM 서버가 JSON을 주므로 그대로 중계
+        return (r.text, r.status_code, {"Content-Type": r.headers.get("Content-Type", "application/json")})
+    except requests.exceptions.RequestException as e:
+        return jsonify({"status": "error", "message": f"proxy error: {e}"}), 502

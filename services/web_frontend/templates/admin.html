@@ -16,7 +16,7 @@
 
   <section class="admin__grid">
     <!-- 1행: 데이터 관리 (좌) -->
-    <article class="card card--half">
+    <article class="card card--third">
       <div class="card__head">
         <h2 class="card__title">📊 데이터 관리</h2>
         <p class="card__desc">머신러닝 예측 결과를 웹 서비스용으로 갱신합니다.</p>
@@ -30,8 +30,23 @@
       <div class="note" id="sync-log" aria-live="polite"></div>
     </article>
 
+    <!-- 1행: LLM 관리 (중앙) -->
+    <article class="card card--third">
+      <div class="card__head">
+        <h2 class="card__title">🤖 LLM 관리</h2>
+        <p class="card__desc">LLM모델의 함수를 초기화 합니다.</p>
+      </div>
+      <div class="card__actions">
+        <button class="btn btn--secondary" id="llm-reload-btn">
+          <span class="btn__spinner" aria-hidden="true"></span>
+          LLM 동기화
+        </button>
+      </div>
+      <div class="note" id="llm-log" aria-live="polite"></div>
+    </article>
+
     <!-- 1행: 시스템 설정 (우) -->
-    <article class="card card--half" id="system-card">
+    <article class="card card--third" id="system-card">
       <div class="card__head">
         <h2 class="card__title">⚙️ 시스템 설정</h2>
         <p class="card__desc">서비스 포트 상태를 확인합니다.</p>
@@ -56,7 +71,7 @@
           <div class="port-conn" id="port-5100-conn"><span class="muted">확인 중…</span></div>
         </div>
 
-        <!-- ✅ 포트 5150 (챗봇 서버) -->
+        <!-- 포트 5150 (챗봇 서버) -->
         <div class="port-row">
           <div class="port-label">포트 5150</div>
           <div class="port-status" id="port-5150-status">
@@ -69,7 +84,24 @@
       <div class="note" id="system-log" aria-live="polite"></div>
     </article>
 
-    <!-- 2행: 사용자 관리 (가로 전체) -->
+    <!-- 2행: LLM 데이터베이스 관리 (가로 전체) -->
+    <article class="card card--full" id="llm-db-card">
+      <div class="card__head">
+        <h2 class="card__title">🗄️ LLM 데이터베이스 관리</h2>
+        <p class="card__desc">멀티턴 대화 데이터를 관리합니다. (개발용)</p>
+      </div>
+
+      <div class="card__actions">
+        <button class="btn btn--danger" id="clear-llm-data-btn">
+          <span class="btn__spinner" aria-hidden="true"></span>
+          LLM_DATA 테이블 비우기
+        </button>
+      </div>
+
+      <div class="note" id="llm-db-log" aria-live="polite"></div>
+    </article>
+
+    <!-- 3행: 사용자 관리 (가로 전체) -->
     <article class="card card--full" id="user-card">
       <div class="card__head">
         <h2 class="card__title">👥 사용자 관리</h2>

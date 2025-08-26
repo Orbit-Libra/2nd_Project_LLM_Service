@@ -18,11 +18,13 @@
   const STORAGE_KEY = `libraChat.history.${USER}`;
   const SIZE_KEY    = `libraChat.size.${USER}`;
   const POSITION_KEY = `libraChat.position.${USER}`;
-  const MAX_MESSAGES = 200; // 너무 길어지지 않게 컷
+  const FIRST_TURN_KEY = `libraChat.firstTurn.${USER}`; // 첫 턴 상태 저장용
+  const MAX_MESSAGES = 200;
 
   let history = []; // {role:'user'|'bot', text:string, ts:number}[]
+  let hasHadFirstTurn = false; // 첫 턴 완료 여부
 
-  // --- 리사이즈 관련 변수들 (원본 방식 유지) ---
+  // --- 리사이즈 관련 변수들 ---
   let isResizing = false;
   let resizeDirection = null;
   let startX, startY, startWidth, startHeight, startBottom, startRight;
@@ -42,10 +44,9 @@
   const openChat = () => { 
     chatWindow.style.display = 'flex';
     
-    // 페이지 로드 시에는 애니메이션 없이, 사용자 클릭 시에는 애니메이션과 함께
     if (isPageLoaded) {
       chatWindow.classList.remove('no-animation');
-      setTimeout(() => chatWindow.classList.add('open'), 10); // 약간의 지연으로 애니메이션 트리거
+      setTimeout(() => chatWindow.classList.add('open'), 10);
     } else {
       chatWindow.classList.add('no-animation', 'open');
     }
@@ -59,15 +60,15 @@
       if (!chatWindow.classList.contains('open')) {
         chatWindow.style.display = 'none';
       }
-    }, 300); // 애니메이션 시간과 맞춤
+    }, 300);
   };
 
-  // --- 크기 저장/복원 (sessionStorage 사용) ---
+  // --- 크기 저장/복원 ---
   function persistSize() {
     const size = {
       width: chatWindow.offsetWidth,
       height: chatWindow.offsetHeight,
-      bottom: parseFloat(chatWindow.style.bottom) || 16, // 1rem = 16px
+      bottom: parseFloat(chatWindow.style.bottom) || 16,
       right: parseFloat(chatWindow.style.right) || 16
     };
     try { 
@@ -117,20 +118,37 @@
           chatWindow.style.right = position.right + 'px';
         }
       } else {
-        // 기본 위치 설정 (우측 하단)
         chatWindow.style.bottom = '16px';
         chatWindow.style.right = '16px';
       }
     } catch(_) {
-      // 에러 시 기본 위치
       chatWindow.style.bottom = '16px';
       chatWindow.style.right = '16px';
     }
   }
 
-  // --- 저장/복원 (sessionStorage 사용) ---
+  // --- 첫 턴 상태 관리 ---
+  function persistFirstTurnStatus() {
+    try {
+      sessionStorage.setItem(FIRST_TURN_KEY, hasHadFirstTurn ? '1' : '0');
+    } catch(_) {}
+  }
+
+  function restoreFirstTurnStatus() {
+    try {
+      const firstTurnRaw = sessionStorage.getItem(FIRST_TURN_KEY);
+      hasHadFirstTurn = (firstTurnRaw === '1');
+      console.log('[챗봇] 첫 턴 상태 복원:', hasHadFirstTurn ? '완료됨' : '미완료');
+    } catch(_) {
+      hasHadFirstTurn = false;
+    }
+  }
+
+  // --- 저장/복원 ---
   function persistHistory() {
-    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch(_) {}
+    try { 
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(history)); 
+    } catch(_) {}
   }
   
   function restore() {
@@ -140,8 +158,17 @@
         const arr = JSON.parse(raw);
         if (Array.isArray(arr)) {
           history = arr;
+          console.log('[챗봇] 대화내역 복원:', history.length, '개 메시지');
           // 복원 렌더 (저장은 중복 방지 위해 off)
-          for (const m of history) appendBubble(m.text, m.role, /*persist=*/false);
+          for (const m of history) {
+            appendBubble(m.text, m.role, /*persist=*/false);
+          }
+          
+          // 대화내역이 있으면 첫 턴은 이미 완료된 것으로 처리
+          if (history.length > 0) {
+            hasHadFirstTurn = true;
+            persistFirstTurnStatus();
+          }
         }
       }
     } catch(_) {}
@@ -151,6 +178,25 @@
     history.push({ role, text, ts: Date.now() });
     if (history.length > MAX_MESSAGES) history = history.slice(-MAX_MESSAGES);
     persistHistory();
+  }
+
+  // --- 첫 턴 여부 판정 (개선된 로직) ---
+  function isFirstTurn() {
+    // 1. 이미 첫 턴을 완료했다면 false
+    if (hasHadFirstTurn) {
+      console.log('[첫턴판정] 이미 첫 턴 완료됨 → false');
+      return false;
+    }
+    
+    // 2. 대화내역이 있다면 false
+    if (history.length > 0) {
+      console.log('[첫턴판정] 대화내역 존재 (' + history.length + '개) → false');
+      return false;
+    }
+    
+    // 3. 둘 다 없다면 첫 턴
+    console.log('[첫턴판정] 첫 번째 대화 → true');
+    return true;
   }
 
   // --- 버블 렌더 ---
@@ -183,12 +229,10 @@
 
     wrap.appendChild(bubble);
     
-    // scrollContainer가 있으면 사용, 없으면 chatBody 사용 (초기화 순서 문제 해결)
     const container = scrollContainer || chatBody;
     container.appendChild(wrap);
     container.scrollTop = container.scrollHeight;
     
-    // 스크롤바가 초기화되어 있으면 업데이트
     if (scrollContainer && updateScrollbar) {
       updateScrollbar();
     }
@@ -199,12 +243,19 @@
   }
 
   // --- 서버 호출 ---
-  async function callAssistant(message, firstTurn) {
+  async function callAssistant(message, isFirstTurnFlag) {
+    console.log('[서버호출] 메시지:', message);
+    console.log('[서버호출] 첫 턴 여부:', isFirstTurnFlag);
+    
     const res = await fetch('/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, first_turn: !!firstTurn })
+      headers: {
+        'Content-Type': 'application/json',
+        'X-First-Turn': isFirstTurnFlag ? '1' : '0'
+      },
+      body: JSON.stringify({ message })
     });
+    
     if (!res.ok) {
       const txt = await res.text().catch(() => '');
       throw new Error(`HTTP ${res.status} ${txt}`);
@@ -217,9 +268,9 @@
     const msg = (chatInput?.value || '').trim();
     if (!msg) return;
 
-    const isFirstTurn = history.length === 0; // 세션 기준 첫 질문 여부
+    const currentIsFirstTurn = isFirstTurn(); // 현재 첫 턴인지 판정
 
-    appendBubble(msg, 'user'); // 저장됨
+    appendBubble(msg, 'user'); // 사용자 메시지 추가 (저장됨)
     if (chatInput) { chatInput.value = ''; chatInput.focus(); }
 
     const loader = document.createElement('div');
@@ -236,20 +287,28 @@
     }
 
     try {
-      const data = await callAssistant(msg, isFirstTurn);
+      const data = await callAssistant(msg, currentIsFirstTurn);
       loader.remove();
+      
       const answer = (data && data.answer) ? String(data.answer).trim() : '';
-      appendBubble(answer || '죄송해요, 응답이 비었습니다.', 'bot'); // 저장됨
+      appendBubble(answer || '죄송해요, 응답이 비었습니다.', 'bot'); // 봇 응답 추가 (저장됨)
+      
+      // 첫 턴이었다면 이제 완료 처리
+      if (currentIsFirstTurn) {
+        hasHadFirstTurn = true;
+        persistFirstTurnStatus();
+        console.log('[첫턴완료] 첫 번째 대화가 완료되었습니다.');
+      }
+      
     } catch (err) {
       loader.remove();
       console.error(err);
-      appendBubble('에러가 발생했어요. 잠시 후 다시 시도해주세요.', 'bot'); // 저장됨
+      appendBubble('에러가 발생했어요. 잠시 후 다시 시도해주세요.', 'bot');
     }
   }
 
   // --- 커스텀 스크롤바 기능 ---
   function initCustomScrollbar() {
-    // 기존 chatBody 내용을 스크롤 컨테이너로 감싸기
     const existingContent = chatBody.innerHTML;
     chatBody.innerHTML = `
       <div class="chat-scroll-container">
@@ -272,16 +331,13 @@
     const upArrow = chatBody.querySelector('.scroll-arrow.up');
     const downArrow = chatBody.querySelector('.scroll-arrow.down');
     
-    // 스크롤 컨테이너에 휠 이벤트 추가 (기본 스크롤 기능 복원)
     scrollContainer.addEventListener('wheel', (e) => {
-      e.stopPropagation(); // 페이지 스크롤 방지
+      e.stopPropagation();
       scrollContainer.scrollTop += e.deltaY;
     });
     
-    // 스크롤 이벤트
     scrollContainer.addEventListener('scroll', updateScrollbar);
     
-    // 화살표 클릭
     upArrow.addEventListener('click', () => {
       scrollContainer.scrollTop -= 50;
     });
@@ -290,10 +346,8 @@
       scrollContainer.scrollTop += 50;
     });
     
-    // 스크롤바 드래그
     scrollThumb.addEventListener('mousedown', startScrollDrag);
     
-    // 트랙 클릭
     scrollTrack.addEventListener('click', (e) => {
       if (e.target === scrollTrack) {
         const rect = scrollTrack.getBoundingClientRect();
@@ -365,12 +419,10 @@
 
   // --- 드래그 기능 ---
   function startDrag(e) {
-    // 닫기 버튼을 클릭한 경우 드래그 시작하지 않음
     if (e.target.id === 'chatCloseBtn') return;
     if (!chatWindow.classList.contains('open')) return;
     
     isDragging = true;
-    
     dragStartX = e.clientX;
     dragStartY = e.clientY;
     
@@ -380,7 +432,6 @@
     
     document.body.style.cursor = 'move';
     document.body.style.userSelect = 'none';
-    
     e.preventDefault();
   }
 
@@ -393,17 +444,14 @@
     let newLeft = dragStartLeft + dx;
     let newTop = dragStartTop + dy;
     
-    // 화면 경계 체크
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const chatWidth = chatWindow.offsetWidth;
     const chatHeight = chatWindow.offsetHeight;
     
-    // 최소 10px 여백 유지
     newLeft = Math.max(10, Math.min(windowWidth - chatWidth - 10, newLeft));
     newTop = Math.max(10, Math.min(windowHeight - chatHeight - 10, newTop));
     
-    // right, bottom 기준으로 변환
     const newRight = windowWidth - newLeft - chatWidth;
     const newBottom = windowHeight - newTop - chatHeight;
     
@@ -416,13 +464,11 @@
       isDragging = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      
-      // 위치 변경 저장
       persistPosition();
     }
   }
 
-  // --- 리사이즈 기능 (원본 방식 그대로 유지) ---
+  // --- 리사이즈 기능 ---
   function startResize(e) {
     if (!chatWindow.classList.contains('open')) return;
     
@@ -434,14 +480,12 @@
     startWidth = parseInt(document.defaultView.getComputedStyle(chatWindow).width, 10);
     startHeight = parseInt(document.defaultView.getComputedStyle(chatWindow).height, 10);
     
-    // 현재 위치 저장 (bottom, right 기준) - 원본 방식
     const rect = chatWindow.getBoundingClientRect();
     startBottom = window.innerHeight - rect.bottom;
     startRight = window.innerWidth - rect.right;
     
     document.body.style.cursor = e.target.style.cursor;
     document.body.style.userSelect = 'none';
-    
     e.preventDefault();
   }
 
@@ -456,23 +500,21 @@
     let newBottom = startBottom;
     let newRight = startRight;
     
-    // 방향에 따른 크기 계산 (방향 수정)
     if (resizeDirection.includes('e')) {
       newWidth = startWidth + dx;
     }
     if (resizeDirection.includes('w')) {
       newWidth = startWidth - dx;
-      newRight = startRight - dx; // 수정: + 대신 -
+      newRight = startRight - dx;
     }
     if (resizeDirection.includes('s')) {
       newHeight = startHeight + dy;
     }
     if (resizeDirection.includes('n')) {
       newHeight = startHeight - dy;
-      newBottom = startBottom - dy; // 수정: + 대신 -
+      newBottom = startBottom - dy;
     }
     
-    // 최소/최대 크기 제한
     const minWidth = 250;
     const minHeight = 300;
     const maxWidth = window.innerWidth * 0.9;
@@ -481,11 +523,9 @@
     newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
     newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
     
-    // 화면 경계 체크
     newRight = Math.max(10, Math.min(window.innerWidth - newWidth - 10, newRight));
     newBottom = Math.max(10, Math.min(window.innerHeight - newHeight - 10, newBottom));
     
-    // 적용
     chatWindow.style.width = newWidth + 'px';
     chatWindow.style.height = newHeight + 'px';
     chatWindow.style.right = newRight + 'px';
@@ -500,8 +540,6 @@
       resizeDirection = null;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      
-      // 크기 변경 저장
       persistSize();
     }
   }
@@ -519,17 +557,14 @@
     }
   });
 
-  // 리사이즈 핸들 이벤트
   const resizeHandles = chatWindow.querySelectorAll('.resize-handle');
   resizeHandles.forEach(handle => {
     handle.addEventListener('mousedown', startResize);
   });
 
-  // 헤더 드래그 이벤트
   const chatHeader = chatWindow.querySelector('.chat-header');
   chatHeader.addEventListener('mousedown', startDrag);
 
-  // 전역 마우스 이벤트 (원본 방식)
   document.addEventListener('mousemove', (e) => {
     doResize(e);
     doDrag(e);
@@ -542,18 +577,15 @@
     stopScrollDrag();
   });
 
-  // 채팅창 전체에 휠 이벤트 추가 (스크롤 기능 복원)
   chatWindow.addEventListener('wheel', (e) => {
-    // 채팅창이 열려있을 때만 스크롤 처리
     if (chatWindow.classList.contains('open')) {
-      e.stopPropagation(); // 페이지 스크롤 방지
+      e.stopPropagation();
       if (scrollContainer) {
         scrollContainer.scrollTop += e.deltaY;
       }
     }
   });
 
-  // 윈도우 리사이즈 시 챗봇 위치 조정
   window.addEventListener('resize', () => {
     if (!chatWindow.classList.contains('open')) return;
     
@@ -565,16 +597,13 @@
     
     chatWindow.style.right = newRight + 'px';
     chatWindow.style.bottom = newBottom + 'px';
-    
     updateScrollbar();
   });
 
-  // 페이지 언로드 시 정리
   window.addEventListener('beforeunload', () => {
     console.log('챗봇 세션이 종료됩니다.');
   });
 
-  // 페이지 로드 완료 체크
   if (document.readyState === 'complete') {
     isPageLoaded = true;
   } else {
@@ -585,9 +614,12 @@
     });
   }
 
-  // 최초 복원 및 초기화 (순서 중요)
-  initCustomScrollbar(); // 먼저 스크롤바 초기화
-  restore(); // 그 다음 대화내역 복원
+  // --- 초기화 (순서 중요) ---
+  initCustomScrollbar();
+  restoreFirstTurnStatus(); // 첫 턴 상태 먼저 복원
+  restore();                // 대화내역 복원
   restoreSize();
   restorePosition();
+  
+  console.log('[챗봇] 초기화 완료');
 })();

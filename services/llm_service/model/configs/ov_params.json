@@ -1,25 +1,26 @@
 {
-  "name": "llama3-ko-8b-gguf-q4km",
-  "backend": "gguf",
+  "name": "llama3-ko-ov-npu",
+  "backend": "ov_genai",
+
   "model": {
-    "repo_id": "QuantFactory/Llama-3-Ko-8B-Instruct-GGUF",
-    "filename": "Llama-3-Ko-8B-Instruct.Q4_K_M.gguf",
-    "cache_dir_env": "HF_CACHE_DIR"
+    "hf_model_id": "srang992/Llama-3.2-3B-Instruct-ov-INT4",
+    "cache_dir": "services/llm_service/huggingface",
+    "export_precision": "int4_sym"
   },
+
   "load_params": {
-    "n_ctx": 2000,
-    "n_threads": 8,
-    "n_gpu_layers": 0,
-    "chat_format": "llama-3"
+    "device": "AUTO:NPU,CPU",
+    "num_threads": 8
   },
+
   "generation": {
-    "max_new_tokens": 128,
+    "max_new_tokens": 180,
     "temperature": 0.9,
     "top_p": 0.9,
     "top_k": 40,
-    "repetition_penalty": 1.1,
     "stop": []
   },
+
   "policy": {
     "enforce_max_lines": 0,
     "force_suffix": ""

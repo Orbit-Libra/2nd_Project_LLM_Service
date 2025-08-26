@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 from .prompts import render_messages
 from .backends.gguf_llamacpp import GGUFBackend
 from .backends.hf_transformers import HFBackend
+from .backends.openvino_genai import OVGenAIBackend
 from ..chains.base_chat_chain import build_base_chat_chain  # LCEL 체인
 
 
@@ -33,6 +34,8 @@ class ModelRouter:
             backend = GGUFBackend(cfg, env)
         elif backend_name == "hf":
             backend = HFBackend(cfg, env)
+        elif backend_name == "ov_genai":
+            backend = OVGenAIBackend(cfg, env)
         else:
             raise RuntimeError(f"Unsupported backend: {backend_name}")
         return cls(backend, cfg)
