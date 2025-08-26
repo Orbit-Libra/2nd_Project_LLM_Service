@@ -5,7 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 
-# 1) .env 로드 (services/user_service/.env 우선)
+# 1) .env 로드
 here = os.path.dirname(os.path.abspath(__file__))
 candidate_env_paths = [
     os.path.join(here, '.env'),
@@ -13,7 +13,6 @@ candidate_env_paths = [
     os.path.abspath(os.path.join(here, '..', 'user_service', '.env')),
     os.path.abspath(os.path.join(here, '..', '..', 'services', 'user_service', '.env')),
 ]
-
 env_path = next((p for p in candidate_env_paths if os.path.exists(p)), None)
 if env_path:
     load_dotenv(dotenv_path=env_path, override=True)
@@ -26,7 +25,7 @@ ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD')
 ORACLE_DSN = os.getenv('ORACLE_DSN')
 ORACLE_CLIENT_PATH = os.getenv('ORACLE_CLIENT_PATH')
 
-# 2) 오라클 클라이언트 초기화 (이미 초기화된 경우 무시)
+# 2) 오라클 클라이언트 초기화
 if ORACLE_CLIENT_PATH:
     try:
         cx_Oracle.init_oracle_client(lib_dir=ORACLE_CLIENT_PATH)
@@ -43,17 +42,18 @@ conn = cx_Oracle.connect(user=ORACLE_USER, password=ORACLE_PASSWORD, dsn=ORACLE_
 cursor = conn.cursor()
 
 # 4) 테이블 & 시퀀스 & 관리자 계정 생성
+#    PK/UK 이름을 명시하여 안정화
 create_table_sql = """
 BEGIN
-    EXECUTE IMMEDIATE '
+  EXECUTE IMMEDIATE '
     CREATE TABLE USER_DATA (
-        ID NUMBER PRIMARY KEY,
-        USR_CR DATE NOT NULL,
-        USR_ID VARCHAR2(50) UNIQUE NOT NULL,
-        USR_PW VARCHAR2(255) NOT NULL,
-        USR_NAME VARCHAR2(50) NOT NULL,
+        ID        NUMBER        NOT NULL,
+        USR_CR    DATE          NOT NULL,
+        USR_ID    VARCHAR2(50)  NOT NULL,
+        USR_PW    VARCHAR2(255) NOT NULL,
+        USR_NAME  VARCHAR2(50)  NOT NULL,
         USR_EMAIL VARCHAR2(120),
-        USR_SNM VARCHAR2(100),
+        USR_SNM   VARCHAR2(100),
         "1ST_YR" NUMBER,
         "1ST_USR_CPS" NUMBER,
         "1ST_USR_LPS" NUMBER,
@@ -73,37 +73,38 @@ BEGIN
         SCR_EST_1ST NUMBER,
         SCR_EST_2ND NUMBER,
         SCR_EST_3RD NUMBER,
-        SCR_EST_4TH NUMBER
+        SCR_EST_4TH NUMBER,
+        CONSTRAINT PK_USER_DATA          PRIMARY KEY (ID),
+        CONSTRAINT UK_USER_DATA_USR_ID   UNIQUE (USR_ID)
     )';
 EXCEPTION
-    WHEN OTHERS THEN
-        NULL;
+  WHEN OTHERS THEN
+    IF SQLCODE != -955 THEN
+      RAISE;
+    END IF;
 END;
 """
 
 create_sequence_sql = """
 BEGIN
-    EXECUTE IMMEDIATE 'CREATE SEQUENCE USER_DATA_SEQ START WITH 1 INCREMENT BY 1';
+  EXECUTE IMMEDIATE 'CREATE SEQUENCE USER_DATA_SEQ START WITH 1 INCREMENT BY 1';
 EXCEPTION
-    WHEN OTHERS THEN
-        NULL;
+  WHEN OTHERS THEN
+    IF SQLCODE != -955 THEN
+      RAISE;
+    END IF;
 END;
 """
 
 insert_admin_sql = """
+DECLARE
+  v_exists NUMBER := 0;
 BEGIN
-    INSERT INTO USER_DATA (
-        ID, USR_CR, USR_ID, USR_PW, USR_NAME
-    ) VALUES (
-        USER_DATA_SEQ.NEXTVAL,
-        :1,             -- USR_CR
-        'libra_admin',  -- USR_ID
-        :2,             -- USR_PW (해시)
-        '관리자'         -- USR_NAME
-    );
-EXCEPTION
-    WHEN DUP_VAL_ON_INDEX THEN
-        NULL;
+  SELECT COUNT(*) INTO v_exists FROM USER_DATA WHERE USR_ID = 'libra_admin';
+  IF v_exists = 0 THEN
+    INSERT INTO USER_DATA (ID, USR_CR, USR_ID, USR_PW, USR_NAME)
+    VALUES (USER_DATA_SEQ.NEXTVAL, :1, 'libra_admin', :2, '관리자');
+  END IF;
 END;
 """
 
@@ -117,9 +118,11 @@ try:
     cursor.execute(insert_admin_sql, [datetime.now(), admin_hash])
 
     conn.commit()
-    print("✅ 테이블, 시퀀스, 관리자 계정 생성 완료 (비밀번호 해시 저장)")
+    print("✅ USER_DATA 테이블/시퀀스/관리자 계정 생성 완료")
 except Exception as e:
     print("❌ 오류 발생:", e)
+    conn.rollback()
+    raise
 finally:
     cursor.close()
     conn.close()

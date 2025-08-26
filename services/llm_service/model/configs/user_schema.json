@@ -1,0 +1,32 @@
+{
+  "tables": [
+    {
+      "name": "USER_DATA",
+      "id_column": "USR_ID",
+      "columns": {
+        "USR_NAME": {"alias": "name"},
+        "USR_SNM": {"alias": "university"},
+        "1ST_YR": {"alias": "y1.year", "type": "int"},
+        "1ST_USR_CPS": {"alias": "y1.CPS", "type": "float"},
+        "1ST_USR_LPS": {"alias": "y1.LPS", "type": "float"},
+        "1ST_USR_VPS": {"alias": "y1.VPS", "type": "float"},
+        "2ND_YR": {"alias": "y2.year", "type": "int"},
+        "2ND_USR_CPS": {"alias": "y2.CPS", "type": "float"},
+        "2ND_USR_LPS": {"alias": "y2.LPS", "type": "float"},
+        "2ND_USR_VPS": {"alias": "y2.VPS", "type": "float"},
+        "3RD_YR": {"alias": "y3.year", "type": "int"},
+        "3RD_USR_CPS": {"alias": "y3.CPS", "type": "float"},
+        "3RD_USR_LPS": {"alias": "y3.LPS", "type": "float"},
+        "3RD_USR_VPS": {"alias": "y3.VPS", "type": "float"},
+        "4TH_YR": {"alias": "y4.year", "type": "int"},
+        "4TH_USR_CPS": {"alias": "y4.CPS", "type": "float"},
+        "4TH_USR_LPS": {"alias": "y4.LPS", "type": "float"},
+        "4TH_USR_VPS": {"alias": "y4.VPS", "type": "float"},
+        "SCR_EST_1ST": {"alias": "y1.score", "type": "float"},
+        "SCR_EST_2ND": {"alias": "y2.score", "type": "float"},
+        "SCR_EST_3RD": {"alias": "y3.score", "type": "float"},
+        "SCR_EST_4TH": {"alias": "y4.score", "type": "float"}
+      }
+    }
+]
+}

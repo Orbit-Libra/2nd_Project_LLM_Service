@@ -31,3 +31,4 @@ llama-cpp-python
 transformers
 torch
 tensorflow
+langchain-core

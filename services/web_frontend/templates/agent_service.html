@@ -1,0 +1,54 @@
+{% extends "common/base.html" %}
+
+{% block title %}Libra - 에이전트 서비스 (test){% endblock %}
+
+{% block head_extra %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/agent.css') }}">
+  <!-- 차트만 우선 띄울 수 있도록 Chart.js는 로드해둡니다 (나중에 바꿔도 됨) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+{% endblock %}
+
+{% block content %}
+  <div class="container agent-container">
+
+    <!-- 상단: 차트 박스 -->
+    <section class="agent-chart">
+      <div class="box-header">
+        <h2>비교/분석 차트</h2>
+        <div class="subtext">아래 채팅에서 질의하면 이 영역에 차트를 그릴 예정입니다.</div>
+      </div>
+      <div class="chart-box">
+        <canvas id="agentChart" aria-label="분석 차트" role="img"></canvas>
+      </div>
+    </section>
+
+    <!-- 하단: 채팅 박스 -->
+    <section class="agent-chat">
+      <div class="box-header">
+        <h3>에이전트 대화</h3>
+      </div>
+
+      <div class="chat-window" id="chatWindow" aria-live="polite" aria-busy="false">
+        <!-- 메시지가 여기 쌓입니다 -->
+        <div class="msg sys">안녕하세요, {{ usr_name or "사용자" }}님! 소속: {{ usr_snm or "-" }}</div>
+        <div class="msg hint">예) “건국대 vs 동국대 2022~2026 자료구입비 비교”</div>
+      </div>
+
+      <div class="chat-input">
+        <input id="chatInput" type="text" placeholder="질문을 입력하세요 (엔터 전송)" />
+        <button id="chatSendBtn" type="button">전송</button>
+      </div>
+    </section>
+
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    window.__USER__ = {
+      name: {{ (usr_name|tojson) if usr_name is defined else '""' }},
+      univ: {{ (usr_snm|tojson)  if usr_snm  is defined else '""'  }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/agent.js') }}" defer></script>
+{% endblock %}
