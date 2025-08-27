@@ -1,6 +1,7 @@
 // static/js/common/base.js
 // 전역: 네이티브 스크롤바 숨김 + 우측 고정 오버레이 썸/화살표.
 // 개선점: 드래그 중 스냅/스무스 OFF(탄성 제거), 드래그 대상 잠금, rAF 기반 업데이트.
+// 채팅창 열릴 때 전역 스크롤바 숨김 추가
 
 (function () {
   const SHOW_DELAY     = 700;   // 스크롤 멈춘 뒤 감춤
@@ -27,6 +28,9 @@
   let edgeActive = false;
   let hideTimer = null, edgeTimer = null, holdTimer = null;
 
+  // 채팅창 상태 추적
+  let chatWindowOpen = false;
+
   // 드래그 상태
   const drag = {
     active: false,
@@ -46,12 +50,50 @@
     return sh > ch + 1;
   };
 
+  // 채팅창 상태 체크 함수
+  function isChatWindowOpen() {
+    const chatWindow = document.getElementById('chatWindow');
+    return chatWindow && chatWindow.classList.contains('open');
+  }
+
+  // 채팅창 관련 요소인지 확인
+  function isChatRelatedElement(element) {
+    if (!element) return false;
+    
+    // 채팅창 자체이거나 그 하위 요소인지 확인
+    const chatWindow = document.getElementById('chatWindow');
+    if (chatWindow && (element === chatWindow || chatWindow.contains(element))) {
+      return true;
+    }
+    
+    // 채팅 관련 클래스명 확인
+    const chatClasses = ['chat-window', 'chat-body', 'chat-scroll-container', 'custom-scrollbar'];
+    return chatClasses.some(cls => element.classList && element.classList.contains(cls));
+  }
+
+  // 전역 스크롤바가 표시되어야 하는지 확인
+  function shouldShowGlobalScrollbar() {
+    chatWindowOpen = isChatWindowOpen();
+    
+    // 채팅창이 열려있으면 전역 스크롤바 숨김
+    if (chatWindowOpen) {
+      console.log('[전역스크롤바] 채팅창 열림 - 전역 스크롤바 숨김');
+      return false;
+    }
+    
+    return true;
+  }
+
   // 화면 우측 끝에서 Y위치에 해당하는 스크롤러 찾기
   function findScrollerAtY(clientY) {
     const x = window.innerWidth - 1;
     const stack = document.elementsFromPoint(x, clientY);
     for (const el of stack) {
       if (!(el instanceof Element)) continue;
+      
+      // 채팅창 관련 요소는 제외
+      if (isChatRelatedElement(el)) continue;
+      
       const cs = getComputedStyle(el);
       const mayScroll = /(auto|scroll)/.test(cs.overflowY) || /(auto|scroll)/.test(cs.overflow);
       if (mayScroll && isScrollable(el)) return el;
@@ -79,6 +121,12 @@
   }
 
   function updateFromScroller(scroller) {
+    // 채팅창이 열려있으면 전역 스크롤바 숨김
+    if (!shouldShowGlobalScrollbar()) {
+      bar.classList.remove('osb--show');
+      return;
+    }
+
     activeScroller = scroller;
     const m = getMetrics(scroller);
     if (!m || m.sh <= m.ch + 1 || m.trackH <= 0) {
@@ -91,6 +139,11 @@
   }
 
   function showFor(ms) {
+    // 채팅창이 열려있으면 전역 스크롤바 표시하지 않음
+    if (!shouldShowGlobalScrollbar()) {
+      return;
+    }
+
     bar.classList.add('osb--show');
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
@@ -146,6 +199,10 @@
   window.addEventListener('scroll', () => {
     const sc = rootScroller();
     if (!isScrollable(sc)) return;
+    
+    // 채팅창이 열려있으면 전역 스크롤바 반응하지 않음
+    if (!shouldShowGlobalScrollbar()) return;
+    
     scrolling = true;
     updateFromScroller(sc);
     showFor(SHOW_DELAY);
@@ -155,7 +212,15 @@
   document.addEventListener('scroll', (e) => {
     const t = e.target;
     if (!(t instanceof Element)) return;
+    
+    // 채팅창 관련 스크롤이면 무시
+    if (isChatRelatedElement(t)) return;
+    
     if (!isScrollable(t)) return;
+    
+    // 채팅창이 열려있으면 전역 스크롤바 반응하지 않음
+    if (!shouldShowGlobalScrollbar()) return;
+    
     scrolling = true;
     updateFromScroller(t);
     showFor(SHOW_DELAY);
@@ -163,6 +228,9 @@
 
   // 우측 근접 표시
   window.addEventListener('mousemove', (e) => {
+    // 채팅창이 열려있으면 전역 스크롤바 근접 반응하지 않음
+    if (!shouldShowGlobalScrollbar()) return;
+    
     const nearRight = (window.innerWidth - e.clientX) <= EDGE_THRESHOLD;
     if (nearRight) {
       edgeActive = true;
@@ -178,11 +246,19 @@
   }, { passive: true });
 
   window.addEventListener('resize', () => {
-    if (activeScroller) updateFromScroller(activeScroller);
+    if (activeScroller && shouldShowGlobalScrollbar()) {
+      updateFromScroller(activeScroller);
+    }
   });
 
   // ==== 썸 드래그 ====
   thumb.addEventListener('mousedown', (e) => {
+    // 채팅창이 열려있으면 전역 스크롤바 드래그 비활성화
+    if (!shouldShowGlobalScrollbar()) {
+      e.preventDefault();
+      return;
+    }
+
     e.preventDefault();
     document.documentElement.classList.add('osb-dragging');
 
@@ -229,6 +305,9 @@
 
   // ==== 화살표 클릭/홀드 ====
   function startHold(dir) {
+    // 채팅창이 열려있으면 전역 스크롤바 화살표 비활성화
+    if (!shouldShowGlobalScrollbar()) return;
+    
     stopHold();
     holdTimer = setInterval(() => {
       const sc = activeScroller || rootScroller();
@@ -240,12 +319,18 @@
   function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
 
   arrowUp.addEventListener('click', () => {
+    // 채팅창이 열려있으면 전역 스크롤바 화살표 비활성화
+    if (!shouldShowGlobalScrollbar()) return;
+    
     const sc = activeScroller || rootScroller();
     pageScroll(sc, -1);
     updateFromScroller(sc);
     showFor(SHOW_DELAY);
   });
   arrowDn.addEventListener('click', () => {
+    // 채팅창이 열려있으면 전역 스크롤바 화살표 비활성화
+    if (!shouldShowGlobalScrollbar()) return;
+    
     const sc = activeScroller || rootScroller();
     pageScroll(sc, +1);
     updateFromScroller(sc);
@@ -255,4 +340,44 @@
   arrowDn.addEventListener('mousedown', () => startHold(+1));
   window.addEventListener('mouseup', stopHold);
   window.addEventListener('blur', stopHold);
+
+  // 채팅창 상태 변화 감지 (MutationObserver 사용)
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const target = mutation.target;
+        if (target.id === 'chatWindow') {
+          const wasOpen = chatWindowOpen;
+          const isOpen = target.classList.contains('open');
+          
+          if (wasOpen !== isOpen) {
+            chatWindowOpen = isOpen;
+            console.log('[전역스크롤바] 채팅창 상태 변화:', isOpen ? '열림' : '닫힘');
+            
+            // 채팅창이 닫혔을 때 전역 스크롤바 상태 복원
+            if (!isOpen && activeScroller) {
+              setTimeout(() => updateFromScroller(activeScroller), 100);
+            } else if (isOpen) {
+              // 채팅창이 열렸을 때 전역 스크롤바 즉시 숨김
+              bar.classList.remove('osb--show');
+            }
+          }
+        }
+      }
+    });
+  });
+
+  // DOM이 로드된 후 채팅창 감지 시작
+  document.addEventListener('DOMContentLoaded', () => {
+    const chatWindow = document.getElementById('chatWindow');
+    if (chatWindow) {
+      observer.observe(chatWindow, { 
+        attributes: true, 
+        attributeFilter: ['class'] 
+      });
+      // 초기 상태 설정
+      chatWindowOpen = chatWindow.classList.contains('open');
+    }
+  });
+
 })();

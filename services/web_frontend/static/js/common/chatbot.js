@@ -18,16 +18,18 @@
   const STORAGE_KEY = `libraChat.history.${USER}`;
   const SIZE_KEY    = `libraChat.size.${USER}`;
   const POSITION_KEY = `libraChat.position.${USER}`;
-  const FIRST_TURN_KEY = `libraChat.firstTurn.${USER}`; // 첫 턴 상태 저장용
+  const FIRST_TURN_KEY = `libraChat.firstTurn.${USER}`;
   const MAX_MESSAGES = 200;
 
-  let history = []; // {role:'user'|'bot', text:string, ts:number}[]
-  let hasHadFirstTurn = false; // 첫 턴 완료 여부
+  let history = [];
+  let hasHadFirstTurn = false;
 
   // --- 리사이즈 관련 변수들 ---
   let isResizing = false;
   let resizeDirection = null;
-  let startX, startY, startWidth, startHeight, startBottom, startRight;
+  let startX, startY, startWidth, startHeight;
+  // 고정점을 위한 변수들 추가
+  let fixedLeft, fixedTop, fixedRight, fixedBottom;
 
   // --- 드래그 관련 변수들 ---
   let isDragging = false;
@@ -38,7 +40,6 @@
   let isScrollDragging = false;
   let scrollDragStart = 0;
 
-  // 페이지 로드 완료 여부 체크
   let isPageLoaded = false;
 
   const openChat = () => { 
@@ -159,12 +160,10 @@
         if (Array.isArray(arr)) {
           history = arr;
           console.log('[챗봇] 대화내역 복원:', history.length, '개 메시지');
-          // 복원 렌더 (저장은 중복 방지 위해 off)
           for (const m of history) {
             appendBubble(m.text, m.role, /*persist=*/false);
           }
           
-          // 대화내역이 있으면 첫 턴은 이미 완료된 것으로 처리
           if (history.length > 0) {
             hasHadFirstTurn = true;
             persistFirstTurnStatus();
@@ -180,21 +179,18 @@
     persistHistory();
   }
 
-  // --- 첫 턴 여부 판정 (개선된 로직) ---
+  // --- 첫 턴 여부 판정 ---
   function isFirstTurn() {
-    // 1. 이미 첫 턴을 완료했다면 false
     if (hasHadFirstTurn) {
       console.log('[첫턴판정] 이미 첫 턴 완료됨 → false');
       return false;
     }
     
-    // 2. 대화내역이 있다면 false
     if (history.length > 0) {
       console.log('[첫턴판정] 대화내역 존재 (' + history.length + '개) → false');
       return false;
     }
     
-    // 3. 둘 다 없다면 첫 턴
     console.log('[첫턴판정] 첫 번째 대화 → true');
     return true;
   }
@@ -231,11 +227,12 @@
     
     const container = scrollContainer || chatBody;
     container.appendChild(wrap);
-    container.scrollTop = container.scrollHeight;
     
-    if (scrollContainer && updateScrollbar) {
-      updateScrollbar();
-    }
+    // 스크롤을 맨 아래로 이동
+    setTimeout(() => {
+      container.scrollTop = container.scrollHeight;
+      if (updateScrollbar) updateScrollbar();
+    }, 10);
 
     if (persist) {
       pushMessage(role, text);
@@ -268,9 +265,9 @@
     const msg = (chatInput?.value || '').trim();
     if (!msg) return;
 
-    const currentIsFirstTurn = isFirstTurn(); // 현재 첫 턴인지 판정
+    const currentIsFirstTurn = isFirstTurn();
 
-    appendBubble(msg, 'user'); // 사용자 메시지 추가 (저장됨)
+    appendBubble(msg, 'user');
     if (chatInput) { chatInput.value = ''; chatInput.focus(); }
 
     const loader = document.createElement('div');
@@ -291,9 +288,8 @@
       loader.remove();
       
       const answer = (data && data.answer) ? String(data.answer).trim() : '';
-      appendBubble(answer || '죄송해요, 응답이 비었습니다.', 'bot'); // 봇 응답 추가 (저장됨)
+      appendBubble(answer || '죄송해요, 응답이 비었습니다.', 'bot');
       
-      // 첫 턴이었다면 이제 완료 처리
       if (currentIsFirstTurn) {
         hasHadFirstTurn = true;
         persistFirstTurnStatus();
@@ -468,7 +464,7 @@
     }
   }
 
-  // --- 리사이즈 기능 ---
+  // --- 개선된 리사이즈 기능 ---
   function startResize(e) {
     if (!chatWindow.classList.contains('open')) return;
     
@@ -477,12 +473,15 @@
     
     startX = e.clientX;
     startY = e.clientY;
-    startWidth = parseInt(document.defaultView.getComputedStyle(chatWindow).width, 10);
-    startHeight = parseInt(document.defaultView.getComputedStyle(chatWindow).height, 10);
+    startWidth = chatWindow.offsetWidth;
+    startHeight = chatWindow.offsetHeight;
     
+    // 현재 창의 위치를 모든 좌표계로 저장
     const rect = chatWindow.getBoundingClientRect();
-    startBottom = window.innerHeight - rect.bottom;
-    startRight = window.innerWidth - rect.right;
+    fixedLeft = rect.left;
+    fixedTop = rect.top;
+    fixedRight = rect.right;
+    fixedBottom = rect.bottom;
     
     document.body.style.cursor = e.target.style.cursor;
     document.body.style.userSelect = 'none';
@@ -497,34 +496,47 @@
     
     let newWidth = startWidth;
     let newHeight = startHeight;
-    let newBottom = startBottom;
-    let newRight = startRight;
+    let newLeft = fixedLeft;
+    let newTop = fixedTop;
     
-    if (resizeDirection.includes('e')) {
-      newWidth = startWidth + dx;
-    }
-    if (resizeDirection.includes('w')) {
-      newWidth = startWidth - dx;
-      newRight = startRight - dx;
-    }
-    if (resizeDirection.includes('s')) {
-      newHeight = startHeight + dy;
-    }
-    if (resizeDirection.includes('n')) {
-      newHeight = startHeight - dy;
-      newBottom = startBottom - dy;
-    }
-    
+    // 최소/최대 크기 제한
     const minWidth = 250;
     const minHeight = 300;
     const maxWidth = window.innerWidth * 0.9;
     const maxHeight = window.innerHeight * 0.9;
     
-    newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-    newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+    // 각 방향별 리사이즈 처리
+    if (resizeDirection.includes('e')) {
+      // 오른쪽으로 늘리기 - 왼쪽 고정
+      newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + dx));
+      newLeft = fixedLeft; // 왼쪽 고정
+    }
     
-    newRight = Math.max(10, Math.min(window.innerWidth - newWidth - 10, newRight));
-    newBottom = Math.max(10, Math.min(window.innerHeight - newHeight - 10, newBottom));
+    if (resizeDirection.includes('w')) {
+      // 왼쪽으로 늘리기 - 오른쪽 고정
+      newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - dx));
+      newLeft = fixedRight - newWidth; // 오른쪽을 기준으로 왼쪽 계산
+    }
+    
+    if (resizeDirection.includes('s')) {
+      // 아래쪽으로 늘리기 - 위쪽 고정
+      newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + dy));
+      newTop = fixedTop; // 위쪽 고정
+    }
+    
+    if (resizeDirection.includes('n')) {
+      // 위쪽으로 늘리기 - 아래쪽 고정
+      newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - dy));
+      newTop = fixedBottom - newHeight; // 아래쪽을 기준으로 위쪽 계산
+    }
+    
+    // 화면 경계를 벗어나지 않도록 조정
+    newLeft = Math.max(10, Math.min(window.innerWidth - newWidth - 10, newLeft));
+    newTop = Math.max(10, Math.min(window.innerHeight - newHeight - 10, newTop));
+    
+    // CSS에 반영 (right/bottom 방식으로 변환)
+    const newRight = window.innerWidth - newLeft - newWidth;
+    const newBottom = window.innerHeight - newTop - newHeight;
     
     chatWindow.style.width = newWidth + 'px';
     chatWindow.style.height = newHeight + 'px';
@@ -577,14 +589,29 @@
     stopScrollDrag();
   });
 
+  // 채팅창 전체에서 휠 이벤트 처리 (개선)
   chatWindow.addEventListener('wheel', (e) => {
     if (chatWindow.classList.contains('open')) {
+      e.preventDefault(); // 외부 페이지 스크롤 완전 차단
       e.stopPropagation();
       if (scrollContainer) {
         scrollContainer.scrollTop += e.deltaY;
+        updateScrollbar(); // 스크롤 후 스크롤바 업데이트
       }
     }
   });
+
+  // 스크롤 컨테이너에서도 휠 이벤트 처리 강화
+  function initScrollEvents() {
+    if (scrollContainer) {
+      scrollContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        scrollContainer.scrollTop += e.deltaY;
+        updateScrollbar();
+      });
+    }
+  }
 
   window.addEventListener('resize', () => {
     if (!chatWindow.classList.contains('open')) return;
@@ -616,8 +643,8 @@
 
   // --- 초기화 (순서 중요) ---
   initCustomScrollbar();
-  restoreFirstTurnStatus(); // 첫 턴 상태 먼저 복원
-  restore();                // 대화내역 복원
+  restoreFirstTurnStatus();
+  restore();
   restoreSize();
   restorePosition();
   
