@@ -5,7 +5,7 @@ __pycache__/
 *.pyc
 
 # 툴 무시
-**/Tools/*
+**/instantclient-basic-windows.x64-19.25.0.0.0dbru/*
 
 # 가상환경 폴더 무시
 .venv/

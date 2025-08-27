@@ -56,6 +56,13 @@ def create_app():
         log.info("- Model: %s", _ROUTER.model_name)
     else:
         log.info("기존 모델 라우터 재사용")
+    
+    # --- 서비스별 로거 레벨 튜닝 ---
+    logging.getLogger("orchestrator").setLevel(logging.INFO)
+    logging.getLogger("orchestrator.intent").setLevel(logging.INFO)
+    logging.getLogger("user_data_chain").setLevel(
+        getattr(logging, os.getenv("USER_DATA_CHAIN_LOG_LEVEL", "WARNING").upper(), logging.WARNING)
+    )
 
     # === 모듈 리로드 유틸 ===
     def reload_api_routes():
@@ -65,6 +72,11 @@ def create_app():
             modules_to_reload = [
                 "services.llm_service.chains.user_data_chain",
                 "services.llm_service.db.llm_repository_cx",
+                "services.llm_service.orchestrator",
+                "services.llm_service.orchestrator.intent_classifier",
+                "services.llm_service.orchestrator.tool_hints",
+                "services.llm_service.orchestrator.planner",
+                "services.llm_service.orchestrator.agent_client",
                 _API_MODULE_PATH
             ]
             for module_name in modules_to_reload:

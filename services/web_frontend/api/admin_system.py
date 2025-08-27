@@ -32,7 +32,7 @@ def ports_status():
     응답 예: {"ports":[{"port":5050,"open":true},{"port":5100,"open":false},{"port":5150,"open":true}]}
     """
     _require_admin()
-    ports = [5050, 5100, 5150]
+    ports = [5050, 5100, 5150, 5200]
     return jsonify({"ports": [{"port": p, "open": _is_port_open(p)} for p in ports]})
 
 # ─────────────────────────────────────────────────────────────

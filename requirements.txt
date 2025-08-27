@@ -37,3 +37,8 @@ openvino_genai
 optimum.intel
 tf-keras
 nncf
+
+chromadb
+sentence-transformers
+pypdf
+requests

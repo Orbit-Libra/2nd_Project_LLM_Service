@@ -17,6 +17,18 @@
 │
 ├── services/             # 모든 마이크로서비스 폴더 묶음
 │   │
+│   ├── agent_service/                        # 데이터 수집 및 처리 서비스
+│   │   │
+│   │   ├── api/                             # 플라스크 api
+│   │   │   │  
+│   │   │   ├── data_api.py                  # 전체예측값 전달 클래스
+│   │   │   ├── main.py                      # 플라스크 api서버 메인코드
+│   │   │   └── num06_api.py                 # 유저서비스 데이터 전달 클래스
+│   │   │
+│   │   ├── DataHandling/                    # 원본파일 CSV파일화 및 DB 업로드 패키지  
+│   │   │   │  
+│   │   │   ├── __init__.py
+│   │  
 │   ├── core_utiles/                         # 공통 모듈 전용 폴더
 │   │   ├── __init__.py
 │   │   ├── config_loader.py                 # .env 로드 모듈
@@ -24,7 +36,6 @@
 │   │   ├── OracleDBConnection.py            # 오라클DBD 접속 모듈
 │   │   ├── OracleSchemaBuilder.py           # 테이블 생성 시 데이터타입 보정 모듈
 │   │   └── OracleTableCreater.py            # 보정 후 테이블 생성 모듈
-│   │   
 │   │
 │   ├── data_service/                        # 데이터 수집 및 처리 서비스
 │   │   │
@@ -64,6 +75,57 @@
 │   │   ├── __init__.py
 │   │   ├── __main__.py                      # 전체 패키지 컨트롤 메인코드
 │   │   └── .env
+│   │
+│   ├── llm_service/                         # LLM 챗봇 서비스
+│   │   |
+│   │   ├── api/
+│   │   |   │  
+│   │   |   ├── llm_api.py                   # LLM모델 서비스 호출 모듈
+│   │   |   └── server.py                    # 플라스크 api 서버 진입점
+│   │   |
+│   │   ├── chains/                          # Langchain 로직구현
+│   │   |   │  
+│   │   |   ├── base_chat_chain.py           # 랭체인 기반 추론 클래스
+│   │   |   └── user_data_chain.py           # 유저데이터 랭체인 클래스
+│   │   |
+│   │   ├── db/                              # 플라스크 웹서버 블루프린트 폴더
+│   │   |   │  
+│   │   |   ├── llm_repository_cx.py         # 오라클DB 데이터 핸들링 모듈
+│   │   |   ├── oracle_cx.py                 # 세션 로딩 모듈
+│   │   |   └── user_schema_loader.py        # 유저데이터 로딩 모듈
+│   │   |
+│   │   ├── huggingface/                     # 허깅페이스 모델 캐시 폴더
+│   │   |   │  
+│   │   │   └── .cache/
+│   │   │
+│   │   ├── model/                           # LLM 모델 엔진
+│   │   │   │  
+│   │   │   ├── backends/                    # LLM 모델 백엔드
+│   │   │   │   │
+│   │   │   │   ├── base.py
+│   │   │   │   ├── gguf_llamacpp.py         # 양자화 gguf 모델 호출 클래스
+│   │   │   │   ├── hf_transformers.py       # 허깅페이스 모델 호출 클래스
+│   │   │   │   └── openvino_genai.py        # OpenVINO 모델 호출 클래스
+│   │   │   │  
+│   │   │   ├── configs/                     # LLM 모델 설정값
+│   │   │   │   │
+│   │   │   │   ├── gguf_params.json
+│   │   │   │   ├── gguf_prompts.json
+│   │   │   │   ├── ov_params.json
+│   │   │   │   └── user_schema.json
+│   │   │   │     
+│   │   │   ├── __init__.py 
+│   │   │   ├── config_loader.py             # 컨피그 로더
+│   │   │   ├── prompts.py                   # 매세지 랜더링 모듈
+│   │   │   └── router.py                    # 플라스크 모델 라우터 클래스
+│   │   |
+│   │   ├── ochestrator/                     # 오케스트레이터
+│   │   |   │  
+│   │   |   ├── 
+│   │   |   ├── 
+│   │   |   └── 
+│   │   |
+│   │   └── .env                             # 엑세스토큰 및 오라클 스키마 설정값
 │   │
 │   ├── ml_service/                          # 모델 학습 및 튜닝
 │   │   │
@@ -136,109 +198,69 @@
 │   │   ├── predict_sync.py                  # 유저 데이터 예측 블루프린트
 │   │   └── user_analysis.py                 # 유저 서비스 페이지 블루프린트
 │   │
-│   ├── web_frontend/                        # 웹 프론트엔드 패키지
-│   │   │
-│   │   ├── api/                             # 플라스크 웹서버 블루프린트 폴더
-│   │   │   │  
-│   │   │   ├── admin_system.py              # 관리자 전용 기능제어 블루프린트
-│   │   │   ├── chart_data.py                # 차트페이지 블루프린트
-│   │   │   ├── Oracle_utils.py              # 오라클DB 커넥션 모듈
-│   │   │   ├── profile_api.py               # 마이페이지 블루프린트
-│   │   │   ├── register_api.py              # 회원가입 페이지 블루프린트
-│   │   │   ├── sync.py                      # 예측데이터 api 콜 블루프린트
-│   │   │   └── user_api.py                  # 유저 입력정보 api콜 플루프린트
-│   │   │
-│   │   ├── static/                          # css & js & image 스테틱 폴더
-│   │   │   │
-│   │   │   ├── css/                         # 페이지 별 css파일 폴더
-│   │   │   │   │
-│   │   │   │   ├── common/                  # 공통 파츠
-│   │   │   │   │   │
-│   │   │   │   │   └── header-footer.css    # 헤더 & 푸터 css
-│   │   │   │   │
-│   │   │   │   ├── admin.css                # 관리자 페이지 css
-│   │   │   │   ├── chartpage1.css           # 차트페이지용 css
-│   │   │   │   ├── login.css                # 로그인 페이지 css
-│   │   │   │   ├── main.css                 # 메인페이지 css
-│   │   │   │   ├── profile.css              # 마이페이지 css
-│   │   │   │   └── register.css             # 회원가입 페이지 css
-│   │   │   │
-│   │   │   │
-│   │   │   ├── images/                      # 이미지 리소스파일
-│   │   │   │   |
-│   │   │   │   ├── logo.jpeg
-│   │   │   │   └── logo2.png
-│   │   │   │
-│   │   │   │
-│   │   │   └── js/                          # 페이지 별 로직 구현 js파일 폴더
-│   │   │       |
-│   │   │       ├── admin.js                 # 관리자 페이지 js
-│   │   │       ├── chartpage1.js            # 차트페이지 1번용 js
-│   │   │       ├── chartpage2.js            # 차트페이지 2번용 js
-│   │   │       ├── header.js                # 헤더 js
-│   │   │       ├── main.js                  # 메인페이지 js
-│   │   │       ├── profile.js               # 마이페이지 js
-│   │   │       ├── register.js              # 회원가입 js
-│   │   │       └── userservice.js           # 유저서비스 js
-│   │   │
-│   │   ├── templates/                       # 페이지 html 파일 폴더
-│   │   │   │
-│   │   │   ├── common/                      # 공통 파츠
-│   │   │   │   |
-│   │   │   │   ├── chatbot.html             # 챗봇 플로터용 html
-│   │   │   │   ├── footer.html              # 푸터 html
-│   │   │   │   └── header.html              # 헤더 html
-│   │   │   │
-│   │   │   ├── admin.html                   # 관리자 페이지 html
-│   │   │   ├── chartpage1.html              # 차트페이지 1번용 html
-│   │   │   ├── chartpage2.html              # 차트페이지 2번용 html
-│   │   │   ├── login.html                   # 로그인 페이지 html
-│   │   │   ├── main.html                    # 메인페이지 html
-│   │   │   ├── profile.html                 # 마이페이지 html
-│   │   │   ├── register.html                # 회원가입 html
-│   │   │   └── userservice.html             # 유저서비스 html
-│   │   │
-│   │   └── .env 
-│   │
-│   └── llm_service/                         # LLM 챗봇 서비스
+│   └── web_frontend/                        # 웹 프론트엔드 패키지
 │       │
-│       ├── api/
+│       ├── api/                             # 플라스크 웹서버 블루프린트 폴더
 │       │   │  
-│       │   └── server.py                    # 플라스크 api 서버 진입점
+│       │   ├── admin_system.py              # 관리자 전용 기능제어 블루프린트
+│       │   ├── chart_data.py                # 차트페이지 블루프린트
+│       │   ├── Oracle_utils.py              # 오라클DB 커넥션 모듈
+│       │   ├── profile_api.py               # 마이페이지 블루프린트
+│       │   ├── register_api.py              # 회원가입 페이지 블루프린트
+│       │   ├── sync.py                      # 예측데이터 api 콜 블루프린트
+│       │   └── user_api.py                  # 유저 입력정보 api콜 플루프린트
 │       │
-│       ├── chains/                          # Langchain 로직구현
-│       │   │  
-│       │   ├── base_chat_chain.py           # 랭체인 기반 추론 클래스
-│       │   └── 
+│       ├── static/                          # css & js & image 스테틱 폴더
+│       │   │
+│       │   ├── css/                         # 페이지 별 css파일 폴더
+│       │   │   │
+│       │   │   ├── common/                  # 공통 파츠
+│       │   │   │   │
+│       │   │   │   └── header-footer.css    # 헤더 & 푸터 css
+│       │   │   │
+│       │   │   ├── admin.css                # 관리자 페이지 css
+│       │   │   ├── chartpage1.css           # 차트페이지용 css
+│       │   │   ├── login.css                # 로그인 페이지 css
+│       │   │   ├── main.css                 # 메인페이지 css
+│       │   │   ├── profile.css              # 마이페이지 css
+│       │   │   └── register.css             # 회원가입 페이지 css
+│       │   │
+│       │   │
+│       │   ├── images/                      # 이미지 리소스파일
+│       │   │   |
+│       │   │   ├── logo.jpeg
+│       │   │   └── logo2.png
+│       │   │
+│       │   │
+│       │   └── js/                          # 페이지 별 로직 구현 js파일 폴더
+│       │       |
+│       │       ├── admin.js                 # 관리자 페이지 js
+│       │       ├── chartpage1.js            # 차트페이지 1번용 js
+│       │       ├── chartpage2.js            # 차트페이지 2번용 js
+│       │       ├── header.js                # 헤더 js
+│       │       ├── main.js                  # 메인페이지 js
+│       │       ├── profile.js               # 마이페이지 js
+│       │       ├── register.js              # 회원가입 js
+│       │       └── userservice.js           # 유저서비스 js
 │       │
-│       ├── db/                              # 플라스크 웹서버 블루프린트 폴더
-│       │   │  
-│       │   ├── llm_repository_cx.py         # 멀티턴 기능 모듈
-│       │   └── oracle_cx.py                 # 오라클DB 데이터 핸들링 모듈
+│       ├── templates/                       # 페이지 html 파일 폴더
+│       │   │
+│       │   ├── common/                      # 공통 파츠
+│       │   │   |
+│       │   │   ├── chatbot.html             # 챗봇 플로터용 html
+│       │   │   ├── footer.html              # 푸터 html
+│       │   │   └── header.html              # 헤더 html
+│       │   │
+│       │   ├── admin.html                   # 관리자 페이지 html
+│       │   ├── chartpage1.html              # 차트페이지 1번용 html
+│       │   ├── chartpage2.html              # 차트페이지 2번용 html
+│       │   ├── login.html                   # 로그인 페이지 html
+│       │   ├── main.html                    # 메인페이지 html
+│       │   ├── profile.html                 # 마이페이지 html
+│       │   ├── register.html                # 회원가입 html
+│       │   └── userservice.html             # 유저서비스 html
 │       │
-│       ├── huggingface/                     # 허깅페이스 모델 캐시 폴더
-│       │   │  
-│       │   └──
-│       │
-│       ├── model/                           # LLM 모델 엔진
-│       │   │  
-│       │   ├── backends/                    # LLM 모델 백엔드
-│       │   │   │
-│       │   │   ├── base.py
-│       │   │   ├── gguf_llamacpp.py         # 양자화 LLM 모델 호출 클래스
-│       │   │   └── hf_transformers.py       # 허깅페이스 모델 호출 클래스
-│       │   │  
-│       │   ├── configs/                     # LLM 모델 설정값
-│       │   │   │
-│       │   │   ├── gguf.json
-│       │   │   └──
-│       │   │     
-│       │   ├── __init__.py 
-│       │   ├── config_loader.py             # 컨피그 로더
-│       │   ├── prompts.py                   # 매세지 랜더링 모듈
-│       │   └── router.py                    # 플라스크 모델 라우터 클래스
-│       │
-│       └── .env                             # 엑세스토큰 및 오라클 스키마 설정값
+│       └── .env 
 │   
 ├── tools/                                   # 필수유틸 폴더
 │   │

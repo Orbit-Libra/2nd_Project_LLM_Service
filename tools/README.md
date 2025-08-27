@@ -1,0 +1,1 @@
+instantclient-basic-windows.x64-19.25.0.0.0dbru 파일 경로

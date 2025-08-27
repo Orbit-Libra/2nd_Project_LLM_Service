@@ -114,9 +114,11 @@ async function refreshPorts() {
   const el5050 = document.getElementById("port-5050-status");
   const el5100 = document.getElementById("port-5100-status");
   const el5150 = document.getElementById("port-5150-status");
+  const el5200 = document.getElementById("port-5200-status");
   const conn5050 = document.getElementById("port-5050-conn");
   const conn5100 = document.getElementById("port-5100-conn");
   const conn5150 = document.getElementById("port-5150-conn");
+  const conn5200 = document.getElementById("port-5200-conn");
 
   try {
     const res = await fetch("/admin/ports");
@@ -127,19 +129,23 @@ async function refreshPorts() {
     const open5050 = map.get(5050);
     const open5100 = map.get(5100);
     const open5150 = map.get(5150);
+    const open5200 = map.get(5200);
 
     renderBadge(el5050, open5050);
     renderBadge(el5100, open5100);
     renderBadge(el5150, open5150);
+    renderBadge(el5200, open5200);
 
     renderConn(conn5050, open5050, "데이터서버 연결 on", "데이터서버 연결 off");
     renderConn(conn5100, open5100, "예측서버 연결 on", "예측서버 연결 off");
     renderConn(conn5150, open5150, "챗봇서버 연결 on", "챗봇서버 연결 off");
+    renderConn(conn5200, open5200, "에이전트서버 연결 on", "에이전트서버 연결 off");
   } catch (err) {
     systemLog && (systemLog.textContent = `❌ 포트 조회 실패: ${err.message || err}`);
     renderConn(conn5050, undefined);
     renderConn(conn5100, undefined);
     renderConn(conn5150, undefined);
+    renderConn(conn5200, undefined);
   }
 }
 
@@ -147,6 +153,53 @@ function initSystemCard() {
   refreshPorts();
   setInterval(refreshPorts, 8000);
 }
+
+// ───────── 래그 디비 관리 ─────────
+
+function initRagCard() {
+  const syncBtn = document.getElementById("rag-sync-btn");
+  const resetBtn = document.getElementById("rag-reset-btn");
+  const note = document.getElementById("rag-log");
+  if (!syncBtn || !resetBtn) return;
+
+  // 동기화: 기존 컬렉션 삭제 후 재업로드(reset=true)
+  syncBtn.addEventListener("click", async () => {
+    setLoading(syncBtn, true);
+    note && (note.textContent = "Vector DB 동기화 중…");
+    try {
+      const res = await fetch("/admin/rag/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reset: true })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      note && (note.textContent = `✅ 동기화 완료 (files=${data?.stats?.indexed_files ?? 0}, chunks=${data?.stats?.indexed_chunks ?? 0})`);
+    } catch (err) {
+      note && (note.textContent = `❌ 동기화 실패: ${err.message || err}`);
+    } finally {
+      setLoading(syncBtn, false);
+    }
+  });
+
+  // 초기화: 모든 컬렉션 삭제
+  resetBtn.addEventListener("click", async () => {
+    if (!confirm("Vector DB를 초기화(모든 컬렉션 삭제)하시겠습니까?")) return;
+    setLoading(resetBtn, true);
+    note && (note.textContent = "Vector DB 초기화 중…");
+    try {
+      const res = await fetch("/admin/rag/reset", { method: "POST" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      note && (note.textContent = `✅ 초기화 완료 (deleted=${(data.reset?.deleted_groups || []).length})`);
+    } catch (err) {
+      note && (note.textContent = `❌ 초기화 실패: ${err.message || err}`);
+    } finally {
+      setLoading(resetBtn, false);
+    }
+  });
+}
+
 
 // ───────── 사용자 관리 (목록/검색/삭제) ─────────
 let usersCache = [];
@@ -254,4 +307,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initLLMDBCard(); // 새로 추가
   initSystemCard();
   initUserCard();
+  initRagCard();
 });

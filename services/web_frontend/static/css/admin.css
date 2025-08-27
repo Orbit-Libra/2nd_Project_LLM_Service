@@ -32,6 +32,8 @@ html,body{background:var(--bg);color:var(--text);}
 .card__actions{display:flex;gap:10px;flex-wrap:wrap;}
 .card__placeholder{color:var(--muted);font-size:14px;border:1px dashed var(--border);border-radius:12px;padding:16px;text-align:center;}
 
+.vgroup { display: grid; gap: 8px; margin: 10px 0 16px; }
+
 /* Button */
 .btn{
   position:relative; appearance:none;

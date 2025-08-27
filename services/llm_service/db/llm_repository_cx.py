@@ -221,7 +221,7 @@ def get_full_user_data(usr_id: str) -> Dict[str, Any]:
             pass
         return {}
 
-# --- 요약 생성 지원(선택) ---
+# --- 요약 생성 ---
 def get_user_academic_summary(usr_id: str) -> Dict[str, Any]:
     try:
         full_data = get_full_user_data(usr_id)

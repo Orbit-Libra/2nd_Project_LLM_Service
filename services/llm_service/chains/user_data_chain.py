@@ -11,6 +11,8 @@ from services.llm_service.model.prompts import render_messages
 
 log = logging.getLogger("user_data_chain")
 
+VERBOSE = os.getenv("USER_DATA_CHAIN_VERBOSE", "false").lower() == "true"
+
 # =========================
 # 유틸: alias 정규화/접기
 # =========================
@@ -150,20 +152,20 @@ def _fetch_user_data_via_schema_local(usr_id: str, schema_path: Optional[str]) -
             # 최후의 보루 (여전히 description 문제 있을 수 있음)
             row_dict = repo.fetch_one_dict(sql, params) if hasattr(repo, "fetch_one_dict") else None
 
-        log.info("[UDC] via_schema sql=%s", sql)
+        log.debug("[UDC] via_schema sql=%s", sql)
         if not row_dict:
-            log.info("[UDC] via_schema: no row")
+            log.debug("[UDC] via_schema: no row")
             return {}
 
         # 디버그
-        log.info("[UDC] via_schema row_dict keys=%s", list(row_dict.keys())[:40])
+        log.debug("[UDC] via_schema row_dict keys=%s", list(row_dict.keys())[:40])
         probe_keys = [
             "USR_NAME","USR_SNM",
             "1ST_USR_LPS","2ND_USR_LPS","3RD_USR_LPS","4TH_USR_LPS",
             "1ST_YR","2ND_YR","3RD_YR","4TH_YR",
             "SCR_EST_1ST","SCR_EST_2ND","SCR_EST_3RD","SCR_EST_4TH"
         ]
-        log.info("[UDC] via_schema row_dict probe=%s",
+        log.debug("[UDC] via_schema row_dict probe=%s",
                  {k: row_dict.get(k) for k in probe_keys})
 
         # alias 키로 재구성
@@ -178,16 +180,16 @@ def _fetch_user_data_via_schema_local(usr_id: str, schema_path: Optional[str]) -
         if "university" not in row_aliases and "USR_SNM" in row_dict:
             row_aliases["university"] = row_dict["USR_SNM"]
 
-        log.info("[UDC] via_schema alias_keys=%s", sorted(list(row_aliases.keys()))[:40])
+        log.debug("[UDC] via_schema alias_keys=%s", sorted(list(row_aliases.keys()))[:40])
 
         # 정규화/접기
         norm = _normalize_alias_keys(row_aliases)
         folded = _fold_from_norm(norm)
 
-        log.info("[UDC] via_schema folded_y1=%s", folded.get("y1"))
-        log.info("[UDC] via_schema folded_y2=%s", folded.get("y2"))
-        log.info("[UDC] via_schema folded_y3=%s", folded.get("y3"))
-        log.info("[UDC] via_schema folded_y4=%s", folded.get("y4"))
+        log.debug("[UDC] via_schema folded_y1=%s", folded.get("y1"))
+        log.debug("[UDC] via_schema folded_y2=%s", folded.get("y2"))
+        log.debug("[UDC] via_schema folded_y3=%s", folded.get("y3"))
+        log.debug("[UDC] via_schema folded_y4=%s", folded.get("y4"))
 
         return folded
 
@@ -223,7 +225,7 @@ def _fetch_user_data_direct(usr_id: str) -> Dict[str, Any]:
             return {}
 
         # 프리뷰
-        log.info("[UDC] direct preview: "
+        log.debug("[UDC] direct preview: "
                  "1ST_YR=%r 2ND_YR=%r 3RD_YR=%r 4TH_YR=%r | "
                  "2ND_USR_LPS=%r 3RD_USR_LPS=%r 4TH_USR_LPS=%r",
                  d.get("1ST_YR"), d.get("2ND_YR"), d.get("3RD_YR"), d.get("4TH_YR"),
@@ -260,11 +262,11 @@ def load_full_user_data(usr_id: str, prof_fallback: Optional[Tuple[str, str]], c
 
     direct = _fetch_user_data_direct(usr_id)
     if direct and _has_any_year_payload(direct):
-        log.info("[UDC] fallback: direct select used.")
+        log.debug("[UDC] fallback: direct select used.")
         return direct
 
     name, snm = (prof_fallback or ("사용자", "미상"))
-    log.info("[UDC] no year payload found. using profile only.")
+    log.debug("[UDC] no year payload found. using profile only.")
     return {"name": name, "university": snm}
 
 # =========================

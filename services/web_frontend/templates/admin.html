@@ -81,25 +81,57 @@
         </div>
       </div>
 
+        <!-- 포트 5200 (에이전트 서버) -->
+        <div class="port-row">
+          <div class="port-label">포트 5200</div>
+          <div class="port-status" id="port-5200-status">
+            <span class="badge badge--muted">확인 중…</span>
+          </div>
+          <div class="port-conn" id="port-5200-conn"><span class="muted">확인 중…</span></div>
+        </div>
+
       <div class="note" id="system-log" aria-live="polite"></div>
     </article>
 
     <!-- 2행: LLM 데이터베이스 관리 (가로 전체) -->
-    <article class="card card--full" id="llm-db-card">
-      <div class="card__head">
-        <h2 class="card__title">🗄️ LLM 데이터베이스 관리</h2>
-        <p class="card__desc">멀티턴 대화 데이터를 관리합니다. (개발용)</p>
-      </div>
+<article class="card card--half" id="llm-db-card">
+  <div class="card__head">
+    <h2 class="card__title">🗄️ LLM 데이터베이스 관리</h2>
+    <p class="card__desc">멀티턴 대화 데이터를 관리합니다. (개발용)</p>
+  </div>
+  <div class="card__actions">
+    <button class="btn btn--danger" id="clear-llm-data-btn">
+      <span class="btn__spinner" aria-hidden="true"></span>
+      LLM_DATA 테이블 비우기
+    </button>
+  </div>
+  <div class="note" id="llm-db-log" aria-live="polite"></div>
+</article>
 
-      <div class="card__actions">
-        <button class="btn btn--danger" id="clear-llm-data-btn">
-          <span class="btn__spinner" aria-hidden="true"></span>
-          LLM_DATA 테이블 비우기
-        </button>
-      </div>
+<!-- 2행: RAG 에이전트 관리 (우) -->
+<article class="card card--half" id="rag-agent-card">
+  <div class="card__head">
+    <h2 class="card__title">📚 RAG 에이전트 관리</h2>
+    <p class="card__desc">Vector DB를 관리합니다.</p>
+  </div>
 
-      <div class="note" id="llm-db-log" aria-live="polite"></div>
-    </article>
+  <div class="card__actions">
+    <div class="vgroup">
+      <button class="btn btn--primary" id="rag-sync-btn">
+        <span class="btn__spinner" aria-hidden="true"></span>
+        Vector DB 동기화
+      </button>
+    </div>
+    <div class="vgroup">
+      <button class="btn btn--danger" id="rag-reset-btn">
+        <span class="btn__spinner" aria-hidden="true"></span>
+        Vector DB 초기화
+      </button>
+    </div>
+  </div>
+
+  <div class="note" id="rag-log" aria-live="polite"></div>
+</article>
 
     <!-- 3행: 사용자 관리 (가로 전체) -->
     <article class="card card--full" id="user-card">
