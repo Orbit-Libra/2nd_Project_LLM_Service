@@ -1,7 +1,13 @@
 {
   "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
-  "chunk": { "size": 800, "overlap": 120 },
-  "semantic_thresholds": { "web_guide": 0.46, "group_match": 0.40 },
+  "chunk": { 
+    "size": 600, 
+    "overlap": 200 
+  },
+  "semantic_thresholds": { 
+    "web_guide": 0.40, 
+    "group_match": 0.35 
+  },
   "router": {
     "web_guide_keywords": [
       "서비스이용가이드","서비스 이용 가이드","이용가이드","이용 가이드",
@@ -12,9 +18,10 @@
     ],
     "seed_phrases": [
       "개인정보 변경 방법", "비밀번호 재설정", "회원가입 절차", "로그인 방법",
-      "예측점수 페이지로 이동", "마이페이지 접근", "설정 페이지 안내", "서비스 이용 가이드"
+      "예측점수 페이지로 이동", "마이페이지 접근", "설정 페이지 안내", "서비스 이용 가이드",
+      "회원가입 버튼을 클릭하세요", "내정보 관리 버튼을 클릭하세요", "로그인 페이지로 이동하세요"
     ],
     "preferred_group": "서비스이용가이드",
-    "top_k": 5
+    "top_k": 8
   }
 }

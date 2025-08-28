@@ -1,4 +1,4 @@
-# services/llm_service/orchestrator/schema.py
+# services/llm_service/orchestrator/schemas.py
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List, Literal
 

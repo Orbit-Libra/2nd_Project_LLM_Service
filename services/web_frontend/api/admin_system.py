@@ -1,5 +1,5 @@
-# web_frontend/api/admin_system.py
 from flask import Blueprint, jsonify, request, session, abort
+import os
 import socket
 import requests
 
@@ -27,10 +27,6 @@ def _is_port_open(port: int, host: str = "127.0.0.1", timeout: float = 0.5) -> b
 
 @admin_system_bp.get("/admin/ports")
 def ports_status():
-    """
-    5050, 5100, 5150 포트 열림 여부 반환
-    응답 예: {"ports":[{"port":5050,"open":true},{"port":5100,"open":false},{"port":5150,"open":true}]}
-    """
     _require_admin()
     ports = [5050, 5100, 5150, 5200]
     return jsonify({"ports": [{"port": p, "open": _is_port_open(p)} for p in ports]})
@@ -42,11 +38,6 @@ _COLUMNS = ["ID", "USR_CR", "USR_ID", "USR_NAME", "USR_EMAIL", "USR_SNM"]
 
 @admin_system_bp.get("/admin/users")
 def list_users():
-    """
-    USER_DATA 테이블에서 가입 유저 목록 조회
-      - 쿼리: ?limit=100 (선택)
-    응답 예: { success: true, count: N, columns: [...], rows: [{...}, ...] }
-    """
     _require_admin()
     limit = request.args.get("limit", type=int)
 
@@ -56,37 +47,22 @@ def list_users():
 
     rows = []
     for r in res.get("data", []):
-        # 🔒 관리자 계정 숨김
         if str(r.get("USR_ID", "")).lower() == "libra_admin":
             continue
         rows.append({k: r.get(k) for k in _COLUMNS})
 
-    # ID 기준 정렬(빈값은 뒤로)
     rows.sort(key=lambda x: (x.get("ID") is None, x.get("ID")))
-
-    return jsonify({
-        "success": True,
-        "count": len(rows),
-        "columns": _COLUMNS,
-        "rows": rows
-    })
+    return jsonify({"success": True, "count": len(rows), "columns": _COLUMNS, "rows": rows})
 
 @admin_system_bp.delete("/admin/users/<int:user_id>")
 def delete_user(user_id: int):
-    """
-    USER_DATA 테이블에서 ID 기준으로 삭제
-    응답 예: { success: true, deleted: 1, id: 123 }
-    - 🔒 관리자 계정(libra_admin)은 삭제 불가
-    """
     _require_admin()
-
     conn = None
     cur = None
     try:
         conn = get_connection()
         cur = conn.cursor()
 
-        # 먼저 해당 ID의 USR_ID 조회
         cur.execute("SELECT USR_ID FROM USER_DATA WHERE ID = :id", {"id": user_id})
         row = cur.fetchone()
         if not row:
@@ -96,7 +72,6 @@ def delete_user(user_id: int):
         if usr_id == "libra_admin":
             return jsonify({"success": False, "error": "관리자 계정은 삭제할 수 없습니다."}), 403
 
-        # 삭제
         cur.execute("DELETE FROM USER_DATA WHERE ID = :id", {"id": user_id})
         affected = cur.rowcount or 0
         conn.commit()
@@ -114,55 +89,120 @@ def delete_user(user_id: int):
 
 @admin_system_bp.post("/admin/clear-llm-data")
 def clear_llm_data():
-    """
-    LLM_DATA 테이블의 모든 멀티턴 대화 데이터 삭제 (개발용)
-    응답 예: { success: true, message: "N건의 데이터가 삭제되었습니다." }
-    """
     _require_admin()
-
     conn = None
     cur = None
     try:
         conn = get_connection()
         cur = conn.cursor()
 
-        # 먼저 현재 데이터 개수 확인
         cur.execute("SELECT COUNT(*) FROM LLM_DATA")
         count_before = cur.fetchone()[0] or 0
 
-        # 모든 데이터 삭제
         cur.execute("DELETE FROM LLM_DATA")
         deleted_count = cur.rowcount or 0
-        
+
         conn.commit()
 
         return jsonify({
-            "success": True, 
+            "success": True,
             "message": f"{deleted_count}건의 LLM 대화 데이터가 삭제되었습니다.",
             "deleted": deleted_count,
             "count_before": count_before
         })
-        
     except Exception as e:
         if conn:
             conn.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
-        
     finally:
         try:
             cur and cur.close()
         finally:
             conn and conn.close()
-            
+
 @admin_system_bp.post("/admin/llm/reload")
 def proxy_llm_reload():
-    """
-    LLM /dev/reload 프록시 (관리자만)
-    """
     _require_admin()
     try:
         r = requests.post("http://127.0.0.1:5150/dev/reload", timeout=10)
-        # LLM 서버가 JSON을 주므로 그대로 중계
         return (r.text, r.status_code, {"Content-Type": r.headers.get("Content-Type", "application/json")})
     except requests.exceptions.RequestException as e:
         return jsonify({"status": "error", "message": f"proxy error: {e}"}), 502
+
+# ─────────────────────────────────────────────────────────────
+# RAG (MCP) 관리: 동기화/초기화/상태 프록시
+# ─────────────────────────────────────────────────────────────
+def _agent_base_url() -> str:
+    return os.getenv("AGENT_SERVICE_URL", "http://127.0.0.1:5200").rstrip("/")
+
+def _agent_post(path: str, payload: dict, timeout: float = 30.0):
+    url = f"{_agent_base_url()}{path}"
+    resp = requests.post(url, json=payload, timeout=timeout)
+    resp.raise_for_status()
+    try:
+        return resp.json(), resp.status_code
+    except ValueError:
+        return {"raw": resp.text}, resp.status_code
+
+@admin_system_bp.post("/admin/rag/sync")
+def admin_rag_sync():
+    """
+    프런트가 기대하는 포맷:
+      data.stats.indexed_files, data.stats.indexed_chunks
+    """
+    _require_admin()
+    body = request.get_json(silent=True) or {}
+    payload = {
+        "group": body.get("group") or "DEFAULT",
+        "patterns": body.get("patterns") or ["*.pdf", "**/*.pdf"],
+        "reset": bool(body.get("reset", False)),
+        "force_rebuild": bool(body.get("force_rebuild", False)),
+        "limit": int(body.get("limit", 0) or 0),
+    }
+    if body.get("base_dir"):
+        payload["base_dir"] = body["base_dir"]
+
+    try:
+        agent, code = _agent_post("/v1/tools/rag/sync", payload, timeout=180.0)
+
+        # pass-through + 안전한 별칭 채움
+        result = dict(agent)
+        result["success"] = True
+        stats = result.get("stats") or {}
+
+        # 레거시 별칭에서 보강
+        if "indexed_files" not in stats and "files" in result:
+            stats["indexed_files"] = int(result.get("files") or 0)
+        if "indexed_chunks" not in stats and "chunks" in result:
+            stats["indexed_chunks"] = int(result.get("chunks") or 0)
+
+        # 완성된 stats 보장
+        result["stats"] = stats
+        return jsonify(result), code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"success": False, "error": f"rag sync proxy error: {e}"}), 502
+
+@admin_system_bp.post("/admin/rag/reset")
+def admin_rag_reset():
+    _require_admin()
+    body = request.get_json(silent=True) or {}
+    payload = {"group": body.get("group") or "DEFAULT"}
+    try:
+        agent, code = _agent_post("/v1/tools/rag/reset", payload, timeout=60.0)
+        result = dict(agent)
+        result["success"] = True
+        return jsonify(result), code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"success": False, "error": f"rag reset proxy error: {e}"}), 502
+
+@admin_system_bp.get("/admin/rag/status")
+def admin_rag_status():
+    _require_admin()
+    group = request.args.get("group") or "DEFAULT"
+    try:
+        agent, code = _agent_post("/v1/tools/rag/status", {"group": group}, timeout=20.0)
+        result = dict(agent)
+        result["success"] = True
+        return jsonify(result), code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"success": False, "error": f"rag status proxy error: {e}"}), 502

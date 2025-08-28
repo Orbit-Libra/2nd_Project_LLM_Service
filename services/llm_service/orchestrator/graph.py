@@ -94,13 +94,13 @@ def _split_compound(q: str) -> List[str]:
         token_hits = 0
         token_hits += sum(1 for name in _PAGE_TOK_N if name and name in pn)
         token_hits += sum(1 for name in _FIELD_TOK_N if name and name in pn)
-        has_and = any(tok in p for tok in _AND_TOKENS)
+        has_and = any(tok in p for tok in _AND_TOKENS) or ("," in p)
         needs_split = has_and and token_hits >= 2
 
         if not needs_split or len(p) < 14:
             out.append(p); continue
 
-        tmp = p
+        tmp = p.replace(",", " | ")  # 쉼표도 동등 분할자 취급
         for tok in _AND_TOKENS:
             tmp = re.sub(rf"\s*{re.escape(tok)}\s*", "|", tmp)
         chunks = [c.strip() for c in tmp.split("|") if c.strip()]
@@ -114,7 +114,7 @@ def _split_compound(q: str) -> List[str]:
             seg = (c if (not tail or tail in c) else f"{c} {tail}").strip()
             out.append(seg)
 
-    return out[:6] if out else [q]
+    return out[:8] if out else [q]
 
 # =========================
 # 실행기 선택
@@ -395,5 +395,13 @@ def run_orchestrator_graph(router, cfg, repo, inp) -> Tuple[str, List[Task], Lis
         "cfg": cfg,
         "repo": repo,
     }
+    # 1단계: 먼저 플랜만 구해서 토큰 스케일링 파라미터 계산
+    tasks = plan_tasks(state["query"], state["usr_id"])
+    agent_heavy = any(t["executor"] == "agent_rag" for t in tasks)
+    scaled_ov = local_exec.with_scaled_tokens(cfg, inp.overrides or {}, task_count=len(tasks), agent_heavy=agent_heavy)
+    # 실행 단계에 스케일된 overrides 주입
+    state["overrides"] = scaled_ov
+    state["tasks"] = tasks
+    # 이제 그래프 실행 (execute→compose)
     out = graph.invoke(state)
     return out["final_answer"], out["tasks"], out["results"]

@@ -24,6 +24,23 @@ def apply_generation_defaults(cfg: dict, overrides: dict) -> dict:
     ov.setdefault("enforce_max_chars", 300)
     return ov
 
+def with_scaled_tokens(cfg: dict, overrides: dict, *, task_count: int = 1, agent_heavy: bool = False) -> dict:
+    """
+    - 태스크(절) 수에 비례해 max_new_tokens를 늘리고, agent_heavy면 상한을 더 올림
+    - 기본값: 베이스 180, 태스크 추가당 +80, 상한 1024 (에이전트 있으면 1280)
+    - enforce_max_sentences도 태스크 수에 따라 완만히 증가(최대 8문장)
+    """
+    ov = apply_generation_defaults(cfg, overrides or {})
+    base = int(ov.get("max_new_tokens", 180))
+    per_task = 80
+    cap = 1280 if agent_heavy else 1024
+    scaled = base + per_task * max(0, task_count - 1)
+    ov["max_new_tokens"] = min(cap, scaled)
+    # 문장수 제한도 완만히 상승
+    sbase = int(ov.get("enforce_max_sentences", 3))
+    ov["enforce_max_sentences"] = min(8, max(sbase, 3 + (task_count - 1)))
+    return ov
+
 def apply_output_policy(cfg: dict, text: str) -> str:
     pol = cfg.get("policy", {})
     if not text:
@@ -65,7 +82,9 @@ def run_guest_base_chat(router, cfg: dict, user_text: str, overrides: dict) -> s
     messages.append({"role": "system", "content": safety_rule})
     if concise_rule: messages.append({"role": "system", "content": concise_rule})
     messages.append({"role": "user", "content": user_text})
-    ov = apply_generation_defaults(cfg, overrides)
+    # 질문 길이를 태스크 힌트로 사용(간단 휴리스틱)
+    approx_tasks = 1 + sum(user_text.count(x) for x in ["?", "그리고", "및", ","])
+    ov = with_scaled_tokens(cfg, overrides, task_count=min(8, approx_tasks), agent_heavy=False)
     body = router.generate_messages(messages, overrides=ov)
     return apply_output_policy(cfg, body)
 
@@ -94,7 +113,7 @@ def run_user_local(router, cfg: dict, repo, usr_id: str, user_text: str, overrid
         "user_name": usr_name,
         "salutation_prefix": salutation_prefix,
         "user_affiliation": aff_to_use,
-        "overrides": apply_generation_defaults(cfg, overrides)
+        "overrides": with_scaled_tokens(cfg, overrides, task_count=min(6, 1 + user_text.count(",")), agent_heavy=False)
     }
     result = _user_chain_singleton.invoke(chain_input)
     body = result.get("answer", "답변을 생성할 수 없습니다.")
@@ -133,7 +152,8 @@ def run_user_base_chat(router, cfg: dict, repo, usr_id: str, conv_id: int, user_
     if concise_rule: messages.append({"role": "system", "content": concise_rule})
     messages.append({"role": "user", "content": user_text})
 
-    ov = apply_generation_defaults(cfg, overrides)
+    approx_tasks = 1 + sum(user_text.count(x) for x in ["?", "그리고", "및", ","])
+    ov = with_scaled_tokens(cfg, overrides, task_count=min(8, approx_tasks), agent_heavy=False)
     body = router.generate_messages(messages, overrides=ov)
     body = apply_output_policy(cfg, body)
     return body, {"usr_name": usr_name, "usr_snm": usr_snm, "salutation_prefix": salutation_prefix, "aff_to_use": aff_to_use}

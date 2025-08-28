@@ -33,6 +33,7 @@ torch
 tensorflow
 huggingface_hub
 langchain-core
+langchain_community
 openvino_genai
 optimum.intel
 tf-keras

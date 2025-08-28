@@ -1,5 +1,5 @@
 # services/llm_service/api/llm_api.py
-import os, logging, requests
+import os, logging
 from flask import request, jsonify
 from services.llm_service.db import llm_repository_cx as repo
 from services.llm_service.orchestrator import handle as orchestrate

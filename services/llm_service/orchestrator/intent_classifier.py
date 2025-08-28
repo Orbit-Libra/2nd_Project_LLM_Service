@@ -1,4 +1,3 @@
-# services/llm_service/orchestrator/intent_classifier.py
 import re
 from typing import List
 from .schemas import Intent, UserDataSlot
@@ -110,6 +109,14 @@ PROFILE_KEYWORDS = [
     "소속이 어디", "소속이 어딘지", "소속대학이 어디", "소속대학이 어느"
 ]
 
+# 🔥 확장된 개인 데이터 패턴 (학년 + 지표 조합)
+PERSONAL_DATA_PATTERNS = [
+    r"(내|나의|내가)\s*([1-4])\s*학년",           # 내 4학년
+    r"([1-4])\s*학년일?\s*때",                    # 4학년일 때
+    r"([1-4])\s*학년\s*(에서|에|의)",             # 4학년에서, 4학년의
+    r"(내|나의)\s*([1-4])\s*학년\s*(때|에|의)",   # 내 4학년 때
+]
+
 AFFILIATION_TOKENS = ["소속대학", "소속 대학", "내 대학", "내 대학교", "나의 대학", "나의 대학교"]
 
 def _is_affiliation_query(q: str) -> bool:
@@ -118,9 +125,59 @@ def _is_affiliation_query(q: str) -> bool:
         return False
     if any(tok in qn for tok in AFFILIATION_TOKENS):
         return True
-    # “내 + (대학|대학교)?” 패턴도 허용
-    import re
+    # "내 + (대학|대학교)?" 패턴도 허용
     return bool(re.search(r"(내|나의).*(대학|대학교)", qn))
+
+def _is_personal_data_query(q: str) -> bool:
+    """확장된 개인 데이터 패턴 인식"""
+    if not q:
+        return False
+    
+    # 기존 패턴
+    if _is_affiliation_query(q):
+        return True
+    
+    # 새로운 패턴들
+    for pattern in PERSONAL_DATA_PATTERNS:
+        if re.search(pattern, q):
+            return True
+    
+    # "내/나의" + 지표 조합
+    if any(self_word in q for self_word in SELF_TOKENS):
+        metrics = ["점수", "예측점수", "자료구입비", "대출", "방문"]
+        if any(metric in q for metric in metrics):
+            return True
+    
+    return False
+
+def _has_complex_structure(q: str) -> bool:
+    """복합 질문 구조 감지 강화"""
+    if not q:
+        return False
+    
+    # 연결사 존재
+    if any(conj in q for conj in CONJ_TOKENS + [",", " 과 ", " 와 "]):
+        return True
+    
+    # 비교/계산 키워드
+    if any(calc in q for calc in ["비교", "차이", "동일", "같은", "vs", "대비"]):
+        return True
+    
+    # 복수 엔티티 (내 것 + 타 대학)
+    has_self = any(tok in q for tok in SELF_TOKENS)
+    has_other = bool(_extract_entity(q))
+    if has_self and has_other:
+        return True
+    
+    # 여러 지표/학년 언급
+    grade_count = len(re.findall(r'([1-4])\s*학년', q))
+    metric_count = sum(1 for metric_list in METRIC_ALIASES.values() 
+                      for metric in metric_list if metric in q)
+    
+    if grade_count > 1 or metric_count > 1:
+        return True
+    
+    return False
 
 def _contains_any(text: str, keywords: List[str]) -> bool:
     return any(k in text for k in keywords)
@@ -164,18 +221,56 @@ def classify(query: str, usr_id: str | None) -> Intent:
             rag_group_hint=tool_hints.group_hint_for_usage(q),
         )
 
-    # 🔸 신규: 소속대학 질의는 프로필 조회이므로 user_local 고정
-    if usr_id and _is_affiliation_query(q):
-        return Intent(
-            kind="user_local",
-            reason="self affiliation",
-            capabilities_hint=[],
-            user_slots=[UserDataSlot(metric="affiliation", grade=None, owner="self")],
-            wants_calculation=False,
-            external_entities=[]
-        )
+    # 🔸 강화된 개인 데이터 인식
+    if usr_id and _is_personal_data_query(q):
+        # 복합 구조면 agent_needed로
+        if _has_complex_structure(q):
+            metrics = _normalize_metrics(q)
+            grades = _extract_grades(q)
+            univs = _extract_universities(q)
+            
+            slots: List[UserDataSlot] = []
+            if metrics:
+                if grades:
+                    for g in grades:
+                        for m in metrics:
+                            slots.append(UserDataSlot(metric=m, grade=g, owner="self"))
+                else:
+                    for m in metrics:
+                        slots.append(UserDataSlot(metric=m, grade=None, owner="self"))
+
+            return Intent(
+                kind="agent_needed",
+                reason="complex personal data query",
+                capabilities_hint=["oracle_fetch", "data_service_fetch", "calculator"],
+                user_slots=slots,
+                wants_calculation=True,
+                external_entities=univs
+            )
+        else:
+            # 단순한 개인 데이터 질의는 user_local
+            metrics = _normalize_metrics(q)
+            grades = _extract_grades(q)
+            slots: List[UserDataSlot] = []
+            
+            if metrics:
+                if grades:
+                    for g in grades:
+                        for m in metrics:
+                            slots.append(UserDataSlot(metric=m, grade=g, owner="self"))
+                else:
+                    for m in metrics:
+                        slots.append(UserDataSlot(metric=m, grade=None, owner="self"))
+            
+            return Intent(
+                kind="user_local",
+                reason="simple personal data query",
+                user_slots=slots,
+                wants_calculation=False,
+                external_entities=[]
+            )
         
-    # ❸ 기존 규칙
+    # ❸ 기존 규칙들
     metrics = _normalize_metrics(q)
     grades  = _extract_grades(q)
     univs   = _extract_universities(q)

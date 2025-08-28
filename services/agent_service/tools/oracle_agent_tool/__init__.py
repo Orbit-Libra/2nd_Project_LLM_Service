@@ -1,24 +1,27 @@
-# services/agent_service/tools/oracle_agent_tool/__init__.py
 # -*- coding: utf-8 -*-
 """
-MCP 툴: 전국 대학(타 대학) 데이터 조회용.
-- 입력: 대학명(SNM), 연도(숫자), 메트릭(자연어/라벨)
-- 테이블: NUM06_{YEAR}
-- 컬럼 추정: mapping 코드 우선 매칭 → 다양한 접미사/패턴 휴리스틱
-- 출력: {"ok": True, "result": {...}, "assumed_year": 2024, "debug": {...}}
+MCP 툴: 전국 대학 데이터 조회
+등록 키:
+- oracle_agent_tool.query_university_metric  (NUM06_YYYY)
+- oracle_agent_tool.query_estimation_score   (ESTIMATIONFUTURE.SCR_EST_YYYY)
 """
 from __future__ import annotations
-from typing import Any, Dict, List, Tuple, Optional
-import re
-import logging
+from typing import Any, Dict, List, Optional
+import logging, re
 
-from .db import ConnCtx
-from .mapping import normalize_metric_label, code_for_label
+try:
+    from .db import ConnCtx
+    from .mapping import normalize_metric_label, code_for_label
+except ImportError as e:
+    logging.error("Oracle tool dependencies not available: %s", e)
+    ConnCtx = None
 
 log = logging.getLogger("oracle_agent_tool")
 
-# ----- 유틸: 테이블 존재 확인 / 최신년도 -----
-def table_exists(conn, table_name: str) -> bool:
+# --- 공통 유틸 ---
+def _table_exists(conn, table_name: str) -> bool:
+    if not conn:
+        return False
     cur = conn.cursor()
     try:
         cur.execute("SELECT 1 FROM ALL_TABLES WHERE TABLE_NAME = :t", {"t": table_name.upper()})
@@ -26,52 +29,21 @@ def table_exists(conn, table_name: str) -> bool:
     finally:
         cur.close()
 
-def latest_available_year(conn, base: str = "NUM06_", min_year: int = 2014, max_year: int = 2100) -> Optional[int]:
-    # 역순 탐색(최신 우선)
+def _latest_year(conn, base: str = "NUM06_", min_year: int = 2014, max_year: int = 2100) -> Optional[int]:
+    if not conn:
+        return None
     for y in range(min(2100, max_year), min_year-1, -1):
-        t = f"{base}{y}"
-        if table_exists(conn, t):
+        if _table_exists(conn, f"{base}{y}"):
             return y
     return None
 
-# ----- 컬럼 후보 생성 휴리스틱 -----
-_SUFFIX_PREFERENCE = [
-    "", "_SUM", "_TTL", "_TOTAL", "_A", "_B", "_C"
-]
-# “%_MC%” 같이 패턴 매칭도 지원
-def build_candidate_columns(code: str, existing_cols: List[str]) -> List[str]:
-    code_u = (code or "").upper()
-    if not code_u:
-        return []
-    candidates: List[str] = []
-
-    # 1) 완전 일치/기본 접미사
-    for suf in _SUFFIX_PREFERENCE:
-        cand = f"{code_u}{suf}"
-        if cand in existing_cols:
-            candidates.append(cand)
-
-    # 2) 포함 패턴 (우선순위 낮음)
-    if not candidates:
-        for c in existing_cols:
-            if c == "SNM":
-                continue
-            if c == code_u or c.endswith("_" + code_u) or c.startswith(code_u + "_") or (code_u in c):
-                candidates.append(c)
-
-    # 중복 제거, 순서 보존
-    seen, uniq = set(), []
-    for c in candidates:
-        if c not in seen:
-            uniq.append(c); seen.add(c)
-    return uniq
-
-# ----- 행/열 조회 -----
-def fetch_row_by_university(conn, table: str, university: str) -> Dict[str, Any] | None:
+def _fetch_row_by_snm(conn, table: str, snm: str) -> Dict[str, Any] | None:
+    if not conn:
+        return None
     cur = conn.cursor()
     try:
         sql = f'SELECT * FROM {table} WHERE "SNM" = :snm'
-        cur.execute(sql, {"snm": university})
+        cur.execute(sql, {"snm": snm})
         row = cur.fetchone()
         if not row:
             return None
@@ -80,100 +52,159 @@ def fetch_row_by_university(conn, table: str, university: str) -> Dict[str, Any]
     finally:
         cur.close()
 
-def list_columns(conn, table: str) -> List[str]:
-    cur = conn.cursor()
-    try:
-        cur.execute(f'SELECT * FROM {table} WHERE ROWNUM = 1')
-        return [d[0].upper() for d in cur.description]
-    finally:
-        cur.close()
+# --- 1) 일반 메트릭(NUM06_YYYY) ---
+_SUFFIX_PREF = ["", "_SUM", "_TTL", "_TOTAL", "_A", "_B", "_C"]
 
-# ----- 메인 MCP 함수 -----
+def _candidate_cols(code: str, cols: List[str]) -> List[str]:
+    code_u = (code or "").upper()
+    cands = []
+    for suf in _SUFFIX_PREF:
+        cand = f"{code_u}{suf}"
+        if cand in cols: cands.append(cand)
+    if not cands:
+        for c in cols:
+            if c != "SNM" and (c == code_u or c.endswith("_"+code_u) or c.startswith(code_u+"_") or code_u in c):
+                cands.append(c)
+    # uniq
+    seen, out = set(), []
+    for c in cands:
+        if c not in seen:
+            out.append(c); seen.add(c)
+    return out
+
 def query_university_metric(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
-    payload = {
-      "university": "서울대학교",       # 필수
-      "metric": "자료구입비" | "CPS",   # 필수(자연어/라벨/약어 모두 허용)
-      "year": 2023,                     # 선택(없으면 최신 가정)
-      "prefer_exact": True              # 선택
-    }
+    args: { university, metric, year?, prefer_exact? }
     """
-    university = (payload.get("university") or "").strip()
-    metric_in  = (payload.get("metric") or "").strip()
-    year_in    = payload.get("year")
+    if ConnCtx is None:
+        log.error("Oracle connection not available")
+        return {"ok": False, "error": "Oracle connection not available"}
+    
+    univ = (payload.get("university") or "").strip()
+    metric_in = (payload.get("metric") or "").strip()
+    year = payload.get("year")
     prefer_exact = bool(payload.get("prefer_exact", True))
-
-    if not university or not metric_in:
+    
+    log.info("[ORACLE] query_university_metric called: univ=%s, metric=%s, year=%s", univ, metric_in, year)
+    
+    if not univ or not metric_in:
         return {"ok": False, "error": "university and metric are required."}
 
-    # 1) 메트릭 라벨 표준화 → 코드
-    label = normalize_metric_label(metric_in) or metric_in
-    code  = code_for_label(label)
-    if not code:
-        # 라벨→코드 매핑 실패
-        return {"ok": False, "error": f"unknown metric '{metric_in}'", "normalized_label": label}
+    try:
+        label = normalize_metric_label(metric_in) or metric_in
+        code = code_for_label(label)
+        if not code:
+            return {"ok": False, "error": f"unknown metric '{metric_in}'", "normalized_label": label}
 
-    with ConnCtx() as conn:
-        # 2) 연도/테이블 해결
-        if year_in is None:
-            y = latest_available_year(conn, base="NUM06_", min_year=2014, max_year=2024)
-            assumed_year = y
-        else:
-            assumed_year = int(year_in)
+        with ConnCtx() as conn:
+            if year is None:
+                year = _latest_year(conn, base="NUM06_", min_year=2014, max_year=2024)
 
-        table = f'NUM06_{assumed_year}'
-        if not table_exists(conn, table):
-            return {"ok": False, "error": f"table {table} not found", "assumed_year": assumed_year}
+            table = f"NUM06_{int(year)}"
+            if not _table_exists(conn, table):
+                return {"ok": False, "error": f"table {table} not found", "assumed_year": year}
 
-        # 3) 대학 행 조회
-        row = fetch_row_by_university(conn, table, university)
-        if not row:
-            return {"ok": False, "error": f"university '{university}' not found in {table}", "assumed_year": assumed_year}
+            row = _fetch_row_by_snm(conn, table, univ)
+            if not row:
+                return {"ok": False, "error": f"university '{univ}' not found in {table}", "assumed_year": year}
 
-        cols = list(row.keys())
-        cands = build_candidate_columns(code, cols)
-        if not cands:
-            # 컬럼 후보 없음 → 디버그 반환
-            return {
-                "ok": False,
-                "error": f"no column matches metric code '{code}' in {table}",
-                "assumed_year": assumed_year,
-                "columns_preview": cols[:40]
+            cols = list(row.keys())
+            cands = _candidate_cols(code, cols)
+            if not cands:
+                return {"ok": False, "error": f"no column for code '{code}' in {table}", "assumed_year": year, "columns_preview": cols[:40]}
+
+            chosen = None
+            if prefer_exact:
+                for suf in [""] + _SUFFIX_PREF[1:]:
+                    if f"{code}{suf}" in cands:
+                        chosen = f"{code}{suf}"; break
+            if not chosen:
+                chosen = cands[0]
+
+            result = {
+                "ok": True,
+                "result": {
+                    "university": univ,
+                    "year": int(year),
+                    "metric_label": label,
+                    "metric_code": code,
+                    "column": chosen,
+                    "value": row.get(chosen)
+                },
+                "assumed_year": int(year),
+                "debug": {"table": table, "candidates": cands[:10]}
             }
+            log.info("[ORACLE] query_university_metric success: %s", result["result"])
+            return result
+            
+    except Exception as e:
+        log.exception("[ORACLE] query_university_metric error: %s", e)
+        return {"ok": False, "error": str(e)}
 
-        # 4) 값 선택(정확 일치 우선)
-        chosen_col = None
-        if prefer_exact:
-            for suf in [""] + _SUFFIX_PREFERENCE[1:]:
-                cc = f"{code}{suf}"
-                if cc in cands:
-                    chosen_col = cc; break
-        if not chosen_col:
-            chosen_col = cands[0]
+# --- 2) 예측점수(ESTIMATIONFUTURE.SCR_EST_YYYY) ---
+def query_estimation_score(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    args: { university, year? }  # year 없으면 근사(최신 가정 또는 가장 가까운 열)
+    """
+    if ConnCtx is None:
+        log.error("Oracle connection not available")
+        return {"ok": False, "error": "Oracle connection not available"}
+    
+    univ = (payload.get("university") or "").strip()
+    year = payload.get("year")
+    
+    log.info("[ORACLE] query_estimation_score called: univ=%s, year=%s", univ, year)
+    
+    if not univ:
+        return {"ok": False, "error": "university is required."}
 
-        value = row.get(chosen_col)
+    try:
+        target_year = int(year) if year else 2026  # 상한 가정, 필요시 조정
+        col = f"SCR_EST_{target_year}"
 
-        return {
-            "ok": True,
-            "result": {
-                "university": university,
-                "year": assumed_year,
-                "metric_label": label,
-                "metric_code": code,
-                "column": chosen_col,
-                "value": value
-            },
-            "assumed_year": assumed_year,
-            "debug": {
-                "table": table,
-                "candidates": cands[:10],
+        with ConnCtx() as conn:
+            if not _table_exists(conn, "ESTIMATIONFUTURE"):
+                return {"ok": False, "error": "table ESTIMATIONFUTURE not found"}
+
+            row = _fetch_row_by_snm(conn, "ESTIMATIONFUTURE", univ)
+            if not row:
+                return {"ok": False, "error": f"university '{univ}' not found in ESTIMATIONFUTURE"}
+
+            if col not in row:
+                # 가장 가까운 연도 선택
+                est_cols = [k for k in row.keys() if k.startswith("SCR_EST_")]
+                years = []
+                for c in est_cols:
+                    try:
+                        years.append(int(c.rsplit("_",1)[1]))
+                    except Exception:
+                        pass
+                if not years:
+                    return {"ok": False, "error": "no SCR_EST_* columns present"}
+                tgt = min(years, key=lambda y: abs(y - target_year))
+                col = f"SCR_EST_{tgt}"
+
+            result = {
+                "ok": True,
+                "result": {
+                    "university": univ,
+                    "year": int(re.findall(r"\d{4}", col)[0]),
+                    "metric_label": "예측점수",
+                    "metric_code": "SCR_EST",
+                    "column": col,
+                    "value": row.get(col)
+                },
+                "debug": {"table": "ESTIMATIONFUTURE"}
             }
-        }
+            log.info("[ORACLE] query_estimation_score success: %s", result["result"])
+            return result
+            
+    except Exception as e:
+        log.exception("[ORACLE] query_estimation_score error: %s", e)
+        return {"ok": False, "error": str(e)}
 
-# ---- MCP 등록 헬퍼 (agent_service 내에서 가져다 씀) ----
-def register_mcp_tools(registry: Dict[str, Any]) -> None:
-    """
-    agent_service의 MCP/툴 레지스트리에 등록하는 유틸.
-    사용예: registry["oracle.query_university_metric"] = query_university_metric
-    """
-    registry["oracle.query_university_metric"] = query_university_metric
+def register_mcp_tools(registry: Dict[str, Any], _cfg: Dict[str, Any] | None = None) -> None:
+    log.info("[ORACLE] Registering MCP tools")
+    registry["oracle_agent_tool.query_university_metric"] = query_university_metric
+    registry["oracle_agent_tool.query_estimation_score"]  = query_estimation_score
+    log.info("[ORACLE] MCP tools registered: %s", ["oracle_agent_tool.query_university_metric", "oracle_agent_tool.query_estimation_score"])

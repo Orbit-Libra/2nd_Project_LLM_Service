@@ -1,4 +1,4 @@
-# model/backends/dase.py
+# model/backends/base.py
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
