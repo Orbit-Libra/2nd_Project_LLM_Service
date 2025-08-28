@@ -1,4 +1,4 @@
-# prompts.py
+# services/llm_service/model/prompts.py
 
 from typing import List, Dict
 

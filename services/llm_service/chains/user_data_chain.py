@@ -275,6 +275,9 @@ def load_full_user_data(usr_id: str, prof_fallback: Optional[Tuple[str, str]], c
 
 def analyze_question_type(message: str) -> str:
     m = (message or "").strip()
+    
+    if any(tok in m for tok in ["소속대학", "소속 대학"]) or (("내" in m or "나의" in m) and ("대학" in m or "대학교" in m)):
+        return "affiliation"
     if ("연도" in m) or ("년도" in m) or ("언제" in m) or ("몇 년" in m) or ("몇년" in m):
         return "year_of_study"
     if any(k in m for k in ["자료구입", "자료 구입", "구입비", "구입 비용", "예산", "신청", "CPS", "cps"]):
@@ -292,6 +295,7 @@ def analyze_question_type(message: str) -> str:
     if any(k in m for k in ["총", "전체", "모두", "합계"]):
         return "total"
     return "general"
+
 
 def extract_year_number(message: str) -> int:
     m = (message or "")
@@ -375,13 +379,14 @@ def _format_context(data: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 def _direct_answer(relevant: Dict[str, Any], qtype: str, message: str) -> Optional[str]:
-    """
-    DB 값이 곧 정답인 케이스는 여기서 즉답.
-    """
     tgt = extract_year_number(message)
     def get(idx: int, key: str):
         y = relevant.get(f"y{idx}", {}) or {}
         return y.get(key)
+
+    if qtype == "affiliation":
+        uni = (relevant.get("university") or "").strip()
+        return f"소속대학은 {uni}입니다!" if uni else "기록이 없습니다."
 
     if qtype == "year_of_study" and tgt:
         val = get(tgt, "year")
@@ -399,7 +404,8 @@ def _direct_answer(relevant: Dict[str, Any], qtype: str, message: str) -> Option
         val = get(tgt, "score")
         return f"{tgt}학년의 예측점수는 {val}입니다!" if val not in (None, "") else "기록이 없습니다."
 
-    return None  # 나머지는 LLM
+    return None
+
 
 # =========================
 # 체인
@@ -471,11 +477,11 @@ def build_user_data_chain(backend_generate_fn, cfg: Dict[str, Any]):
                 "아래 사용자 데이터만을 근거로 답하라. 없는 값은 '기록이 없습니다'라고 답하라. 임의 추론 금지."
             })
             messages.append({"role": "system", "content": inp["user_context"]})
-            # 가이드 간단화 (LLM 사용 경감)
             qtype = inp.get("question_type","")
             guide_map = {
-                "year_of_study": "질문은 특정 학년의 이수 연도입니다. year 값만 답하십시오.",
-                "material_cost": "질문은 자료구입비(CPS)입니다. 원 단위 숫자만 답하십시오.",
+                "affiliation":  "질문은 소속대학입니다. 대학명만 간결하게 답하십시오.",
+                "year_of_study":"질문은 특정 학년의 이수 연도입니다. year 값만 답하십시오.",
+                "material_cost":"질문은 자료구입비(CPS)입니다. 원 단위 숫자만 답하십시오.",
                 "book_loans":   "질문은 도서 대출(LPS)입니다. 건 단위 숫자만 답하십시오.",
                 "library_visits":"질문은 도서관 방문(VPS)입니다. 회 단위 숫자만 답하십시오.",
                 "score":        "질문은 학년별 예측점수(score)입니다. 숫자만 답하십시오.",

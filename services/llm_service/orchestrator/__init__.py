@@ -1,4 +1,9 @@
-import logging, os
+# services/llm_service/orchestrator/__init__.py
+import logging
+import os
+import re
+from typing import List, Optional
+
 from .schemas import OrchestratorInput, OrchestratorOutput
 from . import intent_classifier, local_exec, planner, agent_client
 
@@ -7,6 +12,9 @@ ilog = logging.getLogger("orchestrator.intent")
 
 AGENT_ENABLED = os.getenv("AGENT_ENABLED", "false").lower() == "true"
 
+# =========================
+# RAG 합성 유틸
+# =========================
 
 def _format_rag_snippets(matches, max_chars=1400, max_items=5) -> str:
     """에이전트가 준 RAG 매치들을 시스템 컨텍스트로 정리"""
@@ -33,6 +41,7 @@ def _format_rag_snippets(matches, max_chars=1400, max_items=5) -> str:
 
 
 def _synthesize_from_rag(router, cfg, query: str, rag: dict, overrides: dict, usr_name="게스트", usr_snm=""):
+    """RAG 스니펫 + 시스템 규칙으로 최종 답변 합성"""
     base = local_exec.build_base_messages(cfg, {
         "user_name": usr_name,
         "salutation_prefix": "",
@@ -59,7 +68,7 @@ def _synthesize_from_rag(router, cfg, query: str, rag: dict, overrides: dict, us
     return local_exec.apply_output_policy(cfg, body)
 
 
-def _extract_rag_blob(res: dict) -> dict | None:
+def _extract_rag_blob(res: dict) -> Optional[dict]:
     """
     에이전트 응답에서 RAG 결과를 최대한 관대하게 찾는다.
     지원 형태:
@@ -70,10 +79,9 @@ def _extract_rag_blob(res: dict) -> dict | None:
     if not isinstance(res, dict):
         return None
 
-    # 0) 가장 흔한 커스텀 키
+    # 0) context_snippets 바로 처리
     if isinstance(res.get("context_snippets"), list):
         cs = res["context_snippets"]
-        # 이미 {"text":...} 형태면 그대로, 문자열 리스트면 변환
         matches = []
         for x in cs:
             if isinstance(x, str):
@@ -86,8 +94,8 @@ def _extract_rag_blob(res: dict) -> dict | None:
         if matches:
             return {"matches": matches}
 
-    # 1) 널리 쓰일 법한 경로들
-    cand_paths = [
+    # 1) 경로 탐색
+    cand_paths: List[List[str]] = [
         ["rag"],
         ["data", "rag"],
         ["data", "result"],
@@ -96,7 +104,7 @@ def _extract_rag_blob(res: dict) -> dict | None:
         ["tool_result"],
     ]
 
-    def dig(d: dict, path: list[str]):
+    def dig(d: dict, path: List[str]):
         cur = d
         for key in path:
             if not isinstance(cur, dict):
@@ -107,10 +115,8 @@ def _extract_rag_blob(res: dict) -> dict | None:
     for p in cand_paths:
         blob = dig(res, p)
         if isinstance(blob, dict):
-            # 표준 matches
             if isinstance(blob.get("matches"), list):
                 return {"matches": blob["matches"]}
-            # chroma raw → matches 정규화
             docs = blob.get("documents")
             metas = blob.get("metadatas")
             dists = blob.get("distances")
@@ -128,14 +134,65 @@ def _extract_rag_blob(res: dict) -> dict | None:
         if isinstance(blob, list) and blob and isinstance(blob[0], dict) and "text" in blob[0]:
             return {"matches": blob}
 
-    # 2) 최후: top-level에 matches가 바로 있는 경우
+    # 2) 최후 수단
     if isinstance(res.get("matches"), list):
         return {"matches": res["matches"]}
 
     return None
 
+# =========================
+# 그래프 경로 사용 판단
+# =========================
+
+_USERLOCAL_FIELD_TOKENS = [
+    "소속대학", "소속 대학",
+    "자료구입비", "자료 구입비",
+    "예측점수", "점수",
+    "학년", "4학년", "3학년", "2학년", "1학년"
+]
+_PAGE_TOKENS = [
+    "학습환경 분석", "발전도 분석", "마이페이지", "내정보", "내 정보", "설정", "대시보드", "메뉴", "페이지"
+]
+_AND_TOKENS = [" 과 ", " 와 ", " 및 ", " 그리고 ", " 하고 ", " 랑 ", " 이랑 ", ", "]
+
+def _should_use_graph(query: str) -> bool:
+    """
+    그래프 경로로 보낼지 판단:
+    - 문장부호 기준 2문장 이상, 또는
+    - 연결사 + (유저데이터/페이지) 토큰 2개 이상, 또는
+    - 길이가 길고 쉼표/열거 흔적
+    """
+    q = (query or "").strip()
+    if not q:
+        return False
+
+    sent_splits = [p for p in re.split(r'(?<=[\?\.\!])\s+', q) if p.strip()]
+    if len(sent_splits) >= 2:
+        return True
+
+    if any(tok in q for tok in _AND_TOKENS):
+        hits = 0
+        for t in (_USERLOCAL_FIELD_TOKENS + _PAGE_TOKENS):
+            if t in q:
+                hits += 1
+            if hits >= 2:
+                return True
+
+    if len(q) >= 18 and ("," in q or " 및 " in q or " 그리고 " in q):
+        return True
+
+    return False
+
+# =========================
+# 진입점
+# =========================
 
 def handle(router, cfg: dict, repo, inp: OrchestratorInput) -> OrchestratorOutput:
+    """
+    LangGraph 기반 멀티-질문 분해/실행 → 조립을 우선 시도하고,
+    실패하거나 단문이면 기존 단일 분기 로직으로 폴백
+    """
+    # 1) 1차 의도 분류
     intent = intent_classifier.classify(inp.query, inp.usr_id)
     ilog.info(
         "[INTENT] usr_id=%r conv_id=%r kind=%s reason=%s slots=%d calc=%s external=%s",
@@ -146,6 +203,43 @@ def handle(router, cfg: dict, repo, inp: OrchestratorInput) -> OrchestratorOutpu
         intent.external_entities,
     )
 
+    # 1-1) 🔸 '내 데이터' 오버라이드: 로그인 + (owner=self & metric 매칭) → 무조건 user_local
+    #      (인텐트 오분류/그래프 여부와 무관하게 로컬 체인으로 단락)
+    if inp.usr_id:
+        try:
+            # 지연 임포트: 의존 최소화
+            from .intent_classifier import extract_slots_light
+            _slots = extract_slots_light(inp.query) or {}
+        except Exception:
+            _slots = {}
+        if (_slots.get("owner") == "self") and (_slots.get("metric") in {"cps", "lps", "vps", "score", "budget", "자료구입비"}):
+            log.info("[PATH] override → user_local (owner=self, metric=%s)", _slots.get("metric"))
+            body, prof = local_exec.run_user_local(router, cfg, repo, inp.usr_id, inp.query, inp.overrides)
+            return OrchestratorOutput(
+                answer=body,
+                route="local_user",
+                meta={"intent": intent.dict(), "profile": prof, "override": "self_metric"}
+            )
+
+    # 2) 그래프 경로 우선
+    try:
+        if AGENT_ENABLED and _should_use_graph(inp.query):
+            from .graph import run_orchestrator_graph  # 지연 임포트
+            body, tasks, results = run_orchestrator_graph(router, cfg, repo, inp)
+            meta = {
+                "intent": intent.dict(),
+                "graph": {
+                    "task_count": len(tasks),
+                    "executors": [t.get("executor") for t in tasks],
+                }
+            }
+            log.info("[PATH] route=graph tasks=%d executors=%s",
+                     len(tasks), ",".join(meta["graph"]["executors"]))
+            return OrchestratorOutput(answer=body, route="graph", meta=meta)
+    except Exception as e:
+        log.warning("[GRAPH] orchestration failed → fallback. reason=%s", e)
+
+    # 3) 단일 경로 폴백
     if intent.kind == "guest_base_chat":
         log.info("[PATH] route=guest_base_chat")
         body = local_exec.run_guest_base_chat(router, cfg, inp.query, inp.overrides)
@@ -178,7 +272,7 @@ def handle(router, cfg: dict, repo, inp: OrchestratorInput) -> OrchestratorOutpu
                  list(res.keys()),
                  list((res.get("data") or {}).keys()) if isinstance(res.get("data"), dict) else None)
 
-        # 1) RAG 우선: context_snippets / rag blob 등
+        # 1) RAG 우선
         rag = _extract_rag_blob(res)
         if rag and (rag.get("matches")):
             usr_name, usr_snm = ("게스트", "")
@@ -188,10 +282,11 @@ def handle(router, cfg: dict, repo, inp: OrchestratorInput) -> OrchestratorOutpu
                     usr_name, usr_snm = prof if prof else ("사용자", "")
                 except Exception:
                     pass
-            answer = _synthesize_from_rag(router, cfg, inp.query, rag, inp.overrides, usr_name=usr_name, usr_snm=usr_snm)
+            answer = _synthesize_from_rag(router, cfg, inp.query, rag, inp.overrides,
+                                          usr_name=usr_name, usr_snm=usr_snm)
             return OrchestratorOutput(answer=answer, route="agent_rag", meta={"intent": intent.dict(), "agent_raw": res})
 
-        # 2) 계산형: final_data가 있고, 숫자 결과 키가 실제로 하나 이상 있는 경우에만
+        # 2) 계산형
         fd = (res or {}).get("final_data") or {}
         numeric_keys = any(k in fd for k in ("user_value", "benchmark", "diff", "ratio"))
         if fd and numeric_keys:
@@ -214,12 +309,11 @@ def handle(router, cfg: dict, repo, inp: OrchestratorInput) -> OrchestratorOutpu
                 if isinstance(v, str) and v.strip():
                     return OrchestratorOutput(answer=v.strip(), route="agent_text", meta={"intent": intent.dict(), "agent_raw": res})
 
-        # 4) 기타: 안전 폴백
-        log.info("[PATH] route=agent (no rag/numeric/text) – default ack")
+        # 4) 기타 폴백
+        log.info("[PATH] route=agent (no rag/numeric/text) – default ack]")
         return OrchestratorOutput(answer="에이전트 결과를 가져왔습니다.", route="agent", meta={"intent": intent.dict(), "agent_raw": res})
 
     except Exception:
-        # 콜 실패 시에도 동일 메시지로 폴백
         return OrchestratorOutput(
             answer="기능에 문제가 있습니다. 잠시 후 다시 시도해주세요!",
             route="agent_call_failed",

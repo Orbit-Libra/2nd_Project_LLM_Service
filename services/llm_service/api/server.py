@@ -48,7 +48,7 @@ def create_app():
         log.info("설정 파일 로드 중...")
         _CFG = load_config(os.environ)
 
-        log.info("모델 라우터 초기화 중... (오픈비노 NPU 스냅샷 로딩)")
+        log.info("모델 라우터 초기화 중... (모델 로딩)")
         _ROUTER = ModelRouter.from_config(_CFG, os.environ)
 
         log.info("모델 로딩 완료!")
@@ -60,6 +60,7 @@ def create_app():
     # --- 서비스별 로거 레벨 튜닝 ---
     logging.getLogger("orchestrator").setLevel(logging.INFO)
     logging.getLogger("orchestrator.intent").setLevel(logging.INFO)
+    logging.getLogger("orchestrator.graph").setLevel(logging.INFO)
     logging.getLogger("user_data_chain").setLevel(
         getattr(logging, os.getenv("USER_DATA_CHAIN_LOG_LEVEL", "WARNING").upper(), logging.WARNING)
     )
@@ -69,14 +70,22 @@ def create_app():
         """API 모듈을 동적으로 리로드"""
         global _API_MODULE
         try:
+            # 서브모듈 → 부모 → API 모듈 순으로 리로드
             modules_to_reload = [
                 "services.llm_service.chains.user_data_chain",
                 "services.llm_service.db.llm_repository_cx",
-                "services.llm_service.orchestrator",
+
+                # 🔥 orchestrator 서브모듈들 (graph를 가장 먼저)
+                "services.llm_service.orchestrator.graph",
                 "services.llm_service.orchestrator.intent_classifier",
                 "services.llm_service.orchestrator.tool_hints",
                 "services.llm_service.orchestrator.planner",
                 "services.llm_service.orchestrator.agent_client",
+
+                # 마지막에 orchestrator 패키지 자체
+                "services.llm_service.orchestrator",
+
+                # 그리고 최종 API 엔드포인트 모듈
                 _API_MODULE_PATH
             ]
             for module_name in modules_to_reload:

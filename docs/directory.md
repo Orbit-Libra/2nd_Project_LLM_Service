@@ -15,19 +15,44 @@
 │   │
 │   └── devlogs/    
 │
-├── services/             # 모든 마이크로서비스 폴더 묶음
+├── services/                                 # 모든 마이크로서비스 폴더 묶음
 │   │
-│   ├── agent_service/                        # 데이터 수집 및 처리 서비스
+│   ├── agent_service/                        # 에이전트 툴 서비스
 │   │   │
-│   │   ├── api/                             # 플라스크 api
+│   │   ├── api/                              # 플라스크 api서버 진입점 폴더
 │   │   │   │  
-│   │   │   ├── data_api.py                  # 전체예측값 전달 클래스
-│   │   │   ├── main.py                      # 플라스크 api서버 메인코드
-│   │   │   └── num06_api.py                 # 유저서비스 데이터 전달 클래스
+│   │   │   ├── server.py                                 
+│   │   │   └── num06_api.py                
 │   │   │
-│   │   ├── DataHandling/                    # 원본파일 CSV파일화 및 DB 업로드 패키지  
+│   │   ├── configs/                     
+│   │   │   │  
+│   │   │   ├── rag_config.json
+│   │   │
+│   │   ├── tools/                     
+│   │   │   │  
+│   │   │   ├── calc_tool/
+│   │   │   │   │
+│   │   │   │   ├─ __init__.py
+│   │   │   │   └── 
+│   │   │   │  
+│   │   │   ├── rag_agent_tool/
+│   │   │   │   │
+│   │   │   │   ├── files/
+│   │   │   │   │   │
+│   │   │   │   │   ├── chroma/
+│   │   │   │   │   ├── model/
+│   │   │   │   │   └── pdf/
+│   │   │   │   │
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── store.py
+│   │   │   │   └── tool.py
 │   │   │   │  
 │   │   │   ├── __init__.py
+│   │   │   ├── base.py
+│   │   │   └── router.py
+│   │   │
+│   │   ├── __init__.py 
+│   │   └── .env 
 │   │  
 │   ├── core_utiles/                         # 공통 모듈 전용 폴더
 │   │   ├── __init__.py
@@ -119,11 +144,15 @@
 │   │   │   ├── prompts.py                   # 매세지 랜더링 모듈
 │   │   │   └── router.py                    # 플라스크 모델 라우터 클래스
 │   │   |
-│   │   ├── ochestrator/                     # 오케스트레이터
+│   │   ├── orchestrator/                     # 오케스트레이터
 │   │   |   │  
-│   │   |   ├── 
-│   │   |   ├── 
-│   │   |   └── 
+│   │   |   ├── __init__.py
+│   │   |   ├── agent_client.py
+│   │   |   ├── intent_classifier.py
+│   │   |   ├── local_exec.py
+│   │   |   ├── planner.py
+│   │   |   ├── schemas.py
+│   │   |   └── tool_hints.py
 │   │   |
 │   │   └── .env                             # 엑세스토큰 및 오라클 스키마 설정값
 │   │

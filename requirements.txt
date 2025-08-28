@@ -42,3 +42,4 @@ chromadb
 sentence-transformers
 pypdf
 requests
+langgraph

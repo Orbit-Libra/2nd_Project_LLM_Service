@@ -15,7 +15,7 @@
 
   "generation": {
     "max_new_tokens": 180,
-    "temperature": 0.9,
+    "temperature": 2,
     "top_p": 0.9,
     "top_k": 40,
     "stop": []

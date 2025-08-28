@@ -1,3 +1,4 @@
+# agent_service/api/server.py
 import os, json, logging
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
@@ -12,10 +13,11 @@ logging.basicConfig(
 
 def _load_cfg(app_root: str):
     # 1) .env (agent_service 루트)
-    env_path = os.path.join(app_root, ".env")
-    if os.path.exists(env_path):
-        load_dotenv(env_path)
-        log.info(".env loaded: %s", env_path)
+    env_path = os.path.join(app_root, ".")
+    env_file = os.path.join(env_path, ".env")
+    if os.path.exists(env_file):
+        load_dotenv(env_file)
+        log.info(".env loaded: %s", env_file)
 
     # 2) RAG 설정 JSON
     cfg_path = os.getenv("AGENT_CONFIG_PATH") or os.path.join(app_root, "configs", "rag_config.json")
@@ -41,6 +43,7 @@ def _load_cfg(app_root: str):
     os.environ.setdefault("HF_HOME", hf_home)
     os.environ.setdefault("TRANSFORMERS_CACHE", hf_home)
     os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", hf_home)
+    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
     # 5) 합치기
     cfg = {
@@ -65,6 +68,7 @@ def create_app():
     log.info("- pdf_dir=%s", cfg["RAG_PDF_DIR"])
     log.info("- chroma_dir=%s", cfg["CHROMA_PERSIST_DIR"])
     log.info("- embedding_model=%s", cfg["EMBEDDING_MODEL"])
+    log.info("- tools=%s", ", ".join(router.tool_names()))
 
     @app.get("/health")
     def health():
@@ -76,6 +80,7 @@ def create_app():
             "tools": router.tool_names()
         })
 
+    # RAG 인덱스 관리(내장 RAG 사용 시만 의미 있음 / MCP-RAG일 땐 이 엔드포인트에서 MCP에 위임)
     @app.post("/v1/tools/rag/sync")
     def rag_sync():
         payload = request.get_json(silent=True) or {}
@@ -102,19 +107,27 @@ def create_app():
         data = request.get_json(silent=True) or {}
         query = (data.get("query") or "").strip()
         hints = data.get("hints") or []
+        tools_req = data.get("tools") or []
         if not query:
             return jsonify({"status":"error","message":"query is required"}), 400
         try:
-            plan = router.select_tool(query=query, hints=hints)
+            plan = router.select_tool(query=query, hints=hints, tools_req=tools_req)
             if not plan:
                 return jsonify({"status":"no_tool","message":"no suitable tool"}), 200
-            log.info("[AGENT] tool=%s reason=%s", plan["tool"], plan.get("reason"))
+
+            log.info(
+                "[AGENT] tool=%s reason=%s hints=%s",
+                plan["tool"], plan.get("reason",""), plan.get("matched_hints", [])
+            )
             result = router.run_tool(plan, query=query, payload=data)
+
+            # 공통 응답 스키마
             return jsonify({
                 "status":"ok",
                 "used":[plan["tool"]],
                 "final_data": result.get("final_data"),
                 "context_snippets": result.get("context_snippets", []),
+                "tool_result": result.get("tool_result"),
                 "debug": {"plan": plan}
             })
         except Exception as e:
@@ -125,4 +138,10 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host="0.0.0.0", port=5200, debug=os.getenv("FLASK_DEBUG","0")=="1", use_reloader=False, threaded=True)
+    app.run(
+        host="0.0.0.0",
+        port=5200,
+        debug=os.getenv("FLASK_DEBUG","0")=="1",
+        use_reloader=False,
+        threaded=True
+    )

@@ -1,3 +1,4 @@
+# services/agent_service/tools/rag_agent_tool/tool.py
 import logging, numpy as np
 from typing import Dict, Any, Optional, List
 from sentence_transformers import SentenceTransformer
