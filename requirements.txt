@@ -16,7 +16,7 @@ matplotlib==3.10.3
 Flask==3.0.3
 Flask-Migrate==4.0.7
 SQLAlchemy==2.0.21
-cx__oracle==8.3.0
+cx_oracle==8.3.0
 itsdangerous==2.2.0
 Werkzeug==3.0.3
 Flask-WTF==1.2.2
