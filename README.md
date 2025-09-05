@@ -2,7 +2,13 @@
 
 ### 프로젝트 명 : Generative AI 및 지능형 에이전트 기반 교육 인프라 예측 서비스
 
+![메인 화면](docs/main.png)
+
 ### 5조 - 강승민, 김선희
+
+## Presentation Views
+
+📊 [프레젠테이션 전체보기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pdf)
 
 ## Directory Structure
 ```
@@ -22,11 +28,6 @@
 └── setup-pipeline.bat         # 머신러닝 초기 데이터 셋업 스크립트
 
 ```
-
-## Presentation Views
-
-📊 [최신 발표 자료 보기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pptx)
-
 
 ## 패키지 구동 방법
 
