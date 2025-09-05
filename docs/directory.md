@@ -2,31 +2,31 @@
 
 2nd_Project_LLM_Service/
 │  
-├── .venv/ <- 가상환경 폴더
+├── .venv/                # 가상환경 폴더
 │   │
 │   └── libra_env/    
 │  
-├── app/ <- 플라스크 서버 시작지점
+├── app/                  # 플라스크 웹서버 시작지점
 │   │
 │   ├── __init__.py  
-│   └── main.py
+│   └── main.py           # 서버 부팅 앱
 │  
-├── docs/ <- 문서 폴더
+├── docs/                 # 문서 폴더
 │   │
-│   └── devlogs/    
+│   └── devlogs/          # 개발일지 폴더
 │
-├── services/                                 # 모든 마이크로서비스 폴더 묶음
+├── services/                        # 모든 서비스 폴더 묶음
 │   │
 │   ├── agent_service/                        # 에이전트 툴 서비스
 │   │   │
 │   │   ├── api/                              # 플라스크 api서버 진입점 폴더
 │   │   │   │  
-│   │   │   ├── server.py                                 
-│   │   │   └── num06_api.py                
+│   │   │   ├── rag_admin.py                  # 플라스크 api 라우트 모듈          
+│   │   │   └── server.py                     # 플라스크 api 라우트 모듈 
 │   │   │
 │   │   ├── configs/                     
 │   │   │   │  
-│   │   │   ├── rag_config.json
+│   │   │   ├── rag_config.json               # RAG 에이전트 설정파일
 │   │   │
 │   │   ├── tools/                     
 │   │   │   │  
@@ -35,21 +35,26 @@
 │   │   │   │   ├─ __init__.py
 │   │   │   │   └── 
 │   │   │   │  
-│   │   │   ├── rag_agent_tool/
-│   │   │   │   │
-│   │   │   │   ├── files/
-│   │   │   │   │   │
-│   │   │   │   │   ├── chroma/
-│   │   │   │   │   ├── model/
-│   │   │   │   │   └── pdf/
+│   │   │   ├── oracle_agent_tool/            # 오라클DB 에이전트 툴 패키지
 │   │   │   │   │
 │   │   │   │   ├── __init__.py
-│   │   │   │   ├── store.py
-│   │   │   │   └── tool.py
+│   │   │   │   ├── db.py                     # Data_DB 접속 모듈
+│   │   │   │   ├── mapping.py                # 질의 라벨 매핑 모듈
+│   │   │   │ 
+│   │   │   ├── rag_agent_tool/               # RAG 기반 에이전트 툴 패키지
+│   │   │   │   │
+│   │   │   │   ├── files/                    # RAG용 데이터 리소스 폴더
+│   │   │   │   │   │
+│   │   │   │   │   ├── chroma/               # 벡터DB(Chroma) 저장 폴더
+│   │   │   │   │   ├── model/                # 임베딩/LLM 캐시 모델 폴더
+│   │   │   │   │   └── pdf/                  # 원본 PDF 문서 저장 폴더
+│   │   │   │   │
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── store.py                  # 벡터DB 입출력 관리 모듈
 │   │   │   │  
 │   │   │   ├── __init__.py
-│   │   │   ├── base.py
-│   │   │   └── router.py
+│   │   │   ├── mcp_tool.py                   # MCP 클라이언트 클래스        
+│   │   │   └── router.py                     # 툴 라우팅 제어 모듈
 │   │   │
 │   │   ├── __init__.py 
 │   │   └── .env 
@@ -134,25 +139,26 @@
 │   │   │   │  
 │   │   │   ├── configs/                     # LLM 모델 설정값
 │   │   │   │   │
-│   │   │   │   ├── gguf_params.json
-│   │   │   │   ├── gguf_prompts.json
-│   │   │   │   ├── ov_params.json
-│   │   │   │   └── user_schema.json
+│   │   │   │   ├── gguf_params.json         # gguf 모델 파라미터 설정값
+│   │   │   │   ├── gguf_prompts.json        # 프롬프트 엔지니어링 셋
+│   │   │   │   ├── ov_params.json           # OpenVINO 모델 파라미터 설정값
+│   │   │   │   └── user_schema.json         # 유저데이터 라벨
 │   │   │   │     
 │   │   │   ├── __init__.py 
 │   │   │   ├── config_loader.py             # 컨피그 로더
 │   │   │   ├── prompts.py                   # 매세지 랜더링 모듈
 │   │   │   └── router.py                    # 플라스크 모델 라우터 클래스
 │   │   |
-│   │   ├── orchestrator/                     # 오케스트레이터
+│   │   ├── orchestrator/                    # 오케스트레이터 패키지
 │   │   |   │  
-│   │   |   ├── __init__.py
-│   │   |   ├── agent_client.py
-│   │   |   ├── intent_classifier.py
-│   │   |   ├── local_exec.py
-│   │   |   ├── planner.py
-│   │   |   ├── schemas.py
-│   │   |   └── tool_hints.py
+│   │   |   ├── __init__.py 
+│   │   |   ├── agent_client.py              # 에이전트 툴 호출 모듈
+│   │   |   ├── graph.py                     # LangGraph 기반 태스크 파이프라인
+│   │   |   ├── intent_classifier.py         # 질문 의도 분류 및 구조화 모듈
+│   │   |   ├── local_exec.py                # 유저 데이터 체인 모듈
+│   │   |   ├── planner.py                   # 페이로드 빌더
+│   │   |   ├── schemas.py                   # 타입 안정성 검증 모듈
+│   │   |   └── tool_hints.py                # 툴 힌트 분류 모듈
 │   │   |
 │   │   └── .env                             # 엑세스토큰 및 오라클 스키마 설정값
 │   │
@@ -222,7 +228,8 @@
 │   │   │   └── USER_DB.DBF                  # 유저 데이터베이스
 │   │   │
 │   │   ├── .env 
-│   │   ├── init_oracle_user_data.py         # 초기 유저 데이터베이스 세팅 스크립트
+│   │   ├── init_oracle_llm_data.py          # 초기 LLM DB 테이블 세팅 스크립트
+│   │   ├── init_oracle_user_data.py         # 초기 유저 DB 테이블 세팅 스크립트
 │   │   ├── login_manager.py                 # 로그인 유효성 검사 스크립트
 │   │   ├── predict_sync.py                  # 유저 데이터 예측 블루프린트
 │   │   └── user_analysis.py                 # 유저 서비스 페이지 블루프린트
@@ -233,6 +240,7 @@
 │       │   │  
 │       │   ├── admin_system.py              # 관리자 전용 기능제어 블루프린트
 │       │   ├── chart_data.py                # 차트페이지 블루프린트
+│       │   ├── chatbot_api.py               # 챗봇 플로터 블루프린트
 │       │   ├── Oracle_utils.py              # 오라클DB 커넥션 모듈
 │       │   ├── profile_api.py               # 마이페이지 블루프린트
 │       │   ├── register_api.py              # 회원가입 페이지 블루프린트
@@ -245,7 +253,10 @@
 │       │   │   │
 │       │   │   ├── common/                  # 공통 파츠
 │       │   │   │   │
-│       │   │   │   └── header-footer.css    # 헤더 & 푸터 css
+│       │   │   │   └── base.css             # 베이스 css
+│       │   │   │   └── chatbot.css          # 챗봇 플로터용 css
+│       │   │   │   └── footer.css           # 푸터 css
+│       │   │   │   └── header.css           # 헤더 css
 │       │   │   │
 │       │   │   ├── admin.css                # 관리자 페이지 css
 │       │   │   ├── chartpage1.css           # 차트페이지용 css
@@ -263,6 +274,12 @@
 │       │   │
 │       │   └── js/                          # 페이지 별 로직 구현 js파일 폴더
 │       │       |
+│       │       ├── common/                  # 공통 파츠
+│       │       │   │
+│       │       │   ├── base.js              # 베이스 js
+│       │       │   ├── chatbot.js           # 챗봇 플로터 js
+│       │       │   └── header.js            # 헤더 js
+│       │       │
 │       │       ├── admin.js                 # 관리자 페이지 js
 │       │       ├── chartpage1.js            # 차트페이지 1번용 js
 │       │       ├── chartpage2.js            # 차트페이지 2번용 js
@@ -276,6 +293,7 @@
 │       │   │
 │       │   ├── common/                      # 공통 파츠
 │       │   │   |
+│       │   │   ├── base.html                # 베이스 html
 │       │   │   ├── chatbot.html             # 챗봇 플로터용 html
 │       │   │   ├── footer.html              # 푸터 html
 │       │   │   └── header.html              # 헤더 html
@@ -295,6 +313,7 @@
 │   │
 │   └── instantclient-basic-windows.x64-19.25.0.0.0dbru/
 │
+├── flaskrun-agent.bat         # 플라스크 에이전트서버 실행 스크립트
 ├── flaskrun-data.bat          # 플라스크 데이터서버 실행 스크립트
 ├── flaskrun-llm.bat           # 플라스크 챗봇서버 실행 스크립트
 ├── flaskrun-predict.bat       # 플라스크 예측서버 실행 스크립트
