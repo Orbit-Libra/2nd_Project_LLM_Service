@@ -2,13 +2,17 @@
 
 ### 프로젝트 명 : Generative AI 및 지능형 에이전트 기반 교육 인프라 예측 서비스
 
-![메인 화면](docs/main.png)
-
 ### 5조 - 강승민, 김선희
 
-## Presentation Views
+![메인 화면](docs/main.png)
+[프레젠테이션 바로가기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pdf)
 
-📊 [프레젠테이션 전체보기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pdf)
+
+
+
+
+
+
 
 ## Directory Structure
 ```
