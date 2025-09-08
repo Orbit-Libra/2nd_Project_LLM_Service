@@ -209,7 +209,7 @@ def _extract_universities(text: str) -> List[str]:
 def classify(query: str, usr_id: str | None) -> Intent:
     q = (query or "").strip()
 
-    # ❶ 서비스 이용/네비 → RAG
+    # 서비스 이용/네비 → RAG
     if tool_hints.detect_usage_guide(q):
         return Intent(
             kind="agent_needed",
@@ -221,7 +221,7 @@ def classify(query: str, usr_id: str | None) -> Intent:
             rag_group_hint=tool_hints.group_hint_for_usage(q),
         )
 
-    # 🔸 강화된 개인 데이터 인식
+    # 강화된 개인 데이터 인식
     if usr_id and _is_personal_data_query(q):
         # 복합 구조면 agent_needed로
         if _has_complex_structure(q):
@@ -270,7 +270,7 @@ def classify(query: str, usr_id: str | None) -> Intent:
                 external_entities=[]
             )
         
-    # ❸ 기존 규칙들
+    # 기존 규칙들
     metrics = _normalize_metrics(q)
     grades  = _extract_grades(q)
     univs   = _extract_universities(q)

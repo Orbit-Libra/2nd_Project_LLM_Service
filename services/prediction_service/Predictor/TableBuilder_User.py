@@ -131,7 +131,7 @@ class TableBuilderUser:
             results.append(user_result)
         return pd.DataFrame(results)
 
-    # === ✅ API용: payload(JSON) 기반 예측 ===
+    # === API용: payload(JSON) 기반 예측 ===
     def predict_from_payload(self, payload: dict) -> dict:
         """
         payload 예시:
