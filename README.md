@@ -5,8 +5,9 @@
 ### 5조 - 강승민, 김선희
 
 ![메인 화면](docs/main.png)
-[프레젠테이션 바로가기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pdf)  
-[시연영상 보기(GitHub Pages)](https://orbit-libra.github.io/2nd_Project_LLM_Service/video.html)
+[프레젠테이션 슬라이드 전체보기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pdf)
+
+[시연영상 시청(GitHub Pages)](https://orbit-libra.github.io/2nd_Project_LLM_Service/video.html)
 
 
 
