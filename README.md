@@ -6,7 +6,7 @@
 
 ![메인 화면](docs/main.png)
 [프레젠테이션 바로가기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pdf)  
-[시연영상 보기](docs/시연영상_5조_forWeb.mp4)
+[시연영상 보기(GitHub Pages)](https://orbit-libra.github.io/2nd_Project_LLM_Service/video.html)
 
 
 
