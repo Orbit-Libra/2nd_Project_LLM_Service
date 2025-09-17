@@ -1,20 +1,5 @@
 ## 2차 프로젝트 - 딥러닝 & 플라스크 기반 서비스 프로젝트
 
-### 프로젝트 명 : Generative AI 및 지능형 에이전트 기반 교육 인프라 예측 서비스
-
-### 5조 - 강승민, 김선희
-
-![메인 화면](docs/main.png)
-[프레젠테이션 슬라이드 전체보기](docs/프로젝트결과보고서_5조_강승민_ver.1.0.pdf)
-
-[시연영상 시청(GitHub Pages)](https://orbit-libra.github.io/2nd_Project_LLM_Service/video.html)
-
-
-
-
-
-
-
 ## Directory Structure
 ```
 
