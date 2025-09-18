@@ -42,25 +42,6 @@
 
   let isPageLoaded = false;
 
-  // --- 터치/마우스 이벤트 통합 함수들 ---
-  function getEventPos(e) {
-    if (e.touches && e.touches.length > 0) {
-      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }
-    return { x: e.clientX, y: e.clientY };
-  }
-
-  function addPointerEventListeners(element, downHandler) {
-    // 마우스 이벤트
-    element.addEventListener('mousedown', downHandler);
-    
-    // 터치 이벤트
-    element.addEventListener('touchstart', (e) => {
-      e.preventDefault(); // 터치 시 기본 동작 방지
-      downHandler(e);
-    }, { passive: false });
-  }
-
   const openChat = () => { 
     chatWindow.style.display = 'flex';
     
@@ -361,8 +342,7 @@
       scrollContainer.scrollTop += 50;
     });
     
-    // 스크롤 썸에 터치/마우스 이벤트 추가
-    addPointerEventListeners(scrollThumb, startScrollDrag);
+    scrollThumb.addEventListener('mousedown', startScrollDrag);
     
     scrollTrack.addEventListener('click', (e) => {
       if (e.target === scrollTrack) {
@@ -403,8 +383,7 @@
 
   function startScrollDrag(e) {
     isScrollDragging = true;
-    const pos = getEventPos(e);
-    scrollDragStart = pos.y;
+    scrollDragStart = e.clientY;
     scrollThumb.classList.add('dragging');
     e.preventDefault();
   }
@@ -412,8 +391,7 @@
   function doScrollDrag(e) {
     if (!isScrollDragging) return;
     
-    const pos = getEventPos(e);
-    const deltaY = pos.y - scrollDragStart;
+    const deltaY = e.clientY - scrollDragStart;
     const trackHeight = scrollTrack.offsetHeight;
     const thumbHeight = scrollThumb.offsetHeight;
     const maxThumbTop = trackHeight - thumbHeight;
@@ -425,7 +403,7 @@
     const maxScroll = scrollContainer.scrollHeight - scrollContainer.offsetHeight;
     
     scrollContainer.scrollTop = maxScroll * scrollRatio;
-    scrollDragStart = pos.y;
+    scrollDragStart = e.clientY;
   }
 
   function stopScrollDrag() {
@@ -435,15 +413,14 @@
     }
   }
 
-  // --- 드래그 기능 (터치 지원) ---
+  // --- 드래그 기능 ---
   function startDrag(e) {
     if (e.target.id === 'chatCloseBtn') return;
     if (!chatWindow.classList.contains('open')) return;
     
     isDragging = true;
-    const pos = getEventPos(e);
-    dragStartX = pos.x;
-    dragStartY = pos.y;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
     
     const rect = chatWindow.getBoundingClientRect();
     dragStartLeft = rect.left;
@@ -457,9 +434,8 @@
   function doDrag(e) {
     if (!isDragging) return;
     
-    const pos = getEventPos(e);
-    const dx = pos.x - dragStartX;
-    const dy = pos.y - dragStartY;
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
     
     let newLeft = dragStartLeft + dx;
     let newTop = dragStartTop + dy;
@@ -488,16 +464,15 @@
     }
   }
 
-  // --- 개선된 리사이즈 기능 (터치 지원) ---
+  // --- 개선된 리사이즈 기능 ---
   function startResize(e) {
     if (!chatWindow.classList.contains('open')) return;
     
     isResizing = true;
     resizeDirection = e.target.dataset.direction;
     
-    const pos = getEventPos(e);
-    startX = pos.x;
-    startY = pos.y;
+    startX = e.clientX;
+    startY = e.clientY;
     startWidth = chatWindow.offsetWidth;
     startHeight = chatWindow.offsetHeight;
     
@@ -508,7 +483,7 @@
     fixedRight = rect.right;
     fixedBottom = rect.bottom;
     
-    document.body.style.cursor = e.target.style.cursor || 'nw-resize';
+    document.body.style.cursor = e.target.style.cursor;
     document.body.style.userSelect = 'none';
     e.preventDefault();
   }
@@ -516,9 +491,8 @@
   function doResize(e) {
     if (!isResizing) return;
     
-    const pos = getEventPos(e);
-    const dx = pos.x - startX;
-    const dy = pos.y - startY;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
     
     let newWidth = startWidth;
     let newHeight = startHeight;
@@ -582,19 +556,6 @@
     }
   }
 
-  // --- 통합 이벤트 핸들러 ---
-  function handleGlobalMove(e) {
-    doResize(e);
-    doDrag(e);
-    doScrollDrag(e);
-  }
-
-  function handleGlobalEnd() {
-    stopResize();
-    stopDrag();
-    stopScrollDrag();
-  }
-
   // --- 이벤트 바인딩 ---
   chatToggle.addEventListener('click', () => {
     if (chatWindow.classList.contains('open')) closeChat(); else openChat();
@@ -608,28 +569,25 @@
     }
   });
 
-  // 리사이즈 핸들에 터치/마우스 이벤트 추가
   const resizeHandles = chatWindow.querySelectorAll('.resize-handle');
   resizeHandles.forEach(handle => {
-    addPointerEventListeners(handle, startResize);
+    handle.addEventListener('mousedown', startResize);
   });
 
-  // 채팅 헤더에 터치/마우스 이벤트 추가
   const chatHeader = chatWindow.querySelector('.chat-header');
-  addPointerEventListeners(chatHeader, startDrag);
+  chatHeader.addEventListener('mousedown', startDrag);
 
-  // 전역 move/end 이벤트 (마우스 + 터치)
-  document.addEventListener('mousemove', handleGlobalMove);
-  document.addEventListener('mouseup', handleGlobalEnd);
-  
-  // 터치 이벤트
-  document.addEventListener('touchmove', (e) => {
-    e.preventDefault(); // 터치 스크롤 방지
-    handleGlobalMove(e);
-  }, { passive: false });
-  
-  document.addEventListener('touchend', handleGlobalEnd);
-  document.addEventListener('touchcancel', handleGlobalEnd);
+  document.addEventListener('mousemove', (e) => {
+    doResize(e);
+    doDrag(e);
+    doScrollDrag(e);
+  });
+
+  document.addEventListener('mouseup', () => {
+    stopResize();
+    stopDrag();
+    stopScrollDrag();
+  });
 
   // 채팅창 전체에서 휠 이벤트 처리 (개선)
   chatWindow.addEventListener('wheel', (e) => {
@@ -652,23 +610,6 @@
         scrollContainer.scrollTop += e.deltaY;
         updateScrollbar();
       });
-      
-      // 터치 스크롤 지원
-      let touchStartY = 0;
-      scrollContainer.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-      });
-      
-      scrollContainer.addEventListener('touchmove', (e) => {
-        if (isDragging || isResizing) return; // 드래그/리사이즈 중엔 스크롤 안함
-        
-        const touchY = e.touches[0].clientY;
-        const deltaY = touchStartY - touchY;
-        scrollContainer.scrollTop += deltaY;
-        touchStartY = touchY;
-        updateScrollbar();
-        e.preventDefault();
-      }, { passive: false });
     }
   }
 
@@ -702,11 +643,10 @@
 
   // --- 초기화 (순서 중요) ---
   initCustomScrollbar();
-  initScrollEvents(); // 터치 스크롤 이벤트 초기화 추가
   restoreFirstTurnStatus();
   restore();
   restoreSize();
   restorePosition();
   
-  console.log('[챗봇] 초기화 완료 (터치 지원)');
+  console.log('[챗봇] 초기화 완료');
 })();
